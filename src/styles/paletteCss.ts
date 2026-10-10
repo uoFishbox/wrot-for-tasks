@@ -1,4 +1,4 @@
-import { blendColor, type CodeLightness } from "../utils/color";
+import { blendColor, visibleHighlight, type CodeLightness } from "../utils/color";
 
 /** Colors resolved from the settings for the active theme mode. */
 interface WrPalette {
@@ -9,6 +9,15 @@ interface WrPalette {
   faintColor: string;
   unresolvedLinkColor: string;
   codeLightness: CodeLightness;
+  // The theme's highlight colours (--color-red and the rest) as hex.
+  highlightTheme: Record<string, string>;
+}
+
+/** Highlight colour variables (--wr-hl-red …) kept visible on the given background. */
+export function highlightVars(theme: Record<string, string>, bg: string): string {
+  return Object.entries(theme)
+    .map(([name, color]) => `--wr-hl-${name}: ${visibleHighlight(color, bg)};`)
+    .join("\n        ");
 }
 
 /**
@@ -16,10 +25,13 @@ interface WrPalette {
  * user's chosen palette. Sits at boost level 2 in the specificity ladder.
  */
 export function buildPaletteCss(palette: WrPalette): string {
-  const { bgColor, hoverColor, textColor, mutedColor, faintColor, unresolvedLinkColor, codeLightness } = palette;
+  const { bgColor, hoverColor, textColor, mutedColor, faintColor, unresolvedLinkColor, codeLightness, highlightTheme } = palette;
+  // As far toward the background as faintColor (blendColor 0.6) takes the text.
+  const quoteLink = `color-mix(in srgb, var(--text-accent) 40%, ${bgColor})`;
   return `/* @css */
       body {
         --wr-bg-color: ${bgColor};
+        ${highlightVars(highlightTheme, bgColor)}
         --wr-bg-hover: ${hoverColor};
         --wr-code-text: ${textColor};
         --wr-code-l: ${codeLightness.base};
@@ -47,7 +59,7 @@ export function buildPaletteCss(palette: WrPalette): string {
         background: rgba(0, 0, 0, 0.08);
       }
       body div.block-language-wr .wr-highlight {
-        background: var(--text-highlight-bg);
+        background: var(--text-highlight-bg, var(--wr-hl-yellow, color-mix(in oklch, var(--color-yellow) 30%, transparent)));
       }
       /* LV: code-block-flair doubles as the copy button; its hit area covers the memo tail, so keep it transparent */
       body .wr-codeblock-line .code-block-flair {
@@ -160,11 +172,6 @@ export function buildPaletteCss(palette: WrPalette): string {
       body .cm-line.wr-codeblock-line .wr-check-unchecked,
       body .cm-line.wr-codeblock-line .wr-check-checked,
       body .cm-line.wr-codeblock-line .wr-ol-highlight,
-      body .cm-line.wr-codeblock-line .wr-quote-highlight,
-      body .wr-blockquote,
-      body .wr-blockquote *,
-      body .cm-line.wr-blockquote-line,
-      body .cm-line.wr-blockquote-line *,
       body .wr-quote-card-slot .wr-quote-card .wr-quote-card-body,
       body .wr-quote-card-slot .wr-quote-card .wr-quote-card-body *:not(.wr-tag):not(.wr-url):not(.wr-internal-link):not(.wr-nested-quote-marker):not(.wr-quote-image-marker):not(.wr-quote-math-marker):not(.wr-quote-code-marker):not(.wr-quote-image-marker *):not(.wr-quote-math-marker *):not(.wr-quote-code-marker *):not(.wr-tag *):not(.wr-url *):not(.wr-internal-link *),
       body .wr-quote-card-slot .wr-quote-card .wr-quote-card-meta,
@@ -173,6 +180,16 @@ export function buildPaletteCss(palette: WrPalette): string {
       body .wr-quote-card-slot .wr-quote-card .wr-quote-code-marker,
       body .wr-quote-card-slot .wr-quote-card .wr-nested-quote-marker {
         color: ${mutedColor};
+      }
+      /* Block quotes (> lines) one step fainter than the other sub-colour text */
+      body .cm-line.wr-codeblock-line .wr-quote-highlight,
+      body .wr-blockquote,
+      body .wr-blockquote *,
+      body .cm-line.wr-blockquote-line,
+      body .cm-line.wr-blockquote-line *,
+      body .wr-textarea .cm-line.wr-cv-quote,
+      body .wr-textarea .cm-line.wr-cv-quote * {
+        color: ${faintColor};
       }
       body .wr-quote-card-slot .wr-quote-card {
         border-color: ${mutedColor};
@@ -189,15 +206,17 @@ export function buildPaletteCss(palette: WrPalette): string {
       body .cm-line .wr-check-unchecked:not(#x#y#z),
       body .cm-line .wr-check-checked:not(#x#y#z),
       body .cm-line .wr-ol-highlight:not(#x#y#z),
-      body .cm-line .wr-quote-highlight:not(#x#y#z),
-      body .cm-line.wr-blockquote-line:not(#x#y#z),
-      body .cm-line .wr-blockquote-wrap:not(#x#y#z),
-      body .cm-line .wr-blockquote-wrap:not(#x#y#z) *:not(.wr-tag-highlight):not(.wr-internal-link-highlight):not(.wr-url-highlight):not(.wr-math-highlight):not(.wr-tag):not(.wr-internal-link):not(.wr-url):not(.wr-reading-tag):not(.wr-reading-url),
       body .cm-line .wr-ogp-title:not(#x#y#z),
       body .cm-line .wr-ogp-desc:not(#x#y#z),
       body .cm-line .wr-ogp-site:not(#x#y#z),
       body .cm-line .wr-ogp-loading:not(#x#y#z) {
         color: ${mutedColor};
+      }
+      body .cm-line .wr-quote-highlight:not(#x#y#z),
+      body .cm-line.wr-blockquote-line:not(#x#y#z),
+      body .cm-line .wr-blockquote-wrap:not(#x#y#z),
+      body .cm-line .wr-blockquote-wrap:not(#x#y#z) *:not(.wr-tag-highlight):not(.wr-internal-link-highlight):not(.wr-url-highlight):not(.wr-math-highlight):not(.wr-tag):not(.wr-internal-link):not(.wr-url):not(.wr-reading-tag):not(.wr-reading-url) {
+        color: ${faintColor};
       }
       /* Checkbox border uses the sub color; checked fill uses the theme accent */
       body .wr-check-item input[type="checkbox"],
@@ -210,7 +229,7 @@ export function buildPaletteCss(palette: WrPalette): string {
         --checkbox-color-hover: var(--text-accent);
         accent-color: var(--text-accent);
       }
-      body .wr-textarea::placeholder {
+      body .wr-textarea .cm-placeholder {
         color: ${faintColor};
       }
       body .wr-toolbar-btn.wr-toolbar-active {
@@ -228,45 +247,72 @@ export function buildPaletteCss(palette: WrPalette): string {
       body .cm-line.wr-codeblock-line .wr-math-highlight {
         color: var(--text-accent);
       }
-      body .wr-blockquote-wrap,
       body .wr-check-done {
         color: ${mutedColor};
       }
+      body .wr-blockquote-wrap {
+        color: ${faintColor};
+      }
       body .wr-blockquote,
       body .wr-blockquote-wrap {
-        border-left-color: ${mutedColor};
+        border-left-color: ${faintColor};
       }
-      /* LV quote bars (::before, nested via box-shadow) use the same mutedColor as RV's
+      /* LV quote bars (::before, nested via box-shadow) use the same colour as RV's
          border-left so both views share one color source; tag-rule CSS (tier 4) still wins */
-      body .cm-line.wr-blockquote-line::before {
-        background-color: ${mutedColor};
+      body .cm-line.wr-blockquote-line::before,
+      body .wr-textarea .cm-line.wr-cv-quote::before {
+        background-color: ${faintColor};
       }
-      body .cm-line.wr-blockquote-depth-2::before {
-        box-shadow: 18px 0 0 0 ${mutedColor};
+      body .cm-line.wr-blockquote-depth-2::before,
+      body .wr-textarea .cm-line.wr-cv-quote-2::before {
+        box-shadow: 18px 0 0 0 ${faintColor};
       }
-      body .cm-line.wr-blockquote-depth-3::before {
+      body .cm-line.wr-blockquote-depth-3::before,
+      body .wr-textarea .cm-line.wr-cv-quote-3::before {
         box-shadow:
-          18px 0 0 0 ${mutedColor},
-          36px 0 0 0 ${mutedColor};
+          18px 0 0 0 ${faintColor},
+          36px 0 0 0 ${faintColor};
       }
-      body .cm-line.wr-blockquote-depth-4::before {
+      body .cm-line.wr-blockquote-depth-4::before,
+      body .wr-textarea .cm-line.wr-cv-quote-4::before {
         box-shadow:
-          18px 0 0 0 ${mutedColor},
-          36px 0 0 0 ${mutedColor},
-          54px 0 0 0 ${mutedColor};
+          18px 0 0 0 ${faintColor},
+          36px 0 0 0 ${faintColor},
+          54px 0 0 0 ${faintColor};
       }
-      body .cm-line.wr-blockquote-depth-5::before {
+      body .cm-line.wr-blockquote-depth-5::before,
+      body .wr-textarea .cm-line.wr-cv-quote-5::before {
         box-shadow:
-          18px 0 0 0 ${mutedColor},
-          36px 0 0 0 ${mutedColor},
-          54px 0 0 0 ${mutedColor},
-          72px 0 0 0 ${mutedColor};
+          18px 0 0 0 ${faintColor},
+          36px 0 0 0 ${faintColor},
+          54px 0 0 0 ${faintColor},
+          72px 0 0 0 ${faintColor};
       }
       body .wr-bullet-list > li:not(.wr-check-item)::before,
       body .wr-ordered-list > li::before,
       body ul.wr-reading-list > li:not(.wr-check-item)::before,
       body ol.wr-reading-list > li::before {
         color: ${mutedColor};
+      }
+      /* Lists inside block quotes take the quote's colour throughout: text, markers and
+         checkbox borders (links and tags keep their own) */
+      body .wr-blockquote li,
+      body .wr-blockquote .wr-check-done,
+      body .wr-blockquote .wr-bullet-list > li:not(.wr-check-item)::before,
+      body .wr-blockquote .wr-ordered-list > li::before,
+      body .wr-blockquote ul.wr-reading-list > li:not(.wr-check-item)::before,
+      body .wr-blockquote ol.wr-reading-list > li::before,
+      body .cm-line.wr-blockquote-line .wr-lp-marker:not(#x#y#z) {
+        color: ${faintColor};
+      }
+      body .wr-textarea .cm-line.wr-cv-quote .wr-cv-bullet {
+        background-color: ${faintColor};
+      }
+      body .wr-blockquote .wr-check-item input[type="checkbox"],
+      body .cm-line.wr-blockquote-line .wr-lp-check input[type="checkbox"],
+      body .wr-textarea .cm-line.wr-cv-quote .wr-cv-check {
+        --checkbox-border-color: ${faintColor};
+        --checkbox-border-color-hover: ${faintColor};
       }
       body .wr-tag,
       body .wr-reading-tag,
@@ -280,6 +326,25 @@ export function buildPaletteCss(palette: WrPalette): string {
       body .cm-line.wr-codeblock-line .wr-internal-link,
       body .cm-line.wr-codeblock-line .wr-url {
         color: var(--text-accent);
+      }
+      /* Links inside block quotes: the accent faded toward the background as far as quote text
+         is (faintColor), so they still read as links without standing out of the quote */
+      body .wr-blockquote .wr-internal-link:not(.wr-internal-link-unresolved),
+      body .wr-blockquote .wr-url,
+      body .wr-blockquote .wr-reading-url,
+      body div.block-language-wr .wr-blockquote a.wr-internal-link:not(.wr-internal-link-unresolved),
+      body .wr-textarea .cm-line.wr-cv-quote .wr-cv-link {
+        color: ${quoteLink};
+      }
+      /* LV: either nesting of link and quote marks, over the ID-level quote colour */
+      body .cm-line.wr-blockquote-line .wr-internal-link-highlight:not(.wr-internal-link-unresolved):not(#x#y#z),
+      body .cm-line.wr-blockquote-line .wr-internal-link-highlight:not(.wr-internal-link-unresolved) *:not(#x#y#z),
+      body .cm-line.wr-blockquote-line .wr-internal-link:not(.wr-internal-link-unresolved):not(#x#y#z),
+      body .cm-line.wr-blockquote-line .wr-url-highlight:not(#x#y#z),
+      body .cm-line.wr-blockquote-line .wr-url-highlight *:not(#x#y#z),
+      body .cm-line.wr-blockquote-line .wr-url:not(#x#y#z) {
+        color: ${quoteLink};
+        -webkit-text-fill-color: ${quoteLink};
       }
       /* A missing embed points at something that is not there, same as an unresolved link,
          so both take the palette's faint colour. The tag-rule sheet groups them the same way;

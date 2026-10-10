@@ -137,7 +137,6 @@ const zhCN = {
   "settings.item.resetToolbar.confirm": "再次点击以确认重置",
 
   "view.toolbarAction.image": "图片",
-  "view.toolbarAction.embed": "嵌入",
   "view.toolbarAction.bold": "加粗",
   "view.toolbarAction.italic": "斜体",
   "view.toolbarAction.list": "无序列表",
@@ -152,8 +151,18 @@ const zhCN = {
   "view.formatMenu.math": "公式",
   "view.formatMenu.quote": "引用",
   "view.formatMenu.link": "链接",
+  "view.linkPopover.placeholder": "笔记名称或 URL",
+  "view.linkPopover.unlink": "取消链接",
   "view.formatMenu.strikethrough": "删除线",
   "view.formatMenu.highlight": "高亮",
+  "view.highlight.default": "默认",
+  "view.highlight.red": "红色",
+  "view.highlight.orange": "橙色",
+  "view.highlight.yellow": "黄色",
+  "view.highlight.green": "绿色",
+  "view.highlight.blue": "蓝色",
+  "view.highlight.purple": "紫色",
+  "view.highlight.remove": "取消高亮",
   "view.formatMenu.settings": "设置",
 
   "view.postMenu.copy": "复制",
@@ -178,6 +187,7 @@ const zhCN = {
   "view.notice.searchPluginNotFound": "核心插件“搜索”未启用。",
 
   "view.image.removeAria": "移除图片",
+  "view.quote.removeAria": "移除引用",
 
   // Placeholder body of a quote card whose original post is gone.
   "quote.card.notFound": "（未找到原始记录）",

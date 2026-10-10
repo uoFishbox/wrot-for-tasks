@@ -22,7 +22,7 @@ Because every post drops straight into your daily notes, Wrot works hand-in-hand
 ## What you can do
 
 - **A social-style timeline paired with a rich editor**  
-  Browse your entries in a clean, chronological feed. The editor comes packed with a customizable toolbar for formatting, lists, quotes, and internal links ([learn more](https://github.com/villyoshioka/Wrot/blob/main/docs/en/toolbar.md)).
+  Browse your entries in a clean, chronological feed. The editor hides Markdown syntax so bold text and lists look finished as you write ([learn more](https://github.com/villyoshioka/Wrot/blob/main/docs/en/posting-form-v3.md)). A customizable toolbar puts formatting, lists, quotes, and links within easy reach ([learn more](https://github.com/villyoshioka/Wrot/blob/main/docs/en/toolbar.md)).
 - **Keep important notes pinned**  
   Keep key notes or active tasks stuck to the top of your feed. You can even schedule a note to pin itself automatically on a future date ([learn more](https://github.com/villyoshioka/Wrot/blob/main/docs/en/pinning.md)).
 - **Built right into Obsidian's tag system**  
@@ -32,7 +32,7 @@ Because every post drops straight into your daily notes, Wrot works hand-in-hand
 - **Tag rules with auto color-coding**  
   Set custom background and text colors for specific tags to visually group your feed by project, mood, or urgency ([learn more](https://github.com/villyoshioka/Wrot/blob/main/docs/en/tag-rules.md)).
 - **Internal links and rich link previews**  
-  Mention notes using standard `![[]]` syntax or paste links to generate rich OGP link cards, keeping your context clear at a glance ([learn more](https://github.com/villyoshioka/Wrot/blob/main/docs/en/links-and-embeds.md)).
+  Link to notes in your Vault or to web pages with the Link button, and paste URLs to generate rich OGP link cards, keeping your context clear at a glance ([learn more](https://github.com/villyoshioka/Wrot/blob/main/docs/en/links-and-embeds.md)).
 - **Post under your template headings**  
   Pick a heading from your daily note template and your posts land right under it instead of at the end of the note. Templater-powered templates work too ([learn more](https://github.com/villyoshioka/Wrot/blob/main/docs/en/template-heading-selection.md)).
 - **Hassle-free image attachments**  
@@ -56,7 +56,7 @@ If you format your daily notes by week (like `GGGG年WW週`) or month (like `YYY
 
 ## Requirements
 
-- Obsidian **v1.13.0** or newer
+- Obsidian **v1.14.4** or newer
 - Supported platforms
   - macOS
   - iOS / iPadOS

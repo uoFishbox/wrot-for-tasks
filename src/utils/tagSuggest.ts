@@ -1,5 +1,6 @@
 import { extractNonBlockText } from "./blockSegmenter";
-import { inlineTokenPattern } from "./patterns";
+import { TAG_TOKEN_RE, inlineTokens } from "./patterns";
+import type { ComposerField } from "../editor/composerField";
 
 // Cap on stored recent tags; least-recently-used entries are dropped past
 // the cap to keep the candidate list fresh.
@@ -8,17 +9,15 @@ const MAX_RECENT_TAGS = 200;
 // Max candidates shown at once (the list itself scrolls).
 const MAX_VISIBLE_ITEMS = 5;
 
-// Token precedence comes from the shared inlineTokenPattern: # inside code,
-// math, decorations, embeds/links, or URLs is not a tag on screen, so not recorded either.
+// Tags follow the shared inline token rules, decoration text included: # inside code, math, links or URLs is not a tag.
 
 // Extract tags (without leading #) in appearance order, deduped; code/math blocks excluded.
 export function extractTagsForHistory(text: string): string[] {
   const source = extractNonBlockText(text);
   const tags: string[] = [];
-  for (const part of source.split(inlineTokenPattern())) {
-    if (!part) continue;
-    if (/^#[^\s#]+$/.test(part)) {
-      const tag = part.slice(1);
+  for (const { token } of inlineTokens(source)) {
+    if (TAG_TOKEN_RE.test(token)) {
+      const tag = token.slice(1);
       if (!tags.includes(tag)) tags.push(tag);
     }
   }
@@ -33,7 +32,7 @@ export function mergeRecentTags(existing: string[], used: string[]): string[] {
 }
 
 interface TagSuggestOptions {
-  textarea: HTMLTextAreaElement;
+  field: ComposerField;
   // Parent element hosting the popover (view body = wr-container); positioned and
   // clamped in container coordinates, same as the calendar popover.
   container: HTMLElement;
@@ -52,13 +51,13 @@ interface ActiveToken {
 // After a forced commit, refocusing the textarea directly makes iOS reuse the stale
 // input session and skip drawing the caret (typing still works). Bounce focus through
 // an invisible dummy input to rebuild the session; both are editable, so the keyboard stays open.
-export function rebuildFocus(ta: HTMLTextAreaElement, container: HTMLElement): void {
+export function rebuildFocus(ta: ComposerField, container: HTMLElement): void {
   const dummy = container.createEl("input", {
     cls: "wr-focus-bounce",
     attr: { type: "text" },
   });
   dummy.focus({ preventScroll: true });
-  ta.focus({ preventScroll: true });
+  ta.focus();
   dummy.remove();
 }
 
@@ -91,8 +90,8 @@ export class TagSuggest {
 
   constructor(opts: TagSuggestOptions) {
     this.opts = opts;
-    opts.textarea.addEventListener("compositionstart", this.onCompositionStart);
-    opts.textarea.addEventListener("compositionend", this.onCompositionEnd);
+    opts.field.addEventListener("compositionstart", this.onCompositionStart);
+    opts.field.addEventListener("compositionend", this.onCompositionEnd);
   }
 
   isOpen(): boolean {
@@ -108,12 +107,12 @@ export class TagSuggest {
   // Open/update/close the dropdown for the token at the caret. Safe during IME
   // composition: uncommitted text is in value, so filtering works before commit.
   refresh(): void {
-    const { textarea: ta, isEnabled, getCandidates } = this.opts;
+    const { field: ta, isEnabled, getCandidates } = this.opts;
     if (!isEnabled()) {
       this.close();
       return;
     }
-    if (activeDocument.activeElement !== ta || ta.selectionStart !== ta.selectionEnd) {
+    if (!ta.hasFocus || ta.selectionStart !== ta.selectionEnd) {
       this.close();
       return;
     }
@@ -184,8 +183,8 @@ export class TagSuggest {
   }
 
   destroy(): void {
-    this.opts.textarea.removeEventListener("compositionstart", this.onCompositionStart);
-    this.opts.textarea.removeEventListener("compositionend", this.onCompositionEnd);
+    this.opts.field.removeEventListener("compositionstart", this.onCompositionStart);
+    this.opts.field.removeEventListener("compositionend", this.onCompositionEnd);
     this.close();
   }
 
@@ -289,7 +288,7 @@ export class TagSuggest {
     const tag = this.itemTags[index];
     const token = this.token;
     if (tag === undefined || !token) return;
-    const ta = this.opts.textarea;
+    const ta = this.opts.field;
     const insert = `#${tag} `;
     this.suppressUiUntil = Date.now() + 400;
     this.close();
@@ -319,10 +318,10 @@ export class TagSuggest {
   // Replace the token and put the caret after the insert. Refocus only if focus was
   // lost (blurred by the forced commit): stacking focus() on an already-focused
   // textarea can make iOS lose the keyboard session.
-  private applyInsert(ta: HTMLTextAreaElement, token: ActiveToken, insert: string): void {
+  private applyInsert(ta: ComposerField, token: ActiveToken, insert: string): void {
     ta.value = ta.value.slice(0, token.start) + insert + ta.value.slice(token.end);
     const caret = token.start + insert.length;
-    if (activeDocument.activeElement !== ta) {
+    if (!ta.hasFocus) {
       rebuildFocus(ta, this.opts.container);
     }
     ta.setSelectionRange(caret, caret);
@@ -331,50 +330,26 @@ export class TagSuggest {
 
   private onOutside = (e: PointerEvent): void => {
     const target = e.target as Node | null;
-    if (target && (this.popover?.contains(target) || this.opts.textarea.contains(target))) {
+    if (target && (this.popover?.contains(target) || this.opts.field.contains(target))) {
       return;
     }
     this.suppressUiUntil = Date.now() + 400;
     this.close();
   };
 
-  // Place the dropdown right under the token's #. Textarea caret coordinates aren't
-  // readable directly, so mirror the textarea's rendering into a div and measure a
-  // span wrapping the token.
+  // Place the dropdown right under the token's #: left from the # itself, top from the
+  // bottom of the token's end, which may sit on a later line if the token wrapped.
   private position(): void {
-    const { textarea: ta, container } = this.opts;
+    const { field: ta, container } = this.opts;
     const popover = this.popover;
     const token = this.token;
     if (!popover || !token) return;
 
-    const style = activeWindow.getComputedStyle(ta);
-    const mirror = container.createDiv({ cls: "wr-tag-suggest-mirror" });
-    const copyProps = [
-      "boxSizing", "width", "paddingTop", "paddingRight", "paddingBottom", "paddingLeft",
-      "borderTopWidth", "borderRightWidth", "borderBottomWidth", "borderLeftWidth",
-      "borderStyle", "fontFamily", "fontSize", "fontWeight", "fontStyle",
-      "letterSpacing", "lineHeight", "textTransform", "textIndent", "tabSize",
-      "wordSpacing", "overflowWrap", "wordBreak",
-    ] as const;
-    for (const prop of copyProps) {
-      mirror.style[prop] = style[prop];
-    }
-
-    // The token always contains #, so the span is never empty (empty spans have no size).
-    mirror.appendText(ta.value.slice(0, token.start));
-    const marker = mirror.createSpan({ text: ta.value.slice(token.start, token.end) });
-
-    const mirrorRect = mirror.getBoundingClientRect();
-    const markerRects = marker.getClientRects();
-    const firstRect = markerRects[0] ?? marker.getBoundingClientRect();
-    const lastRect = markerRects[markerRects.length - 1] ?? firstRect;
-    const leftOffset = firstRect.left - mirrorRect.left;
-    const bottomOffset = lastRect.bottom - mirrorRect.top;
-    mirror.remove();
-
-    const taRect = ta.getBoundingClientRect();
-    const caretLeft = taRect.left + leftOffset - ta.scrollLeft;
-    const caretBottom = taRect.top + bottomOffset - ta.scrollTop;
+    const startCoords = ta.coordsAt(token.start, 1);
+    const endCoords = ta.coordsAt(token.end, -1) ?? startCoords;
+    if (!startCoords || !endCoords) return;
+    const caretLeft = startCoords.left;
+    const caretBottom = endCoords.bottom;
 
     // Clamp within the container (same margin rules as the calendar popover).
     const GAP = 2;

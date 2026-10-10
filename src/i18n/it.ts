@@ -141,7 +141,6 @@ const it = {
   "settings.item.resetToolbar.confirm": "Premi di nuovo per confermare",
 
   "view.toolbarAction.image": "Immagine",
-  "view.toolbarAction.embed": "Incorpora",
   "view.toolbarAction.bold": "Grassetto",
   "view.toolbarAction.italic": "Corsivo",
   "view.toolbarAction.list": "Elenco puntato",
@@ -156,8 +155,18 @@ const it = {
   "view.formatMenu.math": "Formula",
   "view.formatMenu.quote": "Citazione",
   "view.formatMenu.link": "Collegamento",
+  "view.linkPopover.placeholder": "Nome nota o URL",
+  "view.linkPopover.unlink": "Rimuovi collegamento",
   "view.formatMenu.strikethrough": "Barrato",
   "view.formatMenu.highlight": "Evidenziato",
+  "view.highlight.default": "Predefinito",
+  "view.highlight.red": "Rosso",
+  "view.highlight.orange": "Arancione",
+  "view.highlight.yellow": "Giallo",
+  "view.highlight.green": "Verde",
+  "view.highlight.blue": "Blu",
+  "view.highlight.purple": "Viola",
+  "view.highlight.remove": "Rimuovi evidenziazione",
   "view.formatMenu.settings": "Impostazioni",
 
   "view.postMenu.copy": "Copia testo",
@@ -182,6 +191,7 @@ const it = {
   "view.notice.searchPluginNotFound": "Il plugin principale «Ricerca» non è attivo.",
 
   "view.image.removeAria": "Rimuovi immagine",
+  "view.quote.removeAria": "Rimuovi citazione",
 
   // Placeholder body of a quote card whose original post is gone.
   "quote.card.notFound": "(Post originale non trovato)",

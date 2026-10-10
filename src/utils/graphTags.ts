@@ -1,6 +1,9 @@
-import { CachedMetadata, Debouncer, TFile, TagCache, debounce, normalizePath } from "obsidian";
+import { CachedMetadata, Debouncer, EmbedCache, LinkCache, TFile, TagCache, debounce, normalizePath } from "obsidian";
 import { parseMemos } from "./memoParser";
 import { extractTagsForHistory } from "./tagSuggest";
+import { findBlockRanges } from "./blockSegmenter";
+import { inlineTokens, tagPattern } from "./patterns";
+import { parseLinkToken } from "../editor/composerLink";
 import type WrotPlugin from "../main";
 
 // Injects tags into the metadata cache at runtime (never writes to note files) so the
@@ -14,12 +17,16 @@ import type WrotPlugin from "../main";
 // Perf: never scan the whole vault (no Thino-style proportional cost). A note→tags index
 // persisted in tag-integration.json is injected at startup without file reads; only
 // mtime-changed notes are re-read to reconcile.
+//
+// Memo note links ride the same index into cache.links/embeds and are re-resolved, so the graph, backlinks and rename updates count them.
 
 // Marker for injected entries so only our own can be removed idempotently, even with
 // shared cache objects or persistence leftovers.
 interface WrTagCache extends TagCache {
   wrGraph: true;
 }
+
+type WrRefCache = (LinkCache | EmbedCache) & { wrGraph: true };
 
 // Notes re-read during one reconcile pass before the index is written out.
 const RECONCILE_SAVE_INTERVAL = 200;
@@ -33,8 +40,17 @@ const RECONCILE_YIELD_INTERVAL = 25;
 // number, get null and drop it; the value simply reads as "never scanned" when absent.
 const SCANNED_AT_KEY = "#scannedAt";
 
+// Index format. 2 added links; an index without it lacks the links of notes that held no tags,
+// and its scan mark would skip those notes for good, so it is dropped and rebuilt once.
+const VERSION_KEY = "#v";
+const INDEX_VERSION = 2;
+
 function isWrTag(t: TagCache): boolean {
   return (t as WrTagCache).wrGraph === true;
+}
+
+function isWrRef(r: LinkCache | EmbedCache): boolean {
+  return (r as WrRefCache).wrGraph === true;
 }
 
 function normalizeTag(tag: string): string {
@@ -50,10 +66,19 @@ interface TagOccurrence {
   offset: number;
 }
 
+// One note link in a memo: the whole token as written, at its real file coordinate.
+interface LinkOccurrence {
+  original: string;
+  line: number;
+  col: number;
+  offset: number;
+}
+
 // One index entry. tags holds all occurrences pre-exclusion; the "exclude from
 // integration" filter is applied at inject time so rule changes need no file re-read.
 interface GraphTagIndexEntry {
   tags: TagOccurrence[];
+  links: LinkOccurrence[];
   mtime: number;
 }
 
@@ -63,6 +88,7 @@ interface GraphTagIndexEntry {
 interface PersistedEntry {
   m: number; // mtime
   t: Record<string, [number, number, number][]>; // "#tag" → [line, col, offset][]
+  l?: [string, number, number, number][]; // [token, line, col, offset][]
 }
 
 function packEntry(entry: GraphTagIndexEntry): PersistedEntry {
@@ -70,14 +96,16 @@ function packEntry(entry: GraphTagIndexEntry): PersistedEntry {
   for (const occ of entry.tags) {
     (t[occ.tag] ??= []).push([occ.line, occ.col, occ.offset]);
   }
-  return { m: entry.mtime, t };
+  const packed: PersistedEntry = { m: entry.mtime, t };
+  if (entry.links.length > 0) packed.l = entry.links.map((o) => [o.original, o.line, o.col, o.offset]);
+  return packed;
 }
 
 // Malformed entries (incl. old formats) return null and are dropped; reconcile
 // re-reads those notes and rebuilds them, so this is non-fatal.
 function unpackEntry(v: unknown): GraphTagIndexEntry | null {
   if (typeof v !== "object" || v === null) return null;
-  const e = v as { m?: unknown; t?: unknown };
+  const e = v as { m?: unknown; t?: unknown; l?: unknown };
   if (typeof e.m !== "number" || typeof e.t !== "object" || e.t === null) return null;
   const tags: TagOccurrence[] = [];
   for (const [tag, positions] of Object.entries(e.t)) {
@@ -89,7 +117,35 @@ function unpackEntry(v: unknown): GraphTagIndexEntry | null {
       tags.push({ tag, line: p[0] as number, col: p[1] as number, offset: p[2] as number });
     }
   }
-  return { tags, mtime: e.m };
+  const links: LinkOccurrence[] = [];
+  if (e.l !== undefined) {
+    if (!Array.isArray(e.l)) return null;
+    for (const p of e.l as unknown[]) {
+      if (
+        !Array.isArray(p) || p.length !== 4 || typeof p[0] !== "string" ||
+        p.slice(1).some((n) => typeof n !== "number")
+      ) {
+        return null;
+      }
+      links.push({ original: p[0], line: p[1] as number, col: p[2] as number, offset: p[3] as number });
+    }
+  }
+  return { tags, links, mtime: e.m };
+}
+
+function toRefCache(o: LinkOccurrence): WrRefCache | null {
+  const parsed = parseLinkToken(o.original, 0);
+  if (!parsed || parsed.external) return null;
+  return {
+    link: parsed.target,
+    original: o.original,
+    displayText: parsed.text,
+    position: {
+      start: { line: o.line, col: o.col, offset: o.offset },
+      end: { line: o.line, col: o.col + o.original.length, offset: o.offset + o.original.length },
+    },
+    wrGraph: true,
+  };
 }
 
 export class GraphTagInjector {
@@ -117,9 +173,9 @@ export class GraphTagInjector {
   }
 
   // Startup: inject from the persisted index without any file reads, then reconcile
-  // in the background (only mtime-changed notes get re-read).
+  // in the background (only mtime-changed notes get re-read). Runs whatever the tag switch
+  // says: links are always integrated.
   async start(): Promise<void> {
-    if (!this.enabled) return;
     this.stopped = false;
     await this.loadIndex();
     this.injectFromIndex();
@@ -135,17 +191,11 @@ export class GraphTagInjector {
     this.requestIndexSave.cancel();
   }
 
-  // Called when the integration toggle changes; realigns injection state.
+  // Called when the tag integration toggle changes. The index already holds every tag
+  // (the scan runs with the toggle off too, for links), so re-applying is enough.
   async applyEnabled(): Promise<void> {
-    if (!this.enabled) {
-      this.removeAll();
-      return;
-    }
-    if (this.index.size === 0) {
-      await this.start();
-    } else {
-      this.rebuild();
-    }
+    this.rebuild();
+    return Promise.resolve();
   }
 
   private injectFromIndex(): void {
@@ -161,7 +211,7 @@ export class GraphTagInjector {
       }
       const cache = metadataCache.getFileCache(file);
       if (!cache) continue;
-      this.applyToCache(path, cache, entry.tags, excluded);
+      this.applyToCache(path, cache, entry, file, excluded);
     }
   }
 
@@ -176,7 +226,7 @@ export class GraphTagInjector {
     let sinceLastSave = 0;
     let sinceLastYield = 0;
     for (const file of vault.getMarkdownFiles()) {
-      if (this.stopped || !this.enabled) return;
+      if (this.stopped) return;
       const entry = this.index.get(file.path);
       if (entry && entry.mtime === file.stat.mtime) continue;
       // No entry means an earlier scan found no memo tags here — worth re-reading only if the
@@ -186,13 +236,13 @@ export class GraphTagInjector {
       const cache = metadataCache.getFileCache(file);
       if (!cache) continue;
       const mayHaveFence = cache.sections?.some((s) => s.type === "code") ?? false;
-      const hasGhost = cache.tags?.some(isWrTag) ?? false;
+      const hasGhost = (cache.tags?.some(isWrTag) ?? false) || this.hasWrRefs(cache);
       if (!entry && !mayHaveFence && !hasGhost) continue;
       const content = await vault.cachedRead(file);
-      if (this.stopped || !this.enabled) return;
-      const tags = this.collectTagEntries(content);
-      if (this.updateIndexEntry(file.path, tags, file.stat.mtime)) tagsChanged = true;
-      this.applyToCache(file.path, cache, tags, excluded);
+      if (this.stopped) return;
+      const next = this.collectEntry(content, file.stat.mtime);
+      if (this.updateIndexEntry(file.path, next)) tagsChanged = true;
+      this.applyToCache(file.path, cache, next, file, excluded);
       // The debounced save resets its timer on every note, so a long first scan would persist
       // nothing until it finished. Flush periodically so an interrupted scan keeps its progress.
       sinceLastSave++;
@@ -219,16 +269,14 @@ export class GraphTagInjector {
   // For metadataCache "changed": the fresh cache and content are handed in, so the
   // incremental update needs no extra file read.
   onFileChanged(file: TFile, content: string, cache: CachedMetadata): void {
-    if (!this.enabled) return;
-    const tags = this.collectTagEntries(content);
-    const changed = this.updateIndexEntry(file.path, tags, file.stat.mtime);
-    this.applyToCache(file.path, cache, tags);
+    const next = this.collectEntry(content, file.stat.mtime);
+    const changed = this.updateIndexEntry(file.path, next);
+    this.applyToCache(file.path, cache, next, file);
     this.requestIndexSave();
     if (changed) this.requestRefresh();
   }
 
   onFileDeleted(path: string): void {
-    if (!this.enabled) return;
     // The cache dies with the file; only tracking and the index need cleanup.
     this.trackedPaths.delete(path);
     if (this.index.delete(path)) {
@@ -238,7 +286,6 @@ export class GraphTagInjector {
   }
 
   onFileRenamed(newPath: string, oldPath: string): void {
-    if (!this.enabled) return;
     // Injected entries follow the cache object across the rename; only keys need re-mapping.
     if (this.trackedPaths.delete(oldPath)) {
       this.trackedPaths.add(newPath);
@@ -254,7 +301,6 @@ export class GraphTagInjector {
   // Called when "exclude from integration" rules change. The index holds raw tags,
   // so re-inject without re-reading files.
   rebuild(): void {
-    if (!this.enabled) return;
     const { vault, metadataCache } = this.plugin.app;
     const excluded = this.excludedTagSet();
     for (const [path, entry] of this.index) {
@@ -262,7 +308,7 @@ export class GraphTagInjector {
       if (!(file instanceof TFile)) continue;
       const cache = metadataCache.getFileCache(file);
       if (!cache) continue;
-      this.applyToCache(path, cache, entry.tags, excluded);
+      this.applyToCache(path, cache, entry, file, excluded);
     }
     this.requestRefresh();
   }
@@ -274,10 +320,13 @@ export class GraphTagInjector {
       const file = vault.getAbstractFileByPath(path);
       if (!(file instanceof TFile)) continue;
       const cache = metadataCache.getFileCache(file);
-      if (!cache?.tags) continue;
-      const kept = cache.tags.filter((t) => !isWrTag(t));
-      if (kept.length > 0) cache.tags = kept;
-      else delete cache.tags;
+      if (!cache) continue;
+      if (cache.tags) {
+        const kept = cache.tags.filter((t) => !isWrTag(t));
+        if (kept.length > 0) cache.tags = kept;
+        else delete cache.tags;
+      }
+      if (this.stripRefs(cache)) this.resolve(path);
     }
     this.trackedPaths.clear();
     this.refresh();
@@ -291,12 +340,13 @@ export class GraphTagInjector {
   private applyToCache(
     path: string,
     cache: CachedMetadata,
-    occurrences: TagOccurrence[],
+    entry: GraphTagIndexEntry,
+    file: TFile,
     excludedTags?: Set<string>
   ): void {
     const excluded = excludedTags ?? this.excludedTagSet();
     const tags = this.enabled
-      ? occurrences.filter((t) => !excluded.has(normalizeTag(t.tag)))
+      ? entry.tags.filter((t) => !excluded.has(normalizeTag(t.tag)))
       : [];
     const kept = (cache.tags ?? []).filter((t) => !isWrTag(t));
     if (tags.length === 0) {
@@ -304,33 +354,109 @@ export class GraphTagInjector {
         if (kept.length > 0) cache.tags = kept;
         else delete cache.tags;
       }
-      this.trackedPaths.delete(path);
-      return;
+    } else {
+      const injected: WrTagCache[] = tags.map((t) => ({
+        tag: t.tag,
+        position: {
+          start: { line: t.line, col: t.col, offset: t.offset },
+          end: { line: t.line, col: t.col + t.tag.length, offset: t.offset + t.tag.length },
+        },
+        wrGraph: true,
+      }));
+      cache.tags = [...kept, ...injected];
     }
-    const injected: WrTagCache[] = tags.map((t) => ({
-      tag: t.tag,
-      position: {
-        start: { line: t.line, col: t.col, offset: t.offset },
-        end: { line: t.line, col: t.col + t.tag.length, offset: t.offset + t.tag.length },
-      },
-      wrGraph: true,
-    }));
-    cache.tags = [...kept, ...injected];
-    this.trackedPaths.add(path);
+
+    // Offsets read from an older version of the note would send a rename update to the
+    // wrong text, so links wait for reconcile (or the next change) to read it afresh.
+    const refs = entry.mtime === file.stat.mtime
+      ? entry.links.map(toRefCache).filter((r): r is WrRefCache => r !== null)
+      : [];
+    const hadRefs = this.stripRefs(cache);
+    if (refs.length > 0) {
+      const links = refs.filter((r) => !r.original.startsWith("!"));
+      const embeds = refs.filter((r) => r.original.startsWith("!"));
+      if (links.length > 0) cache.links = [...(cache.links ?? []), ...links];
+      if (embeds.length > 0) cache.embeds = [...(cache.embeds ?? []), ...embeds];
+    }
+    if (hadRefs || refs.length > 0) this.resolve(path);
+
+    if (tags.length > 0 || refs.length > 0) this.trackedPaths.add(path);
+    else this.trackedPaths.delete(path);
   }
 
-  // Update the index and return whether the set of tag names changed (position/mtime-only
-  // updates return false — the graph only needs redrawing when tags come or go).
-  private updateIndexEntry(path: string, tags: TagOccurrence[], mtime: number): boolean {
+  private hasWrRefs(cache: CachedMetadata): boolean {
+    return (cache.links?.some(isWrRef) ?? false) || (cache.embeds?.some(isWrRef) ?? false);
+  }
+
+  // Removes injected links from a cache; true if there were any.
+  private stripRefs(cache: CachedMetadata): boolean {
+    if (!this.hasWrRefs(cache)) return false;
+    const links = (cache.links ?? []).filter((r) => !isWrRef(r));
+    const embeds = (cache.embeds ?? []).filter((r) => !isWrRef(r));
+    if (links.length > 0) cache.links = links;
+    else delete cache.links;
+    if (embeds.length > 0) cache.embeds = embeds;
+    else delete cache.embeds;
+    return true;
+  }
+
+  // Obsidian's own resolver (not public API) recounts the links from the cache, injected ones included.
+  private resolve(path: string): void {
+    const cache = this.plugin.app.metadataCache as unknown as { resolveLinks?: (path: string) => void };
+    if (typeof cache.resolveLinks === "function") cache.resolveLinks(path);
+  }
+
+  // Update the index and return whether the set of tags or links changed (position/mtime-only
+  // updates return false — the graph only needs redrawing when they come or go).
+  private updateIndexEntry(path: string, next: GraphTagIndexEntry): boolean {
     const prev = this.index.get(path);
-    const names = (list: TagOccurrence[]) => list.map((t) => t.tag).sort().join("\n");
-    const changed = names(prev?.tags ?? []) !== names(tags);
-    if (tags.length === 0) {
+    const names = (e: GraphTagIndexEntry | undefined) =>
+      [...(e?.tags ?? []).map((t) => t.tag), ...(e?.links ?? []).map((l) => l.original)].sort().join("\n");
+    const changed = names(prev) !== names(next);
+    if (next.tags.length === 0 && next.links.length === 0) {
       this.index.delete(path);
     } else {
-      this.index.set(path, { tags, mtime });
+      this.index.set(path, next);
     }
     return changed;
+  }
+
+  private collectEntry(content: string, mtime: number): GraphTagIndexEntry {
+    return { tags: this.collectTagEntries(content), links: this.collectLinkEntries(content), mtime };
+  }
+
+  // Display token rules: links in inline code, math or a code block are not links.
+  private collectLinkEntries(content: string): LinkOccurrence[] {
+    if (!content.includes("```wr")) return [];
+    const lines = content.split("\n");
+    const lineOffsets: number[] = new Array<number>(lines.length);
+    let acc = 0;
+    for (let i = 0; i < lines.length; i++) {
+      lineOffsets[i] = acc;
+      acc += lines[i].length + 1;
+    }
+    const out: LinkOccurrence[] = [];
+    for (const memo of parseMemos(content)) {
+      const bodyFrom = memo.lineStart + 1;
+      const bodyTo = Math.min(memo.lineEnd - 1, lines.length - 1);
+      if (bodyTo < bodyFrom) continue;
+      const body = lines.slice(bodyFrom, bodyTo + 1);
+      const blocked = new Set<number>();
+      // A CRLF note leaves "\r" on each line, which would hide a fence from the block parser.
+      for (const b of findBlockRanges(body.map((l) => l.replace(/\r$/, "")))) {
+        for (let i = b.startLine; i <= b.endLine; i++) blocked.add(i);
+      }
+      body.forEach((text, i) => {
+        if (blocked.has(i) || !text.includes("[[")) return;
+        const line = bodyFrom + i;
+        for (const { token, index: col } of inlineTokens(text)) {
+          const link = parseLinkToken(token, col);
+          if (!link || link.external) continue;
+          out.push({ original: token, line, col, offset: lineOffsets[line] + col });
+        }
+      });
+    }
+    return out;
   }
 
   // Collect every tag occurrence with positions (raw, pre-exclusion). What counts as a
@@ -358,7 +484,7 @@ export class GraphTagInjector {
       const bodyTo = Math.min(memo.lineEnd - 1, lines.length - 1);
       for (let line = bodyFrom; line <= bodyTo; line++) {
         const text = lines[line];
-        const re = /#[^\s#]+/g;
+        const re = tagPattern();
         let m: RegExpExecArray | null;
         while ((m = re.exec(text)) !== null) {
           if (m.index > 0 && !/\s/.test(text[m.index - 1])) continue;
@@ -432,7 +558,9 @@ export class GraphTagInjector {
       if (!(await this.plugin.app.vault.adapter.exists(path))) return;
       const parsed: unknown = JSON.parse(await this.plugin.app.vault.adapter.read(path));
       if (typeof parsed !== "object" || parsed === null) return;
+      if ((parsed as Record<string, unknown>)[VERSION_KEY] !== INDEX_VERSION) return;
       for (const [notePath, raw] of Object.entries(parsed)) {
+        if (notePath === VERSION_KEY) continue;
         if (notePath === SCANNED_AT_KEY) {
           if (typeof raw === "number") this.scannedAt = raw;
           continue;
@@ -451,7 +579,7 @@ export class GraphTagInjector {
     const path = this.indexPath();
     if (!path) return;
     try {
-      const packed: Record<string, PersistedEntry | number> = {};
+      const packed: Record<string, PersistedEntry | number> = { [VERSION_KEY]: INDEX_VERSION };
       if (this.scannedAt > 0) packed[SCANNED_AT_KEY] = this.scannedAt;
       for (const [notePath, entry] of this.index) {
         packed[notePath] = packEntry(entry);

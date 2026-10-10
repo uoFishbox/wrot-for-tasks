@@ -24,7 +24,7 @@ import {
 } from "./utils/blockLocation";
 import { parseMemos, type Memo } from "./utils/memoParser";
 import type WrotPlugin from "./main";
-import { IMAGE_EXT_RE, QUOTE_MARKER_RE, inlineTokenPattern, matchTags } from "./utils/patterns";
+import { IMAGE_EXT_RE, QUOTE_MARKER_RE, TAG_TOKEN_RE, highlightColor, inlineTokenPattern, matchTags, splitLinkAlias } from "./utils/patterns";
 import { ListDepthTracker, NestedListStack, parseListLine, tagFor, type ListLine } from "./utils/listParser";
 
 // Lets Obsidian finish its own render before we re-derive from the DOM.
@@ -348,9 +348,11 @@ function processCodeBlock(code: HTMLElement, plugin: WrotPlugin, parent: Compone
   for (const walkTarget of walkTargets) {
   const walker = activeDocument.createTreeWalker(walkTarget, NodeFilter.SHOW_TEXT);
 
-  let textNode: Text | null;
   const nodesToReplace: { node: Text; fragments: DocumentFragment }[] = [];
-  while ((textNode = walker.nextNode() as Text | null)) {
+  // Decoration text is queued as its own node and read again; replacing waits until after the loop, so the queue only grows with off-page nodes.
+  const queue: Text[] = [];
+  for (let n = walker.nextNode(); n; n = walker.nextNode()) queue.push(n as Text);
+  for (const textNode of queue) {
     const text = textNode.textContent || "";
     if (!text.includes("#") && !text.match(/(?:https?|obsidian):\/\//) && !text.includes("[[") && !text.includes("`") && !text.includes("*") && !text.includes("~") && !text.includes("=") && !text.includes("$")) continue;
 
@@ -391,16 +393,21 @@ function processCodeBlock(code: HTMLElement, plugin: WrotPlugin, parent: Compone
         const m = part.match(re);
         if (m) {
           const el = createEl(tag);
+          // A colour emoji goes in with the hidden opener: kept for copying, not shown.
+          const tint = tag === "mark" ? highlightColor(m[1]) : null;
           if (tag === "mark") el.className = "wr-highlight";
+          if (tint) el.setAttr("data-highlight", tint.color);
           const mOpen = createSpan();
           mOpen.className = "wr-backtick";
-          mOpen.textContent = marker;
+          mOpen.textContent = tint ? marker + m[1].slice(0, tint.length) : marker;
           const mClose = createSpan();
           mClose.className = "wr-backtick";
           mClose.textContent = marker;
+          const innerNode = activeDocument.createTextNode(tint ? m[1].slice(tint.length) : m[1]);
           el.appendChild(mOpen);
-          el.appendChild(activeDocument.createTextNode(m[1]));
+          el.appendChild(innerNode);
           el.appendChild(mClose);
+          queue.push(innerNode);
           frag.appendChild(el);
           hasMatch = true;
           formatHandled = true;
@@ -461,15 +468,16 @@ function processCodeBlock(code: HTMLElement, plugin: WrotPlugin, parent: Compone
           hasMatch = true;
           continue;
         } else {
+          const { target, display } = splitLinkAlias(fileName);
           const a = createEl("a");
-          const resolved = plugin.app.metadataCache.getFirstLinkpathDest(fileName, "") !== null;
+          const resolved = plugin.app.metadataCache.getFirstLinkpathDest(target, "") !== null;
           a.className = resolved ? "wr-internal-link" : "wr-internal-link wr-internal-link-unresolved";
-          a.textContent = fileName;
+          a.textContent = display;
           a.addEventListener("click", (e) => {
             e.preventDefault();
             e.stopPropagation();
             // eslint-disable-next-line @typescript-eslint/no-floating-promises -- fire-and-forget; failure is non-critical
-            plugin.app.workspace.openLinkText(fileName, "", false);
+            plugin.app.workspace.openLinkText(target, "", false);
           });
           frag.appendChild(a);
         }
@@ -488,20 +496,21 @@ function processCodeBlock(code: HTMLElement, plugin: WrotPlugin, parent: Compone
           });
           frag.appendChild(slot);
         } else {
+          const { target, display } = splitLinkAlias(linkName);
           const a = createEl("a");
-          const resolved = plugin.app.metadataCache.getFirstLinkpathDest(linkName, "") !== null;
+          const resolved = plugin.app.metadataCache.getFirstLinkpathDest(target, "") !== null;
           a.className = resolved ? "wr-internal-link" : "wr-internal-link wr-internal-link-unresolved";
-          a.textContent = linkName;
+          a.textContent = display;
           a.addEventListener("click", (e) => {
             e.preventDefault();
             e.stopPropagation();
             // eslint-disable-next-line @typescript-eslint/no-floating-promises -- fire-and-forget; failure is non-critical
-            plugin.app.workspace.openLinkText(linkName, "", false);
+            plugin.app.workspace.openLinkText(target, "", false);
           });
           frag.appendChild(a);
         }
         hasMatch = true;
-      } else if (part.match(/^#[^\s#]+$/)) {
+      } else if (TAG_TOKEN_RE.test(part)) {
         const span = createSpan();
         span.className = "wr-reading-tag";
         span.textContent = part;

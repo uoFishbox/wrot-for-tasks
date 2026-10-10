@@ -4,9 +4,13 @@ import { loadMathJax, renderMath, finishRenderMath } from "obsidian";
 // startup (measurement jitter, flicker). Nothing loads until a formula actually renders,
 // so math-free vaults never load MathJax at all.
 
-// Obsidian's loadMathJax() installs a config stub on window.MathJax before the async script
-// load, so its mere presence does not mean "loaded". Probe tex2chtml (used by renderMath) instead.
+// Set once our own loadMathJax() has resolved: Obsidian's word that renderMath is usable,
+// whatever engine sits behind it.
+let loaded = false;
+
+// loadMathJax() installs a config stub first, so probe tex2chtml (also catches a load started elsewhere).
 export function isMathJaxReady(): boolean {
+  if (loaded) return true;
   const mj = (window as { MathJax?: { tex2chtml?: unknown } }).MathJax;
   return typeof mj?.tex2chtml === "function";
 }
@@ -29,7 +33,10 @@ export function requestMathJax(): void {
   if (requested) return;
   requested = true;
   void loadMathJax()
-    .then(() => readyHandler?.())
+    .then(() => {
+      loaded = true;
+      readyHandler?.();
+    })
     .catch(() => {
       requested = false;
     });

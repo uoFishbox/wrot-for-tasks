@@ -1,9 +1,11 @@
 # Formatting Guide
 
 The Wrot post editor comes with a toolbar that makes formatting your text a breeze.
-With a single click, you can quickly add Markdown styling like bold text, lists, and blockquotes.
+With a single click, you can add styling like bold text, lists, and blockquotes.
 
-Here is a breakdown of the formatting tools on the toolbar and how they work.
+Here is a breakdown of the formatting tools on the toolbar and what each button does.
+
+Starting with Ver3.0.0, the post editor hides Markdown syntax and shows your text already styled. For how deleting, stacking styles, and other editor behaviors work, see [New Posting Form in Ver3.0.0 and Up](./posting-form-v3.md).
 
 ---
 
@@ -11,16 +13,15 @@ Here is a breakdown of the formatting tools on the toolbar and how they work.
 
 By default, the bottom of the editor features the following tools, from left to right:
 
-| Icon  | Feature           | What It Does / Inserts                                        |
-| :---: | :---------------- | :------------------------------------------------------------ |
-|  🖼️   | **Image**     | Opens a window to choose and attach images                    |
-|  📎   | **Embed**         | Embeds notes or files using `![[ ]]`                          |
-| **B** | **Bold**          | `**Bold**`                                                    |
-|  _I_  | **Italic**        | `*Italic*`                                                    |
-|  ☰   | **List**          | `- Bullet point`                                              |
-|   ☑   | **Checklist**     | `- [ ] Task`                                                  |
-|  1.   | **Numbered List** | `1. Numbered`                                                 |
-|   ⋯   | **More**  | Code, Math, Blockquotes, Links, Strikethrough, and Highlights |
+| Icon  | Feature           | What Gets Saved / What It Does                                           |
+| :---: | :---------------- | :----------------------------------------------------------------------- |
+|  🖼️   | **Image**         | Opens a window to choose and attach an image                             |
+| **B** | **Bold**          | `**Bold**`                                                               |
+|  _I_  | **Italic**        | `*Italic*`                                                               |
+|  ☰   | **List**          | `- Bullet point`                                                         |
+|   ☑   | **Checklist**     | `- [ ] Task`                                                             |
+|  1.   | **Numbered List** | `1. Numbered`                                                            |
+|   ⋯   | **More**          | Pin later, Code, Math, Quote, Link, Strikethrough, Highlight, and more   |
 
 - You can customize which buttons show up on the toolbar and rearrange them. To learn how, check out [How to Use the Toolbar](./toolbar.md).
 
@@ -28,46 +29,35 @@ By default, the bottom of the editor features the following tools, from left to 
 
 ## Bold and Italic
 
-How these work depends on whether you have highlighted any text.
-
 ### When Text Is Selected
 
-Clicking a style wraps your highlighted text in Markdown tags. Click it again to strip the formatting.
+Makes the selected text bold (italic). Click the button again to remove it.
 
-- **Bold**: Wraps text with `**…**`.
-- **Italic**: Wraps text with `*…*`.
+- You can also apply it to text that already has other formatting. Bold and italic can be combined, too.
 
-### When No Text Is Selected (Type-Ahead Mode)
+### When No Text Is Selected (Pre-Input Mode)
 
-This mode drops an **opening tag** right where your cursor is and closes it once you finish typing.
+Clicking the button lights it up, and whatever you type next is shown in bold (italic). Click the button again to close the formatting.
 
-1. Click the button to drop an opening tag (like `**`) at your cursor. The toolbar button will light up.
-2. Type out your text.
-3. Click the button again to add the closing tag (like `**`) and finish formatting.
-
-> **Tips and Things to Know**
->
-> - **Auto-spacing**: Whenever you close a tag, a space gets added right after it so your formatting does not bleed into the next word.
-> - **Posting mid-way**: If you publish a post without closing a tag, starting symbols like `**` will just show up as plain text.
-> - **Combining bold and italic**: You cannot turn on both modes at once. Wrap your text in one style first before applying the other.
-> - **IME protection**: To prevent accidental formatting changes while typing in Japanese, toolbar buttons briefly pause while converting text.
+- Pressing `Backspace` before typing anything cancels pre-input mode.
+- If you post without closing it, the formatting is closed automatically at the end of that line.
+- While one of them is in pre-input mode, the other button (italic for bold, and vice versa) is unavailable.
+- While you are converting text with an IME (such as Japanese input), the lit-up button pauses briefly so you do not close the formatting by accident.
 
 ---
 
 ## Lists (Bullets, Checklists, Numbered)
 
-Clicking a list button inserts a list symbol at the **very start of your current line**, even if your cursor is in the middle of a sentence.
+Clicking a list button turns **the line your cursor is on** into a list item (the marker goes at the start of the line even if your cursor is in the middle). Click it again to turn the line back, or click a different list button to switch the type.
 
-| Button            | Inserted Symbol |
-| :---------------- | :-------------- |
-| **Bulleted List** | `- `            |
-| **Checklist**     | `- [ ] `        |
-| **Numbered List** | `1. `           |
+| Button            | Saved Marker |
+| :---------------- | :----------- |
+| **List**          | `- `         |
+| **Checklist**     | `- [ ] `     |
+| **Numbered List** | `1. `        |
 
-### Auto-Continuing Lists
-
-Hitting `Enter` on a list line automatically starts a new list item on the next line.
-To break out of a list, just hit `Enter` on an empty list item.
+- Clicking a list button on a quote line creates a list inside the quote.
+- For continuing lists with `Enter` and changing indentation with `Tab` or `Backspace`, see "6. Managing Lists and Quotes" in [New Posting Form in Ver3.0.0 and Up](./posting-form-v3.md).
 
 ---
 
@@ -75,53 +65,77 @@ To break out of a list, just hit `Enter` on an empty list item.
 
 ### Code
 
-The editor automatically toggles between inline code and a full code block based on your text selection.
+The editor switches between inline code and a code block depending on whether text is selected.
 
-| Selection Status  | What Gets Inserted                                |
+| Selection Status  | What Gets Saved                                   |
 | :---------------- | :------------------------------------------------ |
-| **Text selected** | <code>\`Selected Text\`</code> (Inline code)      |
-| **No selection**  | <code>~~~</code> to <code>~~~</code> (Code block) |
+| **Text selected** | <code>\`Selected Text\`</code> (inline code)      |
+| **No selection**  | <code>~~~</code> to <code>~~~</code> (code block) |
 
-- When you insert a code block, your cursor drops right inside it so you can start typing right away.
+- When you insert a code block, your cursor lands inside it so you can start typing right away.
+- It cannot be applied to text that has formatting or a link (the button is greyed out).
 
 ### Math (LaTeX)
 
-Just like the code tool, this switches between inline and block math depending on what you have selected.
+Just like code, this switches between inline math and a math block depending on whether text is selected.
 
-| Selection Status  | What Gets Inserted              |
+| Selection Status  | What Gets Saved                 |
 | :---------------- | :------------------------------ |
-| **Text selected** | `$Selected Text$` (Inline math) |
-| **No selection**  | `$$ 〜 $$` (Block math)         |
+| **Text selected** | `$Selected Text$` (inline math) |
+| **No selection**  | `$$ … $$` (math block)          |
 
-### Blockquotes
+- It cannot be applied to text that has formatting or a link (the button is greyed out).
 
-This button turns quotes on and off at the start of your current line or selected lines.
+### Quote
 
-- Selecting multiple lines adds `> ` to every single line.
-- If every selected line is already a quote, clicking the button removes the `> ` from all of them at once.
+Adds or removes the quote marker `>` at the start of your current line or selected lines.
 
-### Links
+- Selecting multiple lines adds it to every selected line.
+- If every selected line is already a quote, clicking the button removes it from all of them at once.
 
-**This option only works when text is selected.** (It stays grayed out otherwise.)
+### Link
 
-- It turns your selected text into `[Selected Text](URL)` and drops your cursor right inside the parentheses `()`.
+Available when text is selected, or when your cursor is on a link.
 
-### Strikethrough and Highlight
+A small pop-up field opens below the editor. Type a note name or a URL and press `Enter` to confirm. For details, see "7. Inserting and Editing Links" in [New Posting Form in Ver3.0.0 and Up](./posting-form-v3.md).
 
-**These options only work when text is selected.** (They stay grayed out otherwise.) You can remove the effect by selecting the text and clicking the button again.
+### Strikethrough
 
-| Feature           | Inserted Format |
-| :---------------- | :-------------- |
-| **Strikethrough** | `~~Text~~`      |
-| **Highlight**     | `==Text==`      |
+**Only available when text is selected** (greyed out otherwise). Click it again to remove it.
+
+| Feature           | Saved Format |
+| :---------------- | :----------- |
+| **Strikethrough** | `~~Text~~`   |
+
+### Highlight
+
+**Only available when text is selected** (greyed out otherwise).
+
+- Clicking it opens a color menu: **Default, Red, Orange, Yellow, Green, Blue, Purple**. Default uses your theme's highlight color.
+- When the selected text is already highlighted, the menu item becomes **Remove highlight**, and clicking it removes the highlight.
+
+| Color                     | Saved Format                                        |
+| :------------------------ | :-------------------------------------------------- |
+| **Default**               | `==Text==`                                          |
+| **The six colors**        | `==🔴Text==` and so on (the same syntax as Obsidian) |
 
 ---
 
-## Attaching and Embedding Images
+## Rules That Apply to All Formatting
 
-For a detailed walkthrough on attaching images (🖼️) or embedding notes and files (📎), check out the guide below.
+- **Half-width spaces before and after**: Applying formatting automatically adds a space before and after it (skipped when there is already a space, among other cases).
+- **Stacking**: Applying formatting to text that already has some stacks the two. Clicking the same button removes only that formatting.
+- **Code and math**: Code and math cannot be combined with other formatting.
 
-👉 [How to Use Images, Links, and Embeds](./links-and-embeds.md)
+For the exact conditions, see "5. Toolbar Formatting Rules" in [New Posting Form in Ver3.0.0 and Up](./posting-form-v3.md).
+
+---
+
+## Images and Links
+
+For a detailed walkthrough on attaching images (🖼️) and linking to notes and web pages, check out the guide below.
+
+👉 [Working with Images, Links, and Embeds](./links-and-embeds.md)
 
 ---
 

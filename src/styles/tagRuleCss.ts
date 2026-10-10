@@ -1,5 +1,6 @@
 import type { SubColorScope, TagColorRule } from "../settings";
 import { blendColor, codeLightness, darkenColor } from "../utils/color";
+import { highlightVars } from "./paletteCss";
 import { HEX_COLOR_RE } from "../utils/patterns";
 
 /**
@@ -8,7 +9,7 @@ import { HEX_COLOR_RE } from "../utils/patterns";
  * One block of rules per configured tag, keyed by the wr-tag-rule-<n> class the renderers apply.
  * Sits at boost level 4 so it wins over the base palette stamp.
  */
-export function buildTagRuleCss(rules: TagColorRule[]): string {
+export function buildTagRuleCss(rules: TagColorRule[], highlightTheme: Record<string, string>): string {
     const hexRe = HEX_COLOR_RE;
     const parts: string[] = [];
     rules.forEach((rule, i) => {
@@ -28,10 +29,13 @@ export function buildTagRuleCss(rules: TagColorRule[]): string {
       };
       const mButtons = pickMuted("buttons");
       const mQuote = pickMuted("quote");
+      // Block quotes: the rule's own sub colour where it covers quotes, else one step fainter.
+      const mBlockquote = subSet && scope?.quote !== false ? userMuted : blendColor(fg, bg, 0.6);
       const mList = pickMuted("list");
       const mOgp = pickMuted("ogp");
       // Unresolved link/embed color: same blend logic as the base palette, from this rule's fg/bg.
       const mUnresolved = blendColor(fg, bg, 0.3);
+      const quoteLink = `color-mix(in srgb, ${accent ?? "var(--text-accent)"} 40%, ${bg})`;
       const cls = `wr-tag-rule-${i}`;
       const codeL = codeLightness(fg, bg);
 
@@ -80,6 +84,7 @@ export function buildTagRuleCss(rules: TagColorRule[]): string {
         --wr-code-l: ${codeL.base};
         --wr-code-muted-l: ${codeL.muted};
         --wr-code-faint-l: ${codeL.faint};
+        ${highlightVars(highlightTheme, bg)}
       }
       body .cm-line.wr-codeblock-line.${cls},
       body .cm-line.wr-codeblock-line.${cls} *:not(.wr-tag-highlight):not(.wr-internal-link-highlight):not(.wr-internal-link):not(.wr-url-highlight):not(.wr-lp-marker):not(.wr-list-highlight):not(.wr-ol-highlight):not(.wr-quote-highlight):not(.wr-blockquote-wrap):not(.wr-check-unchecked):not(.wr-check-checked):not(.wr-check-done):not(.wr-quote-card-slot):not(.wr-embed-missing):not(input[type="checkbox"]):not(.wr-tag-highlight *):not(.wr-internal-link-highlight *):not(.wr-url-highlight *):not(.wr-blockquote-wrap *):not(.wr-quote-card-slot *):not(.token) {
@@ -106,7 +111,7 @@ export function buildTagRuleCss(rules: TagColorRule[]): string {
       body pre.${cls} .wr-blockquote:not(.wr-quote-card-slot .wr-blockquote),
       body .cm-line.wr-codeblock-line.${cls}.wr-blockquote-line,
       body .cm-line.wr-codeblock-line.${cls} .wr-blockquote-wrap {
-        color: ${mQuote};
+        color: ${mBlockquote};
       }
       body .wr-card.${cls} .wr-bullet-list > li:not(.wr-check-item)::before,
       body .wr-card.${cls} .wr-ordered-list > li::before,
@@ -140,7 +145,25 @@ export function buildTagRuleCss(rules: TagColorRule[]): string {
       body .cm-line.${cls} .wr-blockquote-wrap:not(#x#y#z),
       body .cm-line.${cls} .wr-blockquote-wrap:not(#x#y#z) *,
       body .cm-line.${cls} .wr-quote-highlight:not(#x#y#z) {
-        color: ${mQuote};
+        color: ${mBlockquote};
+      }
+      /* Lists inside quotes take the rule's quote colour, markers and checkbox borders included
+         (quotes inside quote cards belong to the quoted memo) */
+      body .cm-line.${cls}.wr-blockquote-line .wr-lp-marker:not(#x#y#z),
+      body .wr-card.${cls} .wr-blockquote:not(.wr-quote-card-slot .wr-blockquote) .wr-bullet-list > li:not(.wr-check-item)::before,
+      body .wr-card.${cls} .wr-blockquote:not(.wr-quote-card-slot .wr-blockquote) .wr-ordered-list > li::before,
+      body div.block-language-wr.${cls} .wr-blockquote:not(.wr-quote-card-slot .wr-blockquote) ul.wr-reading-list > li:not(.wr-check-item)::before,
+      body div.block-language-wr.${cls} .wr-blockquote:not(.wr-quote-card-slot .wr-blockquote) ol.wr-reading-list > li::before,
+      body pre.${cls} .wr-blockquote:not(.wr-quote-card-slot .wr-blockquote) ul.wr-reading-list > li:not(.wr-check-item)::before,
+      body pre.${cls} .wr-blockquote:not(.wr-quote-card-slot .wr-blockquote) ol.wr-reading-list > li::before {
+        color: ${mBlockquote};
+      }
+      body .wr-card.${cls} .wr-blockquote:not(.wr-quote-card-slot .wr-blockquote) .wr-check-item input[type="checkbox"],
+      body div.block-language-wr.${cls} .wr-blockquote:not(.wr-quote-card-slot .wr-blockquote) .wr-check-item input[type="checkbox"],
+      body pre.${cls} .wr-blockquote:not(.wr-quote-card-slot .wr-blockquote) .wr-check-item input[type="checkbox"],
+      body .cm-line.wr-codeblock-line.${cls}.wr-blockquote-line .wr-lp-check input[type="checkbox"] {
+        --checkbox-border-color: ${mBlockquote};
+        --checkbox-border-color-hover: ${mBlockquote};
       }
       /* Checkbox border uses the sub color; checked fill uses the rule accent */
       body .wr-card.${cls} .wr-check-item input[type="checkbox"],
@@ -154,11 +177,11 @@ export function buildTagRuleCss(rules: TagColorRule[]): string {
         accent-color: ${accent ?? "var(--text-accent)"};
       }
       /* Blockquotes inside quote cards belong to the quoted memo, so they are
-         excluded from the ancestor (quoting) rule's mQuote */
+         excluded from the ancestor (quoting) rule's mBlockquote */
       body .wr-card.${cls} .wr-blockquote:not(.wr-quote-card-slot .wr-blockquote) *:not(.wr-tag):not(.wr-internal-link):not(.wr-url):not(.wr-reading-tag):not(.wr-reading-url):not(.wr-tag *):not(.wr-internal-link *):not(.wr-url *):not(.wr-reading-tag *):not(.wr-reading-url *),
       body div.block-language-wr.${cls} .wr-blockquote:not(.wr-quote-card-slot .wr-blockquote) *:not(.wr-tag):not(.wr-internal-link):not(.wr-url):not(.wr-reading-tag):not(.wr-reading-url):not(.wr-tag *):not(.wr-internal-link *):not(.wr-url *):not(.wr-reading-tag *):not(.wr-reading-url *),
       body pre.${cls} .wr-blockquote:not(.wr-quote-card-slot .wr-blockquote) *:not(.wr-tag):not(.wr-internal-link):not(.wr-url):not(.wr-reading-tag):not(.wr-reading-url):not(.wr-tag *):not(.wr-internal-link *):not(.wr-url *):not(.wr-reading-tag *):not(.wr-reading-url *) {
-        color: ${mQuote};
+        color: ${mBlockquote};
       }
       /* ID-equivalent re-declaration in case the text-color stamp wins on specificity (quote-card content excluded) */
       body .wr-card.${cls} .wr-blockquote:not(.wr-quote-card-slot .wr-blockquote):not(#x#y#z),
@@ -167,7 +190,7 @@ export function buildTagRuleCss(rules: TagColorRule[]): string {
       body div.block-language-wr.${cls} .wr-blockquote:not(.wr-quote-card-slot .wr-blockquote):not(#x#y#z) *:not(.wr-tag):not(.wr-internal-link):not(.wr-url):not(.wr-reading-tag):not(.wr-reading-url),
       body pre.${cls} .wr-blockquote:not(.wr-quote-card-slot .wr-blockquote):not(#x#y#z),
       body pre.${cls} .wr-blockquote:not(.wr-quote-card-slot .wr-blockquote):not(#x#y#z) *:not(.wr-tag):not(.wr-internal-link):not(.wr-url):not(.wr-reading-tag):not(.wr-reading-url) {
-        color: ${mQuote};
+        color: ${mBlockquote};
       }
       body .cm-line.wr-codeblock-line.${cls} .wr-tag-highlight .wr-blockquote-wrap,
       body .cm-line.wr-codeblock-line.${cls} .wr-internal-link-highlight .wr-blockquote-wrap,
@@ -178,28 +201,40 @@ export function buildTagRuleCss(rules: TagColorRule[]): string {
         color: ${accent ?? "var(--text-accent)"};
       }
       body .wr-card.${cls} .wr-blockquote:not(.wr-quote-card-slot .wr-blockquote) .wr-tag,
-      body .wr-card.${cls} .wr-blockquote:not(.wr-quote-card-slot .wr-blockquote) .wr-internal-link,
-      body .wr-card.${cls} .wr-blockquote:not(.wr-quote-card-slot .wr-blockquote) .wr-url,
       body .wr-card.${cls} .wr-blockquote:not(.wr-quote-card-slot .wr-blockquote) .wr-reading-tag,
-      body .wr-card.${cls} .wr-blockquote:not(.wr-quote-card-slot .wr-blockquote) .wr-reading-url,
       body div.block-language-wr.${cls} .wr-blockquote:not(.wr-quote-card-slot .wr-blockquote) .wr-tag,
-      body div.block-language-wr.${cls} .wr-blockquote:not(.wr-quote-card-slot .wr-blockquote) .wr-internal-link,
-      body div.block-language-wr.${cls} .wr-blockquote:not(.wr-quote-card-slot .wr-blockquote) .wr-url,
       body div.block-language-wr.${cls} .wr-blockquote:not(.wr-quote-card-slot .wr-blockquote) .wr-reading-tag,
-      body div.block-language-wr.${cls} .wr-blockquote:not(.wr-quote-card-slot .wr-blockquote) .wr-reading-url,
       body pre.${cls} .wr-blockquote:not(.wr-quote-card-slot .wr-blockquote) .wr-tag,
-      body pre.${cls} .wr-blockquote:not(.wr-quote-card-slot .wr-blockquote) .wr-internal-link,
-      body pre.${cls} .wr-blockquote:not(.wr-quote-card-slot .wr-blockquote) .wr-url,
-      body pre.${cls} .wr-blockquote:not(.wr-quote-card-slot .wr-blockquote) .wr-reading-tag,
-      body pre.${cls} .wr-blockquote:not(.wr-quote-card-slot .wr-blockquote) .wr-reading-url {
+      body pre.${cls} .wr-blockquote:not(.wr-quote-card-slot .wr-blockquote) .wr-reading-tag {
         color: ${accent ?? "var(--text-accent)"};
+      }
+      /* Links in quotes: the rule's accent faded toward its background, as in the base palette */
+      body .wr-card.${cls} .wr-blockquote:not(.wr-quote-card-slot .wr-blockquote) .wr-internal-link:not(.wr-internal-link-unresolved),
+      body .wr-card.${cls} .wr-blockquote:not(.wr-quote-card-slot .wr-blockquote) .wr-url,
+      body .wr-card.${cls} .wr-blockquote:not(.wr-quote-card-slot .wr-blockquote) .wr-reading-url,
+      body div.block-language-wr.${cls} .wr-blockquote:not(.wr-quote-card-slot .wr-blockquote) .wr-internal-link:not(.wr-internal-link-unresolved),
+      body div.block-language-wr.${cls} .wr-blockquote:not(.wr-quote-card-slot .wr-blockquote) .wr-url,
+      body div.block-language-wr.${cls} .wr-blockquote:not(.wr-quote-card-slot .wr-blockquote) .wr-reading-url,
+      body pre.${cls} .wr-blockquote:not(.wr-quote-card-slot .wr-blockquote) .wr-internal-link:not(.wr-internal-link-unresolved),
+      body pre.${cls} .wr-blockquote:not(.wr-quote-card-slot .wr-blockquote) .wr-url,
+      body pre.${cls} .wr-blockquote:not(.wr-quote-card-slot .wr-blockquote) .wr-reading-url {
+        color: ${quoteLink};
+      }
+      body .cm-line.${cls}.wr-blockquote-line .wr-internal-link-highlight:not(.wr-internal-link-unresolved):not(#x#y#z),
+      body .cm-line.${cls}.wr-blockquote-line .wr-internal-link-highlight:not(.wr-internal-link-unresolved) *:not(#x#y#z),
+      body .cm-line.${cls}.wr-blockquote-line .wr-internal-link:not(.wr-internal-link-unresolved):not(#x#y#z),
+      body .cm-line.${cls}.wr-blockquote-line .wr-url-highlight:not(#x#y#z),
+      body .cm-line.${cls}.wr-blockquote-line .wr-url-highlight *:not(#x#y#z),
+      body .cm-line.${cls}.wr-blockquote-line .wr-url:not(#x#y#z) {
+        color: ${quoteLink};
+        -webkit-text-fill-color: ${quoteLink};
       }
       /* Border color likewise; blockquotes inside quote cards excluded (card content = quoted memo) */
       body .wr-card.${cls} .wr-blockquote:not(.wr-quote-card-slot .wr-blockquote),
       body .wr-card.${cls} .wr-blockquote-wrap:not(.wr-quote-card-slot .wr-blockquote-wrap),
       body div.block-language-wr.${cls} .wr-blockquote:not(.wr-quote-card-slot .wr-blockquote),
       body pre.${cls} .wr-blockquote:not(.wr-quote-card-slot .wr-blockquote) {
-        border-left-color: ${mQuote};
+        border-left-color: ${mBlockquote};
       }
       /* Border color follows the quoting side's look, so it is not overridden here */
       body .wr-quote-card-slot .wr-quote-card.${cls} {
@@ -253,28 +288,28 @@ export function buildTagRuleCss(rules: TagColorRule[]): string {
         color: ${accent ?? "var(--text-accent)"};
       }
       body .cm-line.wr-codeblock-line.wr-blockquote-line.${cls}::before {
-        background-color: ${mQuote};
+        background-color: ${mBlockquote};
       }
       body .cm-line.wr-codeblock-line.wr-blockquote-depth-2.${cls}::before {
-        box-shadow: 18px 0 0 0 ${mQuote};
+        box-shadow: 18px 0 0 0 ${mBlockquote};
       }
       body .cm-line.wr-codeblock-line.wr-blockquote-depth-3.${cls}::before {
         box-shadow:
-          18px 0 0 0 ${mQuote},
-          36px 0 0 0 ${mQuote};
+          18px 0 0 0 ${mBlockquote},
+          36px 0 0 0 ${mBlockquote};
       }
       body .cm-line.wr-codeblock-line.wr-blockquote-depth-4.${cls}::before {
         box-shadow:
-          18px 0 0 0 ${mQuote},
-          36px 0 0 0 ${mQuote},
-          54px 0 0 0 ${mQuote};
+          18px 0 0 0 ${mBlockquote},
+          36px 0 0 0 ${mBlockquote},
+          54px 0 0 0 ${mBlockquote};
       }
       body .cm-line.wr-codeblock-line.wr-blockquote-depth-5.${cls}::before {
         box-shadow:
-          18px 0 0 0 ${mQuote},
-          36px 0 0 0 ${mQuote},
-          54px 0 0 0 ${mQuote},
-          72px 0 0 0 ${mQuote};
+          18px 0 0 0 ${mBlockquote},
+          36px 0 0 0 ${mBlockquote},
+          54px 0 0 0 ${mBlockquote},
+          72px 0 0 0 ${mBlockquote};
       }
       body .wr-card.${cls} .wr-copy-btn .svg-icon,
       body .wr-card.${cls} .wr-menu-btn .svg-icon,

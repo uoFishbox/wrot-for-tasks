@@ -44,7 +44,8 @@ export function i18nPackPlugin() {
         return {
           contents:
             `export const K=${JSON.stringify(keys)};` +
-            `export const D=(v)=>{const o={};for(let i=0;i<K.length;i++)o[K[i]]=v[i];return o;};`,
+            // Values sit in a function body the engine only skims; the object is built on first lookup.
+            `export const D=(f)=>{let o=null;return new Proxy({},{get:(_,k)=>{if(o===null){const v=f();o={};for(let i=0;i<K.length;i++)o[K[i]]=v[i];}return o[k];}});};`,
           loader: "js",
         };
       });
@@ -66,7 +67,7 @@ export function i18nPackPlugin() {
         return {
           contents:
             `import {D} from "${KEYS_MODULE}";` +
-            `export default D(${JSON.stringify(values)});`,
+            `export default D(()=>${JSON.stringify(values)});`,
           loader: "js",
         };
       });

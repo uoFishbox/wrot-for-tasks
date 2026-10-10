@@ -138,7 +138,6 @@ const ja = {
   "settings.item.resetToolbar.confirm": "もう一度押すと初期化",
 
   "view.toolbarAction.image": "画像",
-  "view.toolbarAction.embed": "埋め込み",
   "view.toolbarAction.bold": "太字",
   "view.toolbarAction.italic": "斜体",
   "view.toolbarAction.list": "リスト",
@@ -153,8 +152,18 @@ const ja = {
   "view.formatMenu.math": "数式",
   "view.formatMenu.quote": "引用",
   "view.formatMenu.link": "リンク",
+  "view.linkPopover.placeholder": "ノート名かURL",
+  "view.linkPopover.unlink": "リンクを解除",
   "view.formatMenu.strikethrough": "取り消し線",
   "view.formatMenu.highlight": "ハイライト",
+  "view.highlight.default": "デフォルト",
+  "view.highlight.red": "赤",
+  "view.highlight.orange": "オレンジ",
+  "view.highlight.yellow": "黄",
+  "view.highlight.green": "緑",
+  "view.highlight.blue": "青",
+  "view.highlight.purple": "紫",
+  "view.highlight.remove": "ハイライトを解除",
   "view.formatMenu.settings": "設定",
 
   "view.postMenu.copy": "コピー",
@@ -180,6 +189,7 @@ const ja = {
   "view.notice.searchPluginNotFound": "検索プラグインが見つかりません",
 
   "view.image.removeAria": "画像を削除",
+  "view.quote.removeAria": "引用を外す",
 
   // Placeholder body of a quote card whose original post is gone.
   "quote.card.notFound": "(元投稿が見つかりません)",

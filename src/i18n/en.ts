@@ -137,7 +137,6 @@ const en = {
   "settings.item.resetToolbar.confirm": "Press again to confirm",
 
   "view.toolbarAction.image": "Image",
-  "view.toolbarAction.embed": "Embed",
   "view.toolbarAction.bold": "Bold",
   "view.toolbarAction.italic": "Italic",
   "view.toolbarAction.list": "Bulleted list",
@@ -152,8 +151,18 @@ const en = {
   "view.formatMenu.math": "Math",
   "view.formatMenu.quote": "Quote",
   "view.formatMenu.link": "Link",
+  "view.linkPopover.placeholder": "Note name or URL",
+  "view.linkPopover.unlink": "Remove link",
   "view.formatMenu.strikethrough": "Strikethrough",
   "view.formatMenu.highlight": "Highlight",
+  "view.highlight.default": "Default",
+  "view.highlight.red": "Red",
+  "view.highlight.orange": "Orange",
+  "view.highlight.yellow": "Yellow",
+  "view.highlight.green": "Green",
+  "view.highlight.blue": "Blue",
+  "view.highlight.purple": "Purple",
+  "view.highlight.remove": "Remove highlight",
   "view.formatMenu.settings": "Settings",
 
   "view.postMenu.copy": "Copy",
@@ -178,6 +187,7 @@ const en = {
   "view.notice.searchPluginNotFound": "The core Search plugin is not enabled.",
 
   "view.image.removeAria": "Remove image",
+  "view.quote.removeAria": "Remove quote",
 
   // Placeholder body of a quote card whose original post is gone.
   "quote.card.notFound": "(Original post not found)",

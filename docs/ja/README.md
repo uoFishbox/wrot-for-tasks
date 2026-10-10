@@ -21,7 +21,7 @@ SNS のような気軽さで書けて、誰にも見られず、勝手に整理�
 ## 主な機能
 
 - **SNS ライクな使い心地とリッチなエディタ**
-  タイムライン形式で素早く振り返りが可能。ツールバー付きのエディタを備え、書式設定・リスト・引用・内部リンクなどを手軽に扱えます。ツールバーのボタン表示や並び順は自由にカスタマイズ可能です（[詳細](https://github.com/villyoshioka/Wrot/blob/main/docs/ja/%E3%83%84%E3%83%BC%E3%83%AB%E3%83%90%E3%83%BC%E3%81%AE%E4%BD%BF%E3%81%84%E6%96%B9.md)）。
+  タイムライン形式で素早く振り返りが可能。投稿フォームは Markdown の記号を隠して、太字やリストを仕上がりの見た目のまま書けます（[詳細](https://github.com/villyoshioka/Wrot/blob/main/docs/ja/Ver3.0.0%E4%BB%A5%E9%99%8D%E3%81%AE%E6%8A%95%E7%A8%BF%E3%83%95%E3%82%A9%E3%83%BC%E3%83%A0%E3%81%AB%E3%81%A4%E3%81%84%E3%81%A6.md)）。ツールバーで書式設定・リスト・引用・リンクなどを手軽に扱え、ボタン表示や並び順は自由にカスタマイズ可能です（[詳細](https://github.com/villyoshioka/Wrot/blob/main/docs/ja/%E3%83%84%E3%83%BC%E3%83%AB%E3%83%90%E3%83%BC%E3%81%AE%E4%BD%BF%E3%81%84%E6%96%B9.md)）。
 - **埋もれさせないピン留め機能**
   重要なメモや直近のタスクをタイムライン上部に固定表示。日付を指定して、その日が来たら自動でピン留めする予約にも対応しています（[詳細](https://github.com/villyoshioka/Wrot/blob/main/docs/ja/%E3%83%94%E3%83%B3%E7%95%99%E3%82%81%E3%81%AE%E4%BD%BF%E3%81%84%E6%96%B9.md)）。
 - **Obsidian 本体のタグシステムと完全連携**
@@ -31,7 +31,7 @@ SNS のような気軽さで書けて、誰にも見られず、勝手に整理�
 - **タグルール（自動カラー分け）**
   特定のタグに対して背景色・文字色を指定可能。トピックや気分、重要度に応じてタイムラインを視覚的に整理できます（[詳細](https://github.com/villyoshioka/Wrot/blob/main/docs/ja/%E3%82%BF%E3%82%B0%E3%83%AB%E3%83%BC%E3%83%AB%E3%81%AE%E4%BD%BF%E3%81%84%E6%96%B9.md)）。
 - **リンクと URL プレビュー**
-  内部リンク（`![[]]`）や外部 URL の OGP カード表示に対応し、参照先を直感的に把握できます（[詳細](https://github.com/villyoshioka/Wrot/blob/main/docs/ja/%E7%94%BB%E5%83%8F%E3%83%BB%E3%83%AA%E3%83%B3%E3%82%AF%E3%83%BB%E5%9F%8B%E3%82%81%E8%BE%BC%E3%81%BF%E3%81%AE%E4%BD%BF%E3%81%84%E6%96%B9.md)）。
+  リンクボタンから Vault 内のノートや Web ページへのリンクを付けられます。外部 URL の OGP カード表示にも対応し、参照先を直感的に把握できます（[詳細](https://github.com/villyoshioka/Wrot/blob/main/docs/ja/%E7%94%BB%E5%83%8F%E3%83%BB%E3%83%AA%E3%83%B3%E3%82%AF%E3%83%BB%E5%9F%8B%E3%82%81%E8%BE%BC%E3%81%BF%E3%81%AE%E4%BD%BF%E3%81%84%E6%96%B9.md)）。
 - **テンプレートの見出しに投稿**
   デイリーノートのテンプレートにある見出しを選んでおくと、投稿がその見出しの下に追加されます。Templater を使ったテンプレートにも対応しています（[詳細](https://github.com/villyoshioka/Wrot/blob/main/docs/ja/%E3%83%86%E3%83%B3%E3%83%97%E3%83%AC%E3%83%BC%E3%83%88%E3%81%AE%E8%A6%8B%E5%87%BA%E3%81%97%E6%8C%87%E5%AE%9A%E3%81%AE%E4%BD%BF%E3%81%84%E6%96%B9.md)）。
 - **スムーズな画像添付**
@@ -55,7 +55,7 @@ SNS のような気軽さで書けて、誰にも見られず、勝手に整理�
 
 ## 動作要件
 
-- Obsidian **v1.13.0** 以降
+- Obsidian **v1.14.4** 以降
 - 対応プラットフォーム:
   - macOS
   - iOS / iPadOS

@@ -8,6 +8,7 @@ import {
   PinEntry,
   ScheduledPinEntry,
   ToolbarSlot,
+  DEFAULT_TOOLBAR_LAYOUT,
   resolveToolbarLayout,
 } from "./settings";
 import { WrotView } from "./views/WrotView";
@@ -15,8 +16,9 @@ import { registerWrotPostProcessor } from "./postProcessor";
 import { createWrEditorExtension, tagRulesChanged, vaultFilesChanged } from "./editorExtension";
 import { OGPCache } from "./utils/ogpCache";
 import { GraphTagInjector } from "./utils/graphTags";
+import { mergeRecentTags } from "./utils/tagSuggest";
 import { ATTACHMENT_EXT_RE, matchTags, tagPattern } from "./utils/patterns";
-import { blendColor, codeLightness, darkenColor, validHex } from "./utils/color";
+import { blendColor, codeLightness, darkenColor, readThemeHighlightColors, validHex } from "./utils/color";
 import { boostSelectors, WrStyleSheet } from "./styles/styleInjector";
 import { buildPaletteCss } from "./styles/paletteCss";
 import { buildTagRuleCss } from "./styles/tagRuleCss";
@@ -61,7 +63,6 @@ export default class WrotPlugin extends Plugin {
     this.patchOpeningBehavior();
     initI18n();
     await this.loadSettings();
-    await this.loadRecentTags();
     // Started after layout: reads issued during load queue ahead of Obsidian's own styles.css read in the fs pool and count against startup.
     this.deferredState = new Promise((resolve) => {
       this.app.workspace.onLayoutReady(() => {
@@ -186,6 +187,7 @@ export default class WrotPlugin extends Plugin {
     window.setTimeout(() => {
       if (this.unloading) return;
       upgradeMathFallbacks();
+      this.forEachView((view) => view.composer?.redraw());
       this.app.workspace.iterateAllLeaves((leaf) => {
         const view = leaf.view;
         if (!(view instanceof MarkdownView)) return;
@@ -274,6 +276,7 @@ export default class WrotPlugin extends Plugin {
       faintColor: blendColor(textColor, bgColor, 0.6),
       unresolvedLinkColor: blendColor(textColor, bgColor, 0.3),
       codeLightness: codeLightness(textColor, bgColor),
+      highlightTheme: readThemeHighlightColors(activeDocument, isDark),
     });
     this.bgSheet.apply(boostSelectors(css, 2), this.styleDocs());
   }
@@ -372,7 +375,8 @@ export default class WrotPlugin extends Plugin {
     const rules = this.settings.tagColorRules || [];
     if (rules.length === 0) return;
 
-    const css = buildTagRuleCss(rules);
+    const isDark = activeDocument.body.classList.contains("theme-dark");
+    const css = buildTagRuleCss(rules, readThemeHighlightColors(activeDocument, isDark));
     if (css.length === 0) return;
 
     this.tagRuleSheet.apply(boostSelectors(css, 4), this.styleDocs());
@@ -640,7 +644,7 @@ export default class WrotPlugin extends Plugin {
     // Pins and tag rules moved out to files of their own, but their keys are deliberately
     // left in raw here: Object.assign below carries them onto settings, and loadDeferredState
     // clears them from data.json only once they are safely written elsewhere.
-    for (const key of ["autoLinkEnabled", "autoLinkExcludeList", "zenMode", "zenModePins", "recentTags", "cancelLabel"]) {
+    for (const key of ["autoLinkEnabled", "autoLinkExcludeList", "zenMode", "zenModePins", "recentTags", "cancelLabel", "composerMode"]) {
       if (key in raw) {
         delete (raw as Record<string, unknown>)[key];
         dirty = true;
@@ -784,6 +788,14 @@ export default class WrotPlugin extends Plugin {
     this.legacyRecentTags = null;
   }
 
+  /** Adds tags just used to the suggestion history, once that history has been read. */
+  async rememberTags(used: string[]): Promise<void> {
+    // Merging into the list before tags.json is read would write over it.
+    await this.deferredState;
+    this.recentTags = mergeRecentTags(this.recentTags, used);
+    await this.saveRecentTags();
+  }
+
   async saveRecentTags(): Promise<void> {
     const path = this.tagHistoryPath();
     if (!path) return;
@@ -807,6 +819,7 @@ export default class WrotPlugin extends Plugin {
       this.readSideFile(TAG_RULES_FILE),
       this.readSideFile(LAYOUT_FILE),
       this.readSideFile(DRAFT_FILE),
+      this.loadRecentTags(),
     ]);
 
     if (typeof draftData === "string") {
@@ -842,7 +855,10 @@ export default class WrotPlugin extends Plugin {
     }
 
     if (Array.isArray(layoutData)) {
-      this.settings.toolbarLayout = layoutData as ToolbarSlot[];
+      const known = new Set(DEFAULT_TOOLBAR_LAYOUT.map((slot) => slot.id));
+      const kept = (layoutData as ToolbarSlot[]).filter((slot) => known.has(slot?.id));
+      this.settings.toolbarLayout = kept;
+      if (kept.length !== layoutData.length) await this.writeSideFile(LAYOUT_FILE, kept);
     } else if (this.settings.toolbarLayout.length > 0) {
       await this.writeSideFile(LAYOUT_FILE, this.settings.toolbarLayout);
       migrated = true;

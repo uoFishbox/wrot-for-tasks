@@ -118,7 +118,7 @@ function fixedWordsPattern(text: string): RegExp | null {
  * Whether a posted note could ever be matched against this template heading: true unless
  * it is made only of Templater variables Wrot cannot read, leaving nothing to go by.
  */
-export function isFindableHeading(heading: string): boolean {
+function isFindableHeading(heading: string): boolean {
   const raw = heading.match(HEADING_RE)?.[2] ?? "";
   const today = moment();
   const core = expandCoreTemplateVars(raw, today);

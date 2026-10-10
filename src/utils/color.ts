@@ -34,8 +34,8 @@ export function validHex(hex: string, fallback: string): string {
   return HEX_COLOR_RE.test(hex) ? hex : fallback;
 }
 
-/** OKLab perceptual lightness of a color, 0 (black) to 1 (white). */
-export function oklabLightness(hex: string): number {
+/** OKLab coordinates [L, a, b] of a color. */
+function oklab(hex: string): [number, number, number] {
   const lin = (i: number): number => {
     const c = parseInt(hex.slice(i, i + 2), 16) / 255;
     return c <= 0.04045 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);
@@ -46,7 +46,32 @@ export function oklabLightness(hex: string): number {
   const l = Math.cbrt(0.4122214708 * r + 0.5363329405 * g + 0.0514459929 * b);
   const m = Math.cbrt(0.2119034982 * r + 0.6806995451 * g + 0.1073969566 * b);
   const s = Math.cbrt(0.0883024619 * r + 0.2817188376 * g + 0.6299787005 * b);
-  return 0.2104542553 * l + 0.793617785 * m - 0.0040720468 * s;
+  return [
+    0.2104542553 * l + 0.793617785 * m - 0.0040720468 * s,
+    1.9779984951 * l - 2.428592205 * m + 0.4505937099 * s,
+    0.0259040371 * l + 0.7827717662 * m - 0.808675766 * s,
+  ];
+}
+
+/** The sRGB hex for OKLab coordinates, channels clipped into gamut. */
+function oklabToHex(L: number, a: number, b: number): string {
+  const l = (L + 0.3963377774 * a + 0.2158037573 * b) ** 3;
+  const m = (L - 0.1055613458 * a - 0.0638541728 * b) ** 3;
+  const s = (L - 0.0894841775 * a - 1.291485548 * b) ** 3;
+  const gamma = (c: number): number => {
+    const v = c <= 0.0031308 ? 12.92 * c : 1.055 * Math.pow(c, 1 / 2.4) - 0.055;
+    return Math.round(Math.min(1, Math.max(0, v)) * 255);
+  };
+  return `#${[
+    4.0767416621 * l - 3.3077115913 * m + 0.2309699292 * s,
+    -1.2684380046 * l + 2.6097574011 * m - 0.3413193965 * s,
+    -0.0041960863 * l - 0.7034186147 * m + 1.707614701 * s,
+  ].map((c) => toHex(gamma(c))).join("")}`;
+}
+
+/** OKLab perceptual lightness of a color, 0 (black) to 1 (white). */
+function oklabLightness(hex: string): number {
+  return oklab(hex)[0];
 }
 
 /** OKLab lightnesses for code colors on a given text and background. */
@@ -81,4 +106,54 @@ export function codeLightness(text: string, bg: string): CodeLightness {
     muted: off(bgL + dir * 0.6 * textGap, 0.25),
     faint: off(bgL + dir * 0.45 * textGap, 0.2),
   };
+}
+
+// How far (OKLab distance) a highlight must stand off its background: about where the default
+// yellow sits on white, which reads clearly.
+const HIGHLIGHT_MIN_DIFF = 0.095;
+
+/**
+ * A highlight colour as Obsidian lays it (30% of the theme colour over the background), made
+ * opaque for that background. Where it would sit too close to the background to make out (a
+ * yellow highlight on a pale yellow memo), it is pushed darker, or lighter on a dark
+ * background, keeping its hue, just far enough to show. A clear one is returned as laid.
+ */
+export function visibleHighlight(color: string, bg: string): string {
+  const laid = blendColor(color, bg, 0.7);
+  const [hl, ha, hb] = oklab(laid);
+  const [bl, ba, bb] = oklab(bg);
+  const hueDiff = Math.hypot(ha - ba, hb - bb);
+  if (Math.hypot(hl - bl, hueDiff) >= HIGHLIGHT_MIN_DIFF) return laid;
+  const need = Math.sqrt(Math.max(0, HIGHLIGHT_MIN_DIFF ** 2 - hueDiff ** 2));
+  return oklabToHex(bl >= 0.5 ? bl - need : bl + need, ha, hb);
+}
+
+/** Obsidian's own highlight colours, for a theme whose values cannot be read. */
+const DEFAULT_HIGHLIGHT_THEME: Record<"light" | "dark", Record<string, string>> = {
+  light: { red: "#e93147", orange: "#ec7500", yellow: "#e0ac00", green: "#08b94e", blue: "#086ddd", purple: "#7852ee" },
+  dark: { red: "#fb464c", orange: "#e9973f", yellow: "#e0de71", green: "#44cf6e", blue: "#027aff", purple: "#a882ff" },
+};
+
+/**
+ * The theme's colour variables (--color-red and the rest) as hex, falling back to Obsidian's
+ * defaults for any that do not resolve to an opaque sRGB colour. A canvas turns whatever form
+ * the theme wrote them in into hex without touching the document.
+ */
+export function readThemeHighlightColors(doc: Document, dark: boolean): Record<string, string> {
+  const defaults = DEFAULT_HIGHLIGHT_THEME[dark ? "dark" : "light"];
+  const style = doc.defaultView?.getComputedStyle(doc.body);
+  const ctx = createEl("canvas").getContext("2d");
+  const out: Record<string, string> = {};
+  for (const [name, fallback] of Object.entries(defaults)) {
+    const raw = style?.getPropertyValue(`--color-${name}`).trim() ?? "";
+    let hex = fallback;
+    if (raw && ctx) {
+      ctx.fillStyle = fallback;
+      ctx.fillStyle = raw;
+      const parsed = String(ctx.fillStyle);
+      if (HEX_COLOR_RE.test(parsed)) hex = parsed;
+    }
+    out[name] = hex;
+  }
+  return out;
 }

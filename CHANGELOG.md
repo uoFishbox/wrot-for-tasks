@@ -1,5 +1,39 @@
 # Release Notes
 
+## 3.0.0 - 2026-10-11
+
+### Important Changes
+
+- Raised the minimum required version to Obsidian 1.14.4.
+- Redesigned the post editor so Markdown syntax is hidden and your text looks close to how it will appear. See [New Posting Form in Ver3.0.0 and Up](https://github.com/villyoshioka/Wrot/blob/3.0.0/docs/en/posting-form-v3.md) for what has changed.
+- Removed the Embed button from the toolbar and merged it into the Link button. If you had customized your toolbar layout, the Embed button is removed automatically.
+
+### Updates
+
+- Updated dependencies
+
+### New Features
+
+- Added the ability to add and edit links to notes and web pages from the Link button
+- Note links in posts now show up in Graph View and backlinks, and follow note renames
+- Added support for showing note links with display text, such as `![[Note|Text]]`
+- Added support for Obsidian 1.14's colored highlights, with a color menu on the Highlight button
+- Added support for stacking formatting
+
+### Improvements
+
+- Tags and links inside formatting are now treated as tags and links
+- Adjusted how list markers, checkboxes, and inline code are displayed
+- Adjusted the colors of quotes and of the links and lists inside them
+- Adjusted highlight colors to stay readable against the background
+
+### Bug Fixes
+
+- Fixed tags, links, and URL cards in Live Preview sometimes switching to editing instead of opening when pressed
+- Fixed tags right inside bold text or highlights sometimes not being recognized
+
+---
+
 ## 2.28.3 - 2026-10-03
 
 ### Updates

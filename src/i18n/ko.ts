@@ -133,7 +133,6 @@ const ko = {
   "settings.item.resetToolbar.confirm": "한 번 더 누르면 초기화",
 
   "view.toolbarAction.image": "이미지",
-  "view.toolbarAction.embed": "임베드",
   "view.toolbarAction.bold": "굵게",
   "view.toolbarAction.italic": "기울임꼴",
   "view.toolbarAction.list": "글머리 기호 목록",
@@ -148,8 +147,18 @@ const ko = {
   "view.formatMenu.math": "수식",
   "view.formatMenu.quote": "인용",
   "view.formatMenu.link": "링크",
+  "view.linkPopover.placeholder": "노트 이름 또는 URL",
+  "view.linkPopover.unlink": "링크 해제",
   "view.formatMenu.strikethrough": "취소선",
   "view.formatMenu.highlight": "형광펜",
+  "view.highlight.default": "기본",
+  "view.highlight.red": "빨강",
+  "view.highlight.orange": "주황",
+  "view.highlight.yellow": "노랑",
+  "view.highlight.green": "초록",
+  "view.highlight.blue": "파랑",
+  "view.highlight.purple": "보라",
+  "view.highlight.remove": "형광펜 해제",
   "view.formatMenu.settings": "설정",
 
   "view.postMenu.copy": "복사",
@@ -174,6 +183,7 @@ const ko = {
   "view.notice.searchPluginNotFound": "핵심 플러그인 '검색'이 활성화되어 있지 않습니다.",
 
   "view.image.removeAria": "이미지 삭제",
+  "view.quote.removeAria": "인용 삭제",
 
   // Placeholder body of a quote card whose original post is gone.
   "quote.card.notFound": "(삭제되었거나 찾을 수 없는 게시물입니다)",

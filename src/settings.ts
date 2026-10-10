@@ -58,10 +58,10 @@ export interface ScheduledPinEntry extends PinEntry {
   from: string;
 }
 
-export type PinLimit = 1 | 3 | 5;
+type PinLimit = 1 | 3 | 5;
 
 /** Where a toolbar action lives: on the bar, inside the overflow menu, or nowhere at all. */
-export type ToolbarSlotState = "bar" | "menu" | "off";
+type ToolbarSlotState = "bar" | "menu" | "off";
 
 /**
  * One entry of the input toolbar's single ordered list. Entries keep their place in the
@@ -79,7 +79,6 @@ export interface ToolbarSlot {
  */
 export const DEFAULT_TOOLBAR_LAYOUT: ReadonlyArray<ToolbarSlot> = [
   { id: "image", state: "bar" },
-  { id: "embed", state: "bar" },
   { id: "bold", state: "bar" },
   { id: "italic", state: "bar" },
   { id: "list", state: "bar" },
@@ -325,6 +324,7 @@ export class WrotSettingTab extends PluginSettingTab {
       calendarDayShape: () => this.plugin.applyCalendarDayShape(),
       checkStrikethrough: () => {
         this.plugin.refreshViews();
+        this.plugin.forEachView((view) => view.composer?.setCheckStrikethrough(settings.checkStrikethrough));
         // Notes read the setting only while rendering, so RV and LV are redrawn too.
         this.plugin.refreshAttachmentDecorations();
       },
@@ -670,7 +670,7 @@ export class WrotSettingTab extends PluginSettingTab {
             settings.inputPlaceholder = value;
             await this.plugin.saveSettings();
             this.plugin.forEachView((view) => {
-              view.textarea?.setAttribute("placeholder", settings.inputPlaceholder);
+              view.composer?.setPlaceholder(settings.inputPlaceholder);
             });
           },
           resetValue: () => t("defaults.inputPlaceholder"),

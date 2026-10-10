@@ -2,7 +2,7 @@ import { renderMath, finishRenderMath } from "obsidian";
 import type { OGPData, OGPCache } from "./ogpCache";
 import { segmentBlocks } from "./blockSegmenter";
 import { isMathJaxReady, requestMathJax } from "./mathjax";
-import { IMAGE_EXT_RE, inlineTokenPattern } from "./patterns";
+import { IMAGE_EXT_RE, TAG_TOKEN_RE, highlightColor, inlineTokenPattern, splitLinkAlias } from "./patterns";
 import {
   ListDepthTracker,
   NestedListStack,
@@ -317,22 +317,26 @@ function renderInlineTokens(
     }
     const boldMatch = part.match(/^\*\*(.+)\*\*$/);
     if (boldMatch) {
-      container.createEl("strong", { text: boldMatch[1] });
+      renderInlineTokens(container.createEl("strong"), boldMatch[1], callbacks, urls, seen);
       continue;
     }
     const italicMatch = part.match(/^\*(.+)\*$/);
     if (italicMatch) {
-      container.createEl("em", { text: italicMatch[1] });
+      renderInlineTokens(container.createEl("em"), italicMatch[1], callbacks, urls, seen);
       continue;
     }
     const strikeMatch = part.match(/^~~(.+)~~$/);
     if (strikeMatch) {
-      container.createEl("del", { text: strikeMatch[1] });
+      renderInlineTokens(container.createEl("del"), strikeMatch[1], callbacks, urls, seen);
       continue;
     }
     const highlightMatch = part.match(/^==(.+)==$/);
     if (highlightMatch) {
-      container.createEl("mark", { cls: "wr-highlight", text: highlightMatch[1] });
+      const inner = highlightMatch[1];
+      const tint = highlightColor(inner);
+      const mark = container.createEl("mark", { cls: "wr-highlight" });
+      if (tint) mark.setAttr("data-highlight", tint.color);
+      renderInlineTokens(mark, tint ? inner.slice(tint.length) : inner, callbacks, urls, seen);
       continue;
     }
 
@@ -379,15 +383,16 @@ function renderInlineTokens(
           container.createSpan({ cls: "wr-embed-missing", text: `![[${fileName}]]` });
         }
       } else {
-        const resolved = callbacks.resolveLinkTarget ? callbacks.resolveLinkTarget(fileName) : true;
+        const { target, display } = splitLinkAlias(fileName);
+        const resolved = callbacks.resolveLinkTarget ? callbacks.resolveLinkTarget(target) : true;
         const cls = resolved ? "wr-internal-link" : "wr-internal-link wr-internal-link-unresolved";
-        const linkEl = container.createEl("a", { cls, text: fileName });
+        const linkEl = container.createEl("a", { cls, text: display });
         if (callbacks.onInternalLinkClick) {
           const cb = callbacks.onInternalLinkClick;
           linkEl.addEventListener("click", (e) => {
             e.preventDefault();
             e.stopPropagation();
-            cb(fileName);
+            cb(target);
           });
         }
       }
@@ -398,19 +403,20 @@ function renderInlineTokens(
         const slot = container.createSpan({ cls: "wr-quote-card-slot" });
         callbacks.renderQuoteCard(slot, quoteMatch[1], quoteMatch[2]);
       } else {
-        const resolved = callbacks.resolveLinkTarget ? callbacks.resolveLinkTarget(linkName) : true;
+        const { target, display } = splitLinkAlias(linkName);
+        const resolved = callbacks.resolveLinkTarget ? callbacks.resolveLinkTarget(target) : true;
         const cls = resolved ? "wr-internal-link" : "wr-internal-link wr-internal-link-unresolved";
-        const linkEl = container.createEl("a", { cls, text: linkName });
+        const linkEl = container.createEl("a", { cls, text: display });
         if (callbacks.onInternalLinkClick) {
           const cb = callbacks.onInternalLinkClick;
           linkEl.addEventListener("click", (e) => {
             e.preventDefault();
             e.stopPropagation();
-            cb(linkName);
+            cb(target);
           });
         }
       }
-    } else if (part.match(/^#[^\s#]+$/)) {
+    } else if (TAG_TOKEN_RE.test(part)) {
       const tagEl = container.createSpan({
         cls: "wr-tag",
         text: part,

@@ -57,14 +57,14 @@ Action buttons will appear at the end of the toolbar while you're editing.
 
 Buttons you move off the toolbar will live inside the ⋯ menu. Items in this menu follow a fixed order and won't change even if you rearrange your toolbar:
 
-> Image → Embed → Bulleted list → Checklist → Numbered list → Code → Math → Quote → Bold → Italic → Link → Strikethrough → Highlight → Pin later
+> Image → Bulleted list → Checklist → Numbered list → Code → Math → Quote → Bold → Italic → Link → Strikethrough → Highlight → Pin later
 
 ### Behavior Changes in the Menu
 
 Almost everything works the exact same way as it does on the toolbar, with just two small exceptions:
 
 - **Bold and Italic**:
-  On the toolbar, you can trigger these styles before you start typing. Inside the menu, they **only work when you have text selected** and stay greyed out otherwise.
+  On the toolbar, you can turn on these styles before you start typing (pre-input mode). Inside the menu, they **only work when you have text selected** and stay greyed out otherwise.
 - **Pin later**:
   If a note is pinned for a specific date, a checkmark appears next to this item (just like the button lighting up on the toolbar).
 

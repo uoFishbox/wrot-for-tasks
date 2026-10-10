@@ -13,10 +13,13 @@ import {
   IMAGE_EXT_RE,
   QUOTE_MARKER_ONLY_LINE_RE,
   QUOTE_MARKER_RE,
+  boldItalicPattern,
   boldPattern,
   highlightPattern,
   italicPattern,
   strikePattern,
+  highlightColor,
+  splitLinkAlias,
   tagPattern,
 } from "./utils/patterns";
 import { ListDepthTracker, parseListLine } from "./utils/listParser";
@@ -67,6 +70,16 @@ const boldMark = Decoration.mark({ class: "wr-bold-highlight" });
 const italicMark = Decoration.mark({ class: "wr-italic-highlight" });
 const strikeMark = Decoration.mark({ class: "wr-strike-highlight" });
 const highlightMark = Decoration.mark({ class: "wr-highlight-highlight" });
+const tintedHighlightMarks = new Map<string, Decoration>();
+function highlightMarkFor(color: string | undefined): Decoration {
+  if (!color) return highlightMark;
+  let mark = tintedHighlightMarks.get(color);
+  if (!mark) {
+    mark = Decoration.mark({ class: "wr-highlight-highlight", attributes: { "data-highlight": color } });
+    tintedHighlightMarks.set(color, mark);
+  }
+  return mark;
+}
 const replaceHidden = Decoration.replace({});
 
 const tokenMarkCache = new Map<string, Decoration>();
@@ -318,7 +331,7 @@ function buildDecorations(
           // ViewPlugin can only emit inline replace, not block replace.
           const startLine = doc.line(docStart);
           const widget = range.kind === "codeblock"
-            ? Decoration.replace({ widget: new CodeBlockWidget(widgetContent, range.lang || "", app, plugin, block.ruleClass) })
+            ? Decoration.replace({ widget: new CodeBlockWidget(widgetContent, range.lang || "", block.ruleClass) })
             : Decoration.replace({ widget: new MathBlockWidget(widgetContent, block.ruleClass) });
           builder.add(startLine.from, startLine.to, widget);
 
@@ -454,7 +467,7 @@ function buildDecorations(
 
         let match;
 
-        const tagRegex = /#[^\s#]+/g;
+        const tagRegex = tagPattern();
         while ((match = tagRegex.exec(l.text)) !== null) {
           entries.push({
             from: l.from + match.index,
@@ -521,7 +534,8 @@ function buildDecorations(
           const to = from + match[0].length;
           const isEmbed = match[0].startsWith("!");
           const innerName = isEmbed ? match[0].slice(3, -2) : match[0].slice(2, -2);
-          const resolved = app.metadataCache.getFirstLinkpathDest(innerName, "") !== null;
+          const { target, display } = splitLinkAlias(innerName);
+          const resolved = app.metadataCache.getFirstLinkpathDest(target, "") !== null;
           if (!showRaw) {
             if (isEmbed && IMAGE_EXT_RE.test(innerName)) {
               const file = app.metadataCache.getFirstLinkpathDest(innerName, "");
@@ -560,7 +574,7 @@ function buildDecorations(
             entries.push({
               from,
               to,
-              deco: Decoration.replace({ widget: new InternalLinkWidget(innerName, app, resolved) }),
+              deco: Decoration.replace({ widget: new InternalLinkWidget(target, display, app, resolved) }),
             });
             continue;
           }
@@ -602,14 +616,30 @@ function buildDecorations(
         const insideCode = (f: number, t: number) =>
           codeRanges.some((r) => f >= r.from && t <= r.to);
 
-        const boldRanges: { from: number; to: number }[] = [];
+        // Bold delimiters (and bold-italic's), masked out before italic is looked for.
+        const boldRanges: { from: number; to: number; delim: number }[] = [];
+
+        const boldItalicRegex = boldItalicPattern();
+        while ((match = boldItalicRegex.exec(l.text)) !== null) {
+          const from = l.from + match.index;
+          const to = from + match[0].length;
+          if (insideCode(from, to)) continue;
+          boldRanges.push({ from, to, delim: 3 });
+          if (showRaw) {
+            entries.push({ from, to, deco: boldMark }, { from, to, deco: italicMark });
+          } else {
+            entries.push({ from, to: from + 3, deco: replaceHidden });
+            entries.push({ from: from + 3, to: to - 3, deco: boldMark }, { from: from + 3, to: to - 3, deco: italicMark });
+            entries.push({ from: to - 3, to, deco: replaceHidden });
+          }
+        }
 
         const boldRegex = boldPattern();
         while ((match = boldRegex.exec(l.text)) !== null) {
           const from = l.from + match.index;
           const to = from + match[0].length;
           if (insideCode(from, to)) continue;
-          boldRanges.push({ from, to });
+          boldRanges.push({ from, to, delim: 2 });
           if (showRaw) {
             entries.push({ from, to, deco: boldMark });
           } else {
@@ -619,13 +649,17 @@ function buildDecorations(
           }
         }
 
-        // Italic: mask bold ranges first so ** delimiters aren't matched as *.
+        // Italic: mask bold delimiters first so ** isn't matched as *. Only the delimiters, so
+        // an italic inside bold is still found.
         {
-          const chars = [...l.text];
+          const chars = l.text.split("");
           for (const br of boldRanges) {
             const start = br.from - l.from;
             const end = br.to - l.from;
-            for (let i = start; i < end && i < chars.length; i++) chars[i] = " ";
+            for (let i = 0; i < br.delim; i++) {
+              chars[start + i] = " ";
+              chars[end - 1 - i] = " ";
+            }
           }
           const masked = chars.join("");
           const italicRegex = italicPattern();
@@ -662,11 +696,14 @@ function buildDecorations(
           const from = l.from + match.index;
           const to = from + match[0].length;
           if (insideCode(from, to)) continue;
+          const tint = highlightColor(match[0].slice(2, -2));
+          const mark = highlightMarkFor(tint?.color);
           if (showRaw) {
-            entries.push({ from, to, deco: highlightMark });
+            entries.push({ from, to, deco: mark });
           } else {
-            entries.push({ from, to: from + 2, deco: replaceHidden });
-            entries.push({ from: from + 2, to: to - 2, deco: highlightMark });
+            const open = from + 2 + (tint?.length ?? 0);
+            entries.push({ from, to: open, deco: replaceHidden });
+            entries.push({ from: open, to: to - 2, deco: mark });
             entries.push({ from: to - 2, to, deco: replaceHidden });
           }
         }

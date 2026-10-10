@@ -6,13 +6,29 @@ This guide walks you through inserting these elements, how previews work, and a 
 
 ---
 
-## 1. 📎 The Embed Button
+## 1. The Link Button
 
-The **📎 (Embed Button)** in the toolbar gives you a quick shortcut to insert images or link to other notes.
+Use **Link** in the "⋯" menu to link text to a note in your Vault or to a web page.
 
-- **Inserting a new link**: Click the button without selecting any text to insert `![[ ]]`. The cursor will automatically land inside the brackets so you can start typing the file or note name right away.
-- **Wrapping existing text**: Select any text and click the button to wrap it in `![[ ]]`.
-- **Removing brackets**: Select text that is already wrapped in `![[ ]]` or `[[ ]]` and click the button. You can also click it again while your cursor is inside the brackets (when the button is highlighted) to remove them.
+- **Creating a new link**: Select the text you want to link and click the button.
+- **Editing an existing link**: Select the link text, or place your cursor on the link, and click the button.
+
+A small pop-up field opens below the editor. Type a **note name** or a **URL** and press `Enter` to confirm.
+
+- Typing a note name brings up suggestions you can pick with the arrow keys or a tap (`Enter` confirms exactly what you typed).
+- Anything starting with `https://`, `http://`, or `obsidian://` becomes an external link. Anything else links to a note in your Vault.
+- While editing an existing link, click **Remove link** on the right side of the field to unlink the text.
+
+In the post editor, a link shows only its label, in your accent color. Links are saved like this:
+
+| Link Type     | Saved Format                                                                             |
+| :------------ | :--------------------------------------------------------------------------------------- |
+| Note in Vault | `![[Note Name\|Label Text]]` (or simply `![[Note Name]]` if the label matches the name) |
+| Web address   | `[Label Text](URL)`                                                                      |
+
+> **Changed in Ver3.0.0**
+>
+> The old 📎 (Embed) button has been merged into the Link button. If you had customized your toolbar layout, the 📎 button is removed automatically.
 
 ---
 
@@ -79,14 +95,17 @@ If Wrot can locate the image in the specified Vault, it renders as an image. If 
 
 ## 4. Linking Between Notes
 
-Linking to other notes in your Vault uses the same bracket syntax.
+Besides the Link button, you can also type links to other notes in your Vault by hand.
 
 ```markdown
 ![[Note Name]]
+![[Note Name|Label Text]]
 [[Note Name]]
 ```
 
-The 📎 button inserts `![[ ]]` by default. If you want a plain text link like `[[ ]]`, simply type the brackets yourself. Clicking either format opens the linked note.
+- Text after `|` is shown in place of the note name.
+- Clicking any of these opens the linked note. A link to a note that does not exist yet is shown in faint italics, and clicking it creates that note.
+- Note links inside posts work just like Obsidian's own links: they show up in Graph View and backlinks, and are updated automatically when you rename the note.
 
 ---
 
@@ -119,6 +138,7 @@ Links to posts on `https://twitter.com/...` and `https://x.com/...` are automati
 
 - Make sure the file name and extension match the file in your Vault exactly.
 - Check that you haven't missed a closing bracket in `![[ ]]`.
+- In the post editor, hand-typed image embeds intentionally stay as raw text (they show up as images in the timeline).
 - Verify that the image format is supported.
 
 ### Link preview cards aren't showing up

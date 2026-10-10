@@ -132,7 +132,6 @@ const de = {
   "settings.item.resetToolbar.confirm": "Zum Bestätigen nochmals drücken",
 
   "view.toolbarAction.image": "Bild",
-  "view.toolbarAction.embed": "Einbetten",
   "view.toolbarAction.bold": "Fett",
   "view.toolbarAction.italic": "Kursiv",
   "view.toolbarAction.list": "Aufzählung",
@@ -147,8 +146,18 @@ const de = {
   "view.formatMenu.math": "Formel",
   "view.formatMenu.quote": "Zitat",
   "view.formatMenu.link": "Link",
+  "view.linkPopover.placeholder": "Notizname oder URL",
+  "view.linkPopover.unlink": "Link entfernen",
   "view.formatMenu.strikethrough": "Durchgestrichen",
   "view.formatMenu.highlight": "Hervorgehoben",
+  "view.highlight.default": "Standard",
+  "view.highlight.red": "Rot",
+  "view.highlight.orange": "Orange",
+  "view.highlight.yellow": "Gelb",
+  "view.highlight.green": "Grün",
+  "view.highlight.blue": "Blau",
+  "view.highlight.purple": "Lila",
+  "view.highlight.remove": "Hervorhebung entfernen",
   "view.formatMenu.settings": "Einstellungen",
 
   "view.postMenu.copy": "Kopieren",
@@ -173,6 +182,7 @@ const de = {
   "view.notice.searchPluginNotFound": "Das Kern-Plugin „Suche“ ist nicht aktiviert.",
 
   "view.image.removeAria": "Bild entfernen",
+  "view.quote.removeAria": "Zitat entfernen",
 
   // Placeholder body of a quote card whose original post is gone.
   "quote.card.notFound": "(Zitiertes Original nicht gefunden)",

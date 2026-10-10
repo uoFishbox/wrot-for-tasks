@@ -109,7 +109,7 @@ function updateQuoteCardInPlace(
       return;
     }
     card.classList.remove("wr-quote-card-dead");
-    fillCardBody(card, bodyEl, metaEl, found, app, opts.timestampFormat, opts.checkStrikethrough);
+    fillCardBody(bodyEl, metaEl, found, app, opts.timestampFormat, opts.checkStrikethrough);
     Array.from(card.classList)
       .filter((c) => /^wr-tag-rule-\d+$/.test(c))
       .forEach((c) => card.classList.remove(c));
@@ -326,7 +326,6 @@ function renderPreviewLines(
 }
 
 function fillCardBody(
-  card: HTMLElement,
   bodyEl: HTMLElement,
   metaEl: HTMLElement,
   memo: Memo,
@@ -349,7 +348,6 @@ function markDead(card: HTMLElement, bodyEl: HTMLElement, metaEl: HTMLElement): 
 // polling. In RV, line numbers don't map to screen positions, so polling could miss the flash or stop at the viewport edge.
 function flashJumpTargetReadingView(
   blockId: string,
-  app: App,
   resolveRuleAccent?: (ruleClass: string) => string | null,
   // See flashJumpTarget: flash in place without moving the view.
   skipScroll?: boolean
@@ -570,7 +568,7 @@ function flashJumpTarget(
   // so time-based polling misses; branch to the DOM-observation approach instead.
   const isReadingView = targetView?.getMode?.() === "preview";
   if (isReadingView) {
-    flashJumpTargetReadingView(blockId, app, resolveRuleAccent, skipScroll);
+    flashJumpTargetReadingView(blockId, resolveRuleAccent, skipScroll);
     return;
   }
 
@@ -891,7 +889,7 @@ export function renderQuoteCard(
   });
 
   const setupClick = (memo: Memo) => {
-    fillCardBody(card, bodyEl, metaEl, memo, app, timestampFormat, checkStrikethrough);
+    fillCardBody(bodyEl, metaEl, memo, app, timestampFormat, checkStrikethrough);
     if (resolveRuleClass) {
       Array.from(card.classList)
         .filter((c) => /^wr-tag-rule-\d+$/.test(c))

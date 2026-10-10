@@ -354,7 +354,7 @@ body.wr-font-follow .wr-calendar-nav-btn .svg-icon {
   background: var(--interactive-accent-hover, var(--interactive-accent));
 }
 
-/* Tag suggestion dropdown. Positioned by JS from the hidden .wr-tag-suggest-mirror, which replicates the textarea's text layout. */
+/* Tag suggestion dropdown. Positioned by JS from the editor's caret coordinates. */
 .workspace-leaf-content[data-type="wrot-view"] .wr-tag-suggest {
   position: absolute;
   z-index: 50;
@@ -389,6 +389,109 @@ body.wr-font-follow .wr-calendar-nav-btn .svg-icon {
   background: rgba(var(--mono-rgb-100), 0.05);
 }
 
+/* The link button's window, positioned by JS below the form. */
+body .wr-link-popover {
+  position: absolute;
+  z-index: 50;
+  width: 320px;
+  box-sizing: border-box;
+  padding: 6px;
+  background: var(--wr-bg-color, #f8f8f8);
+  border: 1px solid rgba(var(--mono-rgb-100), 0.12);
+  border-radius: 10px;
+  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.14);
+}
+
+body .wr-link-popover-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* One ID level so Obsidian's form-control rules (mobile ones included) do not win. */
+body .wr-link-popover-input:not(#x) {
+  flex: 1;
+  min-width: 0;
+  height: auto;
+  padding: 4px 8px;
+  font-size: var(--wr-font-ui-small);
+  line-height: 1.4;
+}
+
+body .wr-link-popover-unlink:not(#x) {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  height: auto;
+  padding: 4px 8px;
+  font-size: var(--wr-font-ui-small);
+  background: none;
+  border: none;
+  border-radius: 6px;
+  box-shadow: none;
+  cursor: pointer;
+}
+
+body .wr-link-popover-unlink:not(#x):hover {
+  background: rgba(var(--mono-rgb-100), 0.05);
+}
+
+body .wr-link-popover-unlink:not(#x):active {
+  background: rgba(var(--mono-rgb-100), 0.08);
+}
+
+body .wr-link-popover-unlink .svg-icon {
+  width: 1.2em;
+  height: 1.2em;
+}
+
+body .wr-link-popover-suggest {
+  margin-top: 4px;
+}
+
+body .wr-link-popover-suggest:empty {
+  display: none;
+}
+
+body .wr-link-popover-item {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  padding: 6px 10px;
+  border-radius: 5px;
+  font-size: var(--wr-font-ui-small);
+  color: var(--text-normal);
+  cursor: pointer;
+  white-space: nowrap;
+  overflow: hidden;
+  user-select: none;
+}
+
+body .wr-link-popover-item:hover,
+body .wr-link-popover-item-selected {
+  background: rgba(var(--mono-rgb-100), 0.05);
+}
+
+body .wr-link-popover-item-name,
+body .wr-link-popover-item-folder {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+body .wr-link-popover-item-name {
+  flex-shrink: 0;
+  max-width: 70%;
+}
+
+body .wr-link-popover-item-folder {
+  color: var(--text-faint);
+}
+
+.is-mobile .wr-link-popover-item {
+  padding: 10px 12px;
+  font-size: var(--wr-font-text);
+}
+
 /* Invisible focusable input used to rebuild the iOS input session after a
    forced IME commit (the caret fails to render when refocusing the textarea
    directly). Must stay editable-looking to the OS so the keyboard stays open;
@@ -402,20 +505,6 @@ body.wr-font-follow .wr-calendar-nav-btn .svg-icon {
   padding: 0;
   border: 0;
   opacity: 0;
-  pointer-events: none;
-}
-
-/* Off-screen measuring element replicating the textarea's text layout.
-   Box/font metrics (width, padding, font, etc.) are copied over in JS;
-   only the invariant parts live here. */
-.workspace-leaf-content[data-type="wrot-view"] .wr-tag-suggest-mirror {
-  position: absolute;
-  top: 0;
-  left: -9999px;
-  visibility: hidden;
-  white-space: pre-wrap;
-  word-wrap: break-word;
-  overflow: hidden;
   pointer-events: none;
 }
 
@@ -434,12 +523,12 @@ body.wr-font-follow .wr-calendar-nav-btn .svg-icon {
   margin-bottom: 6px;
 }
 
+/* The composer is a CodeMirror editor (.cm-editor), whatever its class name. */
+/* At least two lines (2 × line-height 1.6) at any font size. */
 body .wr-textarea {
   width: 100%;
-  min-height: 48px;
-  max-height: none;
-  resize: none;
-  overflow-y: auto;
+  height: auto;
+  min-height: max(48px, 3.2em);
   box-shadow: none;
   padding: 0;
   font-size: var(--wr-font-text);
@@ -450,26 +539,156 @@ body .wr-textarea {
   border-radius: 0;
 }
 
-/* Reset Obsidian / theme textarea decoration (borders) */
-body .wr-textarea:not(#x) {
+/* CodeMirror's base theme sets these on its own classes one level deep. */
+body .wr-textarea .cm-scroller {
+  font-family: inherit;
+  line-height: inherit;
+  overflow: visible;
+}
+
+/* caret-color: CodeMirror's base theme hardcodes black/white; Obsidian's own fields use
+   its caret variable (the accent on mobile), which the textarea used to pick up. */
+body .wr-textarea .cm-content {
+  padding: 0;
+  color: inherit;
+  caret-color: var(--caret-color);
+}
+
+body .wr-textarea .cm-line {
+  padding: 0;
+}
+
+/* Reset Obsidian / theme editor decoration (borders, the focus outline) */
+body .wr-textarea:not(#x),
+body .wr-textarea.cm-focused:not(#x) {
   border: none;
   outline: none;
 }
 
-/* Obsidian core paints textarea backgrounds (incl. :hover) and themes may go
-   higher, so win with 3 ID levels; priority-flag opponents win by design. */
+/* Themes may paint editor backgrounds, so win with 3 ID levels;
+   priority-flag opponents win by design. */
 body .wr-textarea:not(#x#y#z) {
   background: transparent;
 }
 
-body .wr-textarea:focus:not(#x) {
-  outline: none;
-  border: none;
-  box-shadow: none;
+/* Inline rather than CodeMirror's inline-block: a placeholder that wraps then forms
+   separate line boxes, so the caret beside it stays one line tall instead of spanning it. */
+body .wr-textarea .cm-placeholder {
+  display: inline;
+  color: var(--text-faint);
 }
 
-.wr-textarea::placeholder {
-  color: var(--text-faint);
+/* Min-width so a wide number grows the slot. */
+body .wr-textarea .wr-cv-mark {
+  display: inline-block;
+  min-width: max(22px, calc(1em + 8px));
+  padding-right: 6px;
+  box-sizing: border-box;
+  text-align: right;
+}
+
+body .wr-textarea .wr-cv-bullet {
+  display: inline-block;
+  width: 0.36em;
+  height: 0.36em;
+  border-radius: var(--list-bullet-radius, 50%);
+  background-color: var(--list-marker-color, var(--text-muted));
+  /* Centre 0.46em above the baseline, as in reading view and live preview. */
+  vertical-align: 0.28em;
+  margin-inline-end: 0.32em;
+}
+
+/* Set by holdRange while a popover or menu holds the focus. */
+body .wr-textarea .wr-held-range {
+  background-color: color-mix(in srgb, var(--interactive-accent) 25%, transparent);
+}
+
+body .wr-textarea .wr-cv-link {
+  color: var(--text-accent);
+}
+
+/* Text being composed at a decoration's end, set by composerVisual. */
+::highlight(wr-composing) {
+  color: var(--wr-composing-color);
+}
+
+body .wr-textarea .wr-cv-hidden {
+  display: none;
+}
+
+body .wr-textarea .wr-cv-ol {
+  display: inline-block;
+  min-width: 1em;
+  text-align: center;
+  color: var(--list-marker-color, var(--text-muted));
+}
+
+/* Form controls carry their own small font size; inherit it so em tracks the form. -0.12em centres it 0.38em up. */
+body .wr-textarea .wr-cv-check:not(#x) {
+  --checkbox-size: 1em;
+  font-size: inherit;
+  width: var(--checkbox-size);
+  height: var(--checkbox-size);
+  margin: 0;
+  vertical-align: -0.12em;
+}
+
+body .wr-textarea .cm-line.wr-cv-quote {
+  position: relative;
+  padding-inline-start: 18px;
+  color: var(--text-muted);
+}
+
+body .wr-textarea .cm-line.wr-cv-quote::before {
+  content: "";
+  position: absolute;
+  left: 5px;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  background-color: var(--text-muted);
+}
+
+body .wr-textarea .cm-line.wr-cv-quote-2 {
+  padding-inline-start: 36px;
+}
+
+body .wr-textarea .cm-line.wr-cv-quote-2::before {
+  box-shadow:
+    18px 0 0 0 var(--text-muted);
+}
+
+body .wr-textarea .cm-line.wr-cv-quote-3 {
+  padding-inline-start: 54px;
+}
+
+body .wr-textarea .cm-line.wr-cv-quote-3::before {
+  box-shadow:
+    18px 0 0 0 var(--text-muted),
+    36px 0 0 0 var(--text-muted);
+}
+
+body .wr-textarea .cm-line.wr-cv-quote-4 {
+  padding-inline-start: 72px;
+}
+
+body .wr-textarea .cm-line.wr-cv-quote-4::before {
+  box-shadow:
+    18px 0 0 0 var(--text-muted),
+    36px 0 0 0 var(--text-muted),
+    54px 0 0 0 var(--text-muted);
+}
+
+body .wr-textarea .cm-line.wr-cv-quote-5 {
+  padding-inline-start: 90px;
+}
+
+body .wr-textarea .cm-line.wr-cv-quote-5::before {
+  box-shadow:
+    18px 0 0 0 var(--text-muted),
+    36px 0 0 0 var(--text-muted),
+    54px 0 0 0 var(--text-muted),
+    72px 0 0 0 var(--text-muted);
 }
 
 .wr-input-toolbar {
@@ -566,7 +785,8 @@ body .wr-toolbar-btn:active {
 
 .wr-toolbar-arranging .wr-card,
 .wr-toolbar-arranging .wr-submit-btn,
-.wr-toolbar-arranging .wr-thumbnail-container {
+.wr-toolbar-arranging .wr-thumbnail-container,
+.wr-toolbar-arranging .wr-pending-quote-container {
   pointer-events: none;
 }
 
@@ -679,6 +899,19 @@ body .wr-thumbnail-remove {
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+/* Only the × responds: the card is a preview and must not navigate. */
+.wr-pending-quote-container {
+  margin: 6px 0 4px;
+}
+
+.wr-pending-quote {
+  position: relative;
+}
+
+.wr-pending-quote .wr-quote-card {
+  pointer-events: none;
 }
 
 /* Reset Obsidian / theme button padding */
@@ -970,17 +1203,25 @@ body .wr-tag-highlight:not(#x) {
   padding-left: 0;
 }
 
+/* The marker slot: 22px at the default size, widening with larger text so a box sized
+   in em never runs into the item's text. */
 .wr-bullet-list>li,
 .wr-ordered-list>li {
-  padding-left: 22px;
+  padding-left: max(22px, calc(1em + 8px));
   position: relative;
 }
 
-.wr-bullet-list>li:not(.wr-check-item)::before {
-  content: "•";
+/* Dot drawn in currentColor so the ::before colour stamps reach it; 0.08em above the line's middle. */
+.wr-bullet-list>li:not(.wr-check-item)::before,
+ul.wr-reading-list>li:not(.wr-check-item)::before {
+  content: "";
   position: absolute;
-  left: 4px;
-  font-size: 0.85em;
+  left: calc(max(22px, calc(1em + 8px)) - 6px - 0.5em - 0.18em);
+  top: calc(0.5lh - 0.26em);
+  width: 0.36em;
+  height: 0.36em;
+  border-radius: var(--list-bullet-radius, 50%);
+  background-color: currentColor;
   color: var(--text-muted);
 }
 
@@ -994,8 +1235,16 @@ body .wr-tag-highlight:not(#x) {
 
 .wr-ordered-list>li::before {
   content: counter(wr-ol-tl) ".";
+}
+
+/* Right-anchored so a wider number ("10.") grows away from the text. */
+.wr-ordered-list>li::before,
+ol.wr-reading-list>li::before {
   position: absolute;
-  left: 4px;
+  right: calc(100% - max(22px, calc(1em + 8px)) + 6px);
+  min-width: 1em;
+  text-align: center;
+  white-space: nowrap;
   color: var(--text-muted);
 }
 
@@ -1016,21 +1265,13 @@ body ol.wr-reading-list:not(#x) {
 
 ul.wr-reading-list>li,
 ol.wr-reading-list>li {
-  padding-left: 22px;
+  padding-left: max(22px, calc(1em + 8px));
   position: relative;
 }
 
 body ul.wr-reading-list:not(#x)>li,
 body ol.wr-reading-list:not(#x)>li {
   margin-inline-start: 0;
-}
-
-ul.wr-reading-list>li:not(.wr-check-item)::before {
-  content: "•";
-  position: absolute;
-  left: 4px;
-  font-size: 0.85em;
-  color: var(--text-muted);
 }
 
 ol.wr-reading-list {
@@ -1041,11 +1282,41 @@ ol.wr-reading-list>li {
   counter-increment: wr-ol;
 }
 
+/* Text font, not monospace: a monospace "1." is wider than the checkbox and juts out. */
 ol.wr-reading-list>li::before {
   content: counter(wr-ol) ".";
-  position: absolute;
-  left: 4px;
-  color: var(--text-muted);
+  font-family: var(--font-text, var(--default-font));
+}
+
+/* Monospace puts the line's middle off the kana's, so RV markers join the first line and are placed from the baseline; the margins cancel their width. */
+body ul.wr-reading-list:not(#x)>li:not(.wr-check-item)::before {
+  position: static;
+  display: inline-block;
+  margin-inline-start: calc(-6px - 0.68em);
+  margin-inline-end: calc(6px + 0.32em);
+  vertical-align: 0.28em;
+}
+
+/* Centred in a checkbox-wide box; a wider number spills out both sides of it. */
+body ol.wr-reading-list:not(#x)>li::before {
+  position: static;
+  display: inline-flex;
+  justify-content: center;
+  width: 1em;
+  margin-inline-start: calc(-6px - 1em);
+  margin-inline-end: 6px;
+}
+
+/* The sub-list selector outranks the timeline's first-line anchoring for nested items. */
+body .wr-reading-list:not(#x) .wr-check-item input[type="checkbox"],
+body .wr-reading-list:not(#x) .wr-check-item.wr-has-sublist>input[type="checkbox"] {
+  position: relative;
+  top: auto;
+  left: auto;
+  transform: none;
+  vertical-align: -0.12em;
+  margin-inline-start: calc(-6px - var(--checkbox-size));
+  margin-inline-end: 6px;
 }
 
 .wr-bullet-list li,
@@ -1073,28 +1344,45 @@ li>.wr-reading-list {
    Catppuccin) only use the priority flag for checkbox colors/borders, never
    metrics, and their metric rules target task-list classes Wrot's bare
    inputs don't carry — so the :not(#x) specificity boost is enough here. */
+/* Obsidian sizes the checked mark (::after) from --checkbox-size. */
 .wr-bullet-list .wr-check-item input[type="checkbox"]:not(#x),
 .wr-reading-list .wr-check-item input[type="checkbox"]:not(#x) {
+  --checkbox-size: 1em;
   position: absolute;
-  left: 3px;
+  left: calc(max(22px, calc(1em + 8px)) - 6px - var(--checkbox-size));
   top: 50%;
   transform: translateY(-50%);
-  width: 14px;
-  height: 14px;
+  font-size: inherit;
+  width: var(--checkbox-size);
+  height: var(--checkbox-size);
   margin: 0;
 }
 
+/* Mixed from --checkbox-border-color so the palette's and tag rules' colours still apply. */
+.wr-bullet-list .wr-check-item input[type="checkbox"]:not(#x):not(:checked),
+.wr-reading-list .wr-check-item input[type="checkbox"]:not(#x):not(:checked),
+.wr-lp-check input[type="checkbox"]:not(#x):not(:checked),
+body .wr-textarea .wr-cv-check:not(#x):not(:checked) {
+  border-color: color-mix(in srgb, var(--checkbox-border-color) 55%, transparent);
+}
+
+/* The mark's layer must cover exactly the inside of the border, or it rounds to device pixels apart from the box and drifts. */
 .wr-bullet-list .wr-check-item input[type="checkbox"]:not(#x):checked::after,
-.wr-reading-list .wr-check-item input[type="checkbox"]:not(#x):checked::after {
-  top: -2.5px;
-  inset-inline-start: -2px;
+.wr-reading-list .wr-check-item input[type="checkbox"]:not(#x):checked::after,
+.wr-lp-check input[type="checkbox"]:not(#x):checked::after,
+body .wr-textarea .wr-cv-check:not(#x):checked::after {
+  inset: 0;
+  width: auto;
+  height: auto;
+  mask-size: calc((var(--checkbox-size) + 2px) * 0.65) auto;
+  mask-position: center calc(50% - 0.35px);
 }
 
 /* An item holding a nested list is as tall as its whole subtree, so the centered box would
    sink to the middle of the group. Anchor it to the first line instead. */
 .wr-bullet-list .wr-check-item.wr-has-sublist>input[type="checkbox"]:not(#x),
 .wr-reading-list .wr-check-item.wr-has-sublist>input[type="checkbox"]:not(#x) {
-  top: calc(0.5lh - 7px);
+  top: calc(0.5lh - var(--checkbox-size) / 2);
   transform: none;
 }
 
@@ -1187,10 +1475,10 @@ body .wr-inline-code {
   padding: 2px 5px;
 }
 
-/* Typography must beat the theme's rules for code elements */
+/* Typography must beat the theme's rules for code elements. */
 body .wr-inline-code:not(#x) {
   border-radius: 4px;
-  font-size: 0.85em;
+  font-size: 1em;
   font-family: var(--font-monospace);
   color: var(--text-normal);
 }
@@ -1211,7 +1499,7 @@ body code.language-wr span.wr-inline-code {
 body code.language-wr span.wr-inline-code:not(#x) {
   display: inline;
   color: var(--text-normal);
-  font-size: 0.85em;
+  font-size: 1em;
 }
 
 /* LV inline code: CodeMirror emits 1 span (cursor outside) or 3 spans (cursor
@@ -1269,10 +1557,42 @@ body code.wr-code-hidden:not(#x) {
   line-height: var(--line-height-normal);
 }
 
+/* The theme's highlight colour where it sets one; 1.14 no longer defines it itself and falls
+   back to its yellow, as this does (kept visible on the memo's background, see --wr-hl-*). */
 body .wr-highlight {
-  background: var(--text-highlight-bg);
+  background: var(--text-highlight-bg, var(--wr-hl-yellow, color-mix(in oklch, var(--color-yellow) 30%, transparent)));
   padding: 1px 2px;
   border-radius: 2px;
+}
+
+/* --wr-hb per colour: the palette/tag-rule --wr-hl-* (see visibleHighlight), else Obsidian's own. */
+[data-highlight="red"] {
+  --wr-hb: var(--wr-hl-red, var(--highlight-background-red));
+}
+
+[data-highlight="orange"] {
+  --wr-hb: var(--wr-hl-orange, var(--highlight-background-orange));
+}
+
+[data-highlight="yellow"] {
+  --wr-hb: var(--wr-hl-yellow, var(--highlight-background-yellow));
+}
+
+[data-highlight="green"] {
+  --wr-hb: var(--wr-hl-green, var(--highlight-background-green));
+}
+
+[data-highlight="blue"] {
+  --wr-hb: var(--wr-hl-blue, var(--highlight-background-blue));
+}
+
+[data-highlight="purple"] {
+  --wr-hb: var(--wr-hl-purple, var(--highlight-background-purple));
+}
+
+body .wr-highlight[data-highlight]:not(#x),
+body .wr-highlight-highlight[data-highlight]:not(#x) {
+  background: var(--wr-hb);
 }
 
 .wr-math {
@@ -1533,7 +1853,7 @@ body .wr-strike-highlight {
 }
 
 body .wr-highlight-highlight {
-  background: var(--text-highlight-bg);
+  background: var(--text-highlight-bg, var(--wr-hl-yellow, color-mix(in oklch, var(--color-yellow) 30%, transparent)));
 }
 
 /* Live Preview: blockquote line */
@@ -1610,59 +1930,73 @@ body .cm-line.wr-blockquote-depth-5:not(#x) {
 }
 
 /* Live Preview: shared marker style */
+/* On the baseline: the monospace line's middle sits away from the kana's (see reading view). */
 .wr-lp-marker {
   display: inline-block;
-  width: 22px;
-  padding-left: 3px;
+  white-space: nowrap;
+  width: max(22px, calc(1em + 8px));
+  padding-right: 6px;
   box-sizing: border-box;
-  vertical-align: middle;
-  text-align: left;
+  vertical-align: baseline;
+  text-align: right;
 }
 
 body .wr-lp-marker:not(#x) {
   color: var(--text-muted);
 }
 
-.wr-lp-bullet {
-  font-size: 0.85em;
+/* Padding centres the number on the checkbox line; no inner element, as colour stamps reach inside the marker. */
+.wr-lp-marker.wr-lp-ol {
+  width: auto;
+  min-width: max(22px, calc(1em + 8px));
+  padding-right: max(0px, calc(12px + 1em - max(22px, calc(1em + 8px))));
+  text-align: center;
+  font-family: var(--font-text, var(--default-font));
+}
+
+/* A pseudo-element, not a child: colour stamps skip .wr-lp-marker but reach elements inside it. */
+.wr-lp-bullet::before {
+  content: "";
+  display: inline-block;
+  width: 0.36em;
+  height: 0.36em;
+  border-radius: var(--list-bullet-radius, 50%);
+  background-color: currentColor;
+  vertical-align: 0.28em;
+  margin-inline-end: 0.32em;
 }
 
 /* Nesting in live preview: the marker carries the offset, since a line here cannot hold a
-   child list. Steps match the 22px marker slot the rendered views use. */
+   child list. Steps match the marker slot the rendered views use. */
 .wr-lp-marker.wr-lp-indent-1 {
-  margin-inline-start: 22px;
+  margin-inline-start: calc(max(22px, calc(1em + 8px)) * 1);
 }
 
 .wr-lp-marker.wr-lp-indent-2 {
-  margin-inline-start: 44px;
+  margin-inline-start: calc(max(22px, calc(1em + 8px)) * 2);
 }
 
 .wr-lp-marker.wr-lp-indent-3 {
-  margin-inline-start: 66px;
+  margin-inline-start: calc(max(22px, calc(1em + 8px)) * 3);
 }
 
 .wr-lp-marker.wr-lp-indent-4 {
-  margin-inline-start: 88px;
-}
-
-.wr-lp-check {
-  padding-left: 2px;
+  margin-inline-start: calc(max(22px, calc(1em + 8px)) * 4);
 }
 
 /* Native checkbox metrics — same survey-based reasoning as the timeline
-   checkbox block above; :not(#x) outranks themes' non-priority rules. */
+   checkbox block above (size and checked mark included); :not(#x) outranks themes'
+   non-priority rules. */
 .wr-lp-check input[type="checkbox"]:not(#x) {
-  width: 14px;
-  height: 14px;
+  --checkbox-size: 1em;
+  font-size: inherit;
+  width: var(--checkbox-size);
+  height: var(--checkbox-size);
   margin: 0;
   padding: 0;
-  vertical-align: 0px;
+  /* Centred 0.38em up, on the kana's middle, as reading view's checkbox. */
+  vertical-align: -0.12em;
   cursor: default;
-}
-
-.wr-lp-check input[type="checkbox"]:not(#x):checked::after {
-  top: -2.5px;
-  inset-inline-start: -2px;
 }
 
 .wr-content {
@@ -1951,15 +2285,6 @@ body .wr-codeblock-line:not(.HyperMD-codeblock-end):not(#x) {
   padding-right: 32px;
 }
 
-body .wr-hidden-line:not(#x) {
-  height: 0;
-  padding: 0;
-  margin: 0;
-  line-height: 0;
-  font-size: 0;
-  overflow: hidden;
-}
-
 body div.block-language-wr {
   border: none;
   border-radius: 8px;
@@ -1989,7 +2314,7 @@ body div.block-language-wr .wr-inline-code {
 }
 
 body div.block-language-wr .wr-highlight {
-  background: var(--text-highlight-bg);
+  background: var(--text-highlight-bg, var(--wr-hl-yellow, color-mix(in oklch, var(--color-yellow) 30%, transparent)));
 }
 
 body .block-language-wr pre:not(#x) {
@@ -2374,14 +2699,14 @@ body.is-mobile .wr-submit-btn.wr-submit-icon-only {
 }
 
 .is-mobile .wr-textarea {
-  min-height: 28px;
+  min-height: 2.8em;
   line-height: 1.4;
 }
 
 /* Obsidian mobile draws form-field borders; win by ID-level specificity
    instead of the priority flag (loses only to priority-flag opponents). */
 body.is-mobile .wr-textarea:not(#x#y#z),
-body.is-mobile .wr-textarea:focus:not(#x#y#z) {
+body.is-mobile .wr-textarea.cm-focused:not(#x#y#z) {
   border: none;
   outline: none;
 }

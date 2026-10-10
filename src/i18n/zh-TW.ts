@@ -137,7 +137,6 @@ const zhTW = {
   "settings.item.resetToolbar.confirm": "再按一次以確認重設",
 
   "view.toolbarAction.image": "圖片",
-  "view.toolbarAction.embed": "嵌入",
   "view.toolbarAction.bold": "粗體",
   "view.toolbarAction.italic": "斜體",
   "view.toolbarAction.list": "無序清單",
@@ -152,8 +151,18 @@ const zhTW = {
   "view.formatMenu.math": "公式",
   "view.formatMenu.quote": "引言",
   "view.formatMenu.link": "連結",
+  "view.linkPopover.placeholder": "筆記名稱或 URL",
+  "view.linkPopover.unlink": "取消連結",
   "view.formatMenu.strikethrough": "刪除線",
   "view.formatMenu.highlight": "螢光標示",
+  "view.highlight.default": "預設",
+  "view.highlight.red": "紅色",
+  "view.highlight.orange": "橘色",
+  "view.highlight.yellow": "黃色",
+  "view.highlight.green": "綠色",
+  "view.highlight.blue": "藍色",
+  "view.highlight.purple": "紫色",
+  "view.highlight.remove": "取消螢光標示",
   "view.formatMenu.settings": "設定",
 
   "view.postMenu.copy": "複製",
@@ -178,6 +187,7 @@ const zhTW = {
   "view.notice.searchPluginNotFound": "核心外掛「搜尋」未啟用。",
 
   "view.image.removeAria": "移除圖片",
+  "view.quote.removeAria": "移除引用",
 
   // Placeholder body of a quote card whose original post is gone.
   "quote.card.notFound": "（找不到原始貼文）",

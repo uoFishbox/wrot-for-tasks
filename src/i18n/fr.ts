@@ -138,7 +138,6 @@ const fr = {
   "settings.item.resetToolbar.confirm": "Appuyez à nouveau pour confirmer",
 
   "view.toolbarAction.image": "Image",
-  "view.toolbarAction.embed": "Fichier intégré",
   "view.toolbarAction.bold": "Gras",
   "view.toolbarAction.italic": "Italique",
   "view.toolbarAction.list": "Liste à puces",
@@ -153,8 +152,18 @@ const fr = {
   "view.formatMenu.math": "Équation",
   "view.formatMenu.quote": "Citation",
   "view.formatMenu.link": "Lien",
+  "view.linkPopover.placeholder": "Nom de note ou URL",
+  "view.linkPopover.unlink": "Supprimer le lien",
   "view.formatMenu.strikethrough": "Barré",
   "view.formatMenu.highlight": "Surligné",
+  "view.highlight.default": "Par défaut",
+  "view.highlight.red": "Rouge",
+  "view.highlight.orange": "Orange",
+  "view.highlight.yellow": "Jaune",
+  "view.highlight.green": "Vert",
+  "view.highlight.blue": "Bleu",
+  "view.highlight.purple": "Violet",
+  "view.highlight.remove": "Supprimer le surlignage",
   "view.formatMenu.settings": "Paramètres",
 
   "view.postMenu.copy": "Copier le texte",
@@ -179,6 +188,7 @@ const fr = {
   "view.notice.searchPluginNotFound": "Le plugin principal « Recherche » n'est pas activé.",
 
   "view.image.removeAria": "Supprimer l'image",
+  "view.quote.removeAria": "Supprimer la citation",
 
   // Placeholder body of a quote card whose original post is gone.
   "quote.card.notFound": "(Publication d'origine introuvable)",

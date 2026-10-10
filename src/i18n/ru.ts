@@ -133,7 +133,6 @@ const ru = {
   "settings.item.resetToolbar.confirm": "Нажмите ещё раз для подтверждения",
 
   "view.toolbarAction.image": "Изображение",
-  "view.toolbarAction.embed": "Вставка",
   "view.toolbarAction.bold": "Жирный",
   "view.toolbarAction.italic": "Курсив",
   "view.toolbarAction.list": "Маркированный список",
@@ -148,8 +147,18 @@ const ru = {
   "view.formatMenu.math": "Формула",
   "view.formatMenu.quote": "Цитата",
   "view.formatMenu.link": "Ссылка",
+  "view.linkPopover.placeholder": "Название заметки или URL",
+  "view.linkPopover.unlink": "Удалить ссылку",
   "view.formatMenu.strikethrough": "Зачёркивание",
   "view.formatMenu.highlight": "Выделение",
+  "view.highlight.default": "По умолчанию",
+  "view.highlight.red": "Красный",
+  "view.highlight.orange": "Оранжевый",
+  "view.highlight.yellow": "Жёлтый",
+  "view.highlight.green": "Зелёный",
+  "view.highlight.blue": "Синий",
+  "view.highlight.purple": "Фиолетовый",
+  "view.highlight.remove": "Убрать выделение",
   "view.formatMenu.settings": "Настройки",
 
   "view.postMenu.copy": "Копировать",
@@ -174,6 +183,7 @@ const ru = {
   "view.notice.searchPluginNotFound": "Основной плагин «Поиск» не включён.",
 
   "view.image.removeAria": "Удалить изображение",
+  "view.quote.removeAria": "Удалить цитату",
 
   // Placeholder body of a quote card whose original post is gone.
   "quote.card.notFound": "(Исходная запись не найдена)",

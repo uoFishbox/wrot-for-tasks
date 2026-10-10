@@ -37,7 +37,6 @@ export class BulletWidget extends WidgetType {
   toDOM(): HTMLElement {
     const span = createSpan();
     span.className = `wr-lp-marker wr-lp-bullet${indentClass(this.depth)}`;
-    span.textContent = "\u2022";
     return span;
   }
   eq(other: BulletWidget): boolean { return this.depth === other.depth; }
@@ -89,15 +88,38 @@ export class CheckboxWidget extends WidgetType {
   ignoreEvent(): boolean { return true; }
 }
 
+/**
+ * Runs fn on a click or a tap. A tap is taken at touchend with its default stopped: left to the
+ * browser, it puts the caret in the editor and opens the block as raw text before the click
+ * arrives. A touch that moved (a scroll) is left alone.
+ */
+function onTap(el: HTMLElement, fn: () => void): void {
+  let start: { x: number; y: number } | null = null;
+  el.addEventListener("touchstart", (e) => {
+    const t = e.touches[0];
+    start = { x: t.clientX, y: t.clientY };
+  }, { passive: true });
+  el.addEventListener("touchend", (e) => {
+    const t = e.changedTouches[0];
+    if (!start || Math.hypot(t.clientX - start.x, t.clientY - start.y) > 10) return;
+    e.preventDefault();
+    e.stopPropagation();
+    fn();
+  });
+  el.addEventListener("click", (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    fn();
+  });
+}
+
 // Read-mode tag; click opens global search. A clickable mark would open the block raw
 // on mousedown, so use an ignoreEvent widget. While editing it stays plain text + tagMark.
 export class TagWidget extends WidgetType {
   constructor(private tag: string, private plugin: WrotPlugin) { super(); }
   toDOM(): HTMLElement {
     const span = createSpan({ cls: "wr-tag-highlight wr-tag-clickable", text: this.tag });
-    span.addEventListener("click", (e) => {
-      e.preventDefault();
-      e.stopPropagation();
+    onTap(span, () => {
       // Press feedback: remove class and force reflow so rapid clicks re-trigger the flash.
       span.classList.remove("wr-tag-flash");
       void span.offsetWidth;
@@ -135,9 +157,7 @@ export class ObsidianLinkWidget extends WidgetType {
       ? "wr-internal-link wr-internal-link-unresolved"
       : "wr-internal-link";
     link.textContent = this.displayName;
-    link.addEventListener("click", (e) => {
-      e.preventDefault();
-      e.stopPropagation();
+    onTap(link, () => {
       if (isSafeUrl(this.url)) window.open(this.url);
     });
     return link;
@@ -145,7 +165,9 @@ export class ObsidianLinkWidget extends WidgetType {
   eq(other: ObsidianLinkWidget): boolean {
     return this.url === other.url && this.unresolved === other.unresolved;
   }
-  ignoreEvent(): boolean { return false; }
+  // A mousedown reaching the editor would put the caret in the block and open it as raw
+  // text before the click lands, as with tags and checkboxes.
+  ignoreEvent(): boolean { return true; }
 }
 
 export class MdLinkWidget extends WidgetType {
@@ -154,9 +176,7 @@ export class MdLinkWidget extends WidgetType {
     const link = createEl("a");
     link.className = "wr-url-highlight";
     link.textContent = this.label;
-    link.addEventListener("click", (e) => {
-      e.preventDefault();
-      e.stopPropagation();
+    onTap(link, () => {
       if (isSafeUrl(this.url)) window.open(this.url, "_blank");
     });
     return link;
@@ -164,29 +184,32 @@ export class MdLinkWidget extends WidgetType {
   eq(other: MdLinkWidget): boolean {
     return this.url === other.url && this.label === other.label;
   }
-  ignoreEvent(): boolean { return false; }
+  ignoreEvent(): boolean { return true; }
 }
 
 export class InternalLinkWidget extends WidgetType {
-  constructor(private fileName: string, private app: App, private resolved: boolean) { super(); }
+  constructor(
+    private fileName: string,
+    private display: string,
+    private app: App,
+    private resolved: boolean
+  ) { super(); }
   toDOM(): HTMLElement {
     const link = createEl("a");
     link.className = this.resolved
       ? "wr-internal-link"
       : "wr-internal-link wr-internal-link-unresolved";
-    link.textContent = this.fileName;
-    link.addEventListener("click", (e) => {
-      e.preventDefault();
-      e.stopPropagation();
+    link.textContent = this.display;
+    onTap(link, () => {
       // eslint-disable-next-line @typescript-eslint/no-floating-promises -- fire-and-forget; failure is non-critical
       this.app.workspace.openLinkText(this.fileName, "", false);
     });
     return link;
   }
   eq(other: InternalLinkWidget): boolean {
-    return this.fileName === other.fileName && this.resolved === other.resolved;
+    return this.fileName === other.fileName && this.display === other.display && this.resolved === other.resolved;
   }
-  ignoreEvent(): boolean { return false; }
+  ignoreEvent(): boolean { return true; }
 }
 
 export class EmbedMissingWidget extends WidgetType {
@@ -231,8 +254,6 @@ export class CodeBlockWidget extends WidgetType {
   constructor(
     private code: string,
     private lang: string,
-    private app: App,
-    private plugin: WrotPlugin,
     private ruleClass: string | null
   ) { super(); }
   toDOM(): HTMLElement {
@@ -391,7 +412,7 @@ export class UrlPreviewWidget extends WidgetType {
   }
 
   ignoreEvent(): boolean {
-    return false;
+    return true;
   }
 }
 
