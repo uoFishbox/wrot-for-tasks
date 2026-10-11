@@ -68,7 +68,8 @@ export class TagSuggest {
   private popover: HTMLDivElement | null = null;
   private itemEls: HTMLElement[] = [];
   private itemTags: string[] = [];
-  private selectedIndex = 0;
+  // -1 = nothing selected: the list opens unselected, so Enter/Tab type as usual until an arrow key picks one.
+  private selectedIndex = -1;
   private token: ActiveToken | null = null;
   // Finger position at pointerdown; counts as a tap if it barely moves by pointerup.
   private tapStart: { id: number; x: number; y: number } | null = null;
@@ -154,7 +155,7 @@ export class TagSuggest {
       this.moveSelection(e.key === "ArrowDown" ? 1 : -1);
       return true;
     }
-    if ((e.key === "Enter" && !e.shiftKey) || e.key === "Tab") {
+    if (((e.key === "Enter" && !e.shiftKey) || e.key === "Tab") && this.selectedIndex >= 0) {
       e.preventDefault();
       e.stopPropagation();
       this.confirm(this.selectedIndex);
@@ -170,7 +171,7 @@ export class TagSuggest {
     this.popover = null;
     this.itemEls = [];
     this.itemTags = [];
-    this.selectedIndex = 0;
+    this.selectedIndex = -1;
     this.token = null;
     this.tapStart = null;
     this.interacting = false;
@@ -234,7 +235,7 @@ export class TagSuggest {
     this.popover.empty();
     this.itemEls = [];
     this.itemTags = matches;
-    this.selectedIndex = 0;
+    this.selectedIndex = -1;
 
     matches.forEach((tag, index) => {
       const item = this.popover!.createDiv({
@@ -272,7 +273,9 @@ export class TagSuggest {
   private moveSelection(delta: number): void {
     const count = this.itemEls.length;
     if (count === 0) return;
-    this.selectedIndex = (this.selectedIndex + delta + count) % count;
+    this.selectedIndex = this.selectedIndex < 0
+      ? (delta > 0 ? 0 : count - 1)
+      : (this.selectedIndex + delta + count) % count;
     this.applySelection();
   }
 

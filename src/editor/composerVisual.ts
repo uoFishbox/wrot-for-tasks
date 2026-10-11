@@ -32,7 +32,7 @@ import { finishRenderMath, renderMath } from "obsidian";
 import { findBlockRanges } from "../utils/blockSegmenter";
 import { parseListLine } from "../utils/listParser";
 import { isMathJaxReady, requestMathJax } from "../utils/mathjax";
-import { highlightColor, inlineTokens } from "../utils/patterns";
+import { TAG_TOKEN_RE, highlightColor, inlineTokens } from "../utils/patterns";
 import { parseLinkToken } from "./composerLink";
 
 interface Span {
@@ -140,6 +140,7 @@ const hide = Decoration.replace({});
 const conceal = Decoration.mark({ class: "wr-cv-hidden" });
 const checkDone = Decoration.mark({ class: "wr-check-done" });
 const linkMark = Decoration.mark({ class: "wr-cv-link" });
+const URL_TOKEN_RE = /^(?:https?|obsidian):\/\//i;
 const tintedHighlights = new Map<string, Decoration>();
 // 1.14's coloured highlight (==🔴…==): the emoji is part of the hidden opener.
 function tintedHighlight(color: string): Decoration {
@@ -251,6 +252,7 @@ function analyze(state: EditorState, rawOverride?: Span[]): Analysis {
   const strikeDone = state.facet(checkStrikethrough);
   const raw = rawOverride ?? state.field(rawField);
   const armedState = state.field(armedField);
+  const caret = state.selection.main.head;
   const doc = state.doc;
   const decos: Range<Decoration>[] = [];
   const atomic: Range<Decoration>[] = [];
@@ -340,6 +342,15 @@ function analyze(state: EditorState, rawOverride?: Span[]): Analysis {
         constructs.push({ open, close });
         continue;
       }
+      if (token.startsWith("#")) {
+        // A tag still being typed (caret inside or at its end) stays plain until finished.
+        if (!(caret > from && caret <= to)) decos.push(linkMark.range(from, to));
+        continue;
+      }
+      if (URL_TOKEN_RE.test(token)) {
+        decos.push(linkMark.range(from, to));
+        continue;
+      }
       const kind = INLINE_MARKS.find((k) => token.startsWith(k.delim) && token.endsWith(k.delim));
       if (!kind) continue;
       const tint = kind.delim === "==" ? highlightColor(token.slice(2, -2)) : null;
@@ -380,6 +391,7 @@ const visualField = StateField.define<Analysis>({
   update(value, tr) {
     const touched =
       tr.docChanged ||
+      tr.startState.selection.main.head !== tr.state.selection.main.head ||
       tr.startState.field(rawField) !== tr.state.field(rawField) ||
       tr.startState.field(armedField) !== tr.state.field(armedField) ||
       tr.effects.some((e) => e.is(redrawEffect)) ||
@@ -605,6 +617,21 @@ const typeOutsideDecoration = EditorState.transactionFilter.of((tr) => {
   };
 });
 
+/** A tag written with a full-width ＃ becomes a real one once whitespace ends it, as picking a candidate does. */
+const halfWidthTagHash = EditorState.transactionFilter.of((tr) => {
+  if (!tr.docChanged || tr.isUserEvent("input.type.compose")) return tr;
+  const fixes: number[] = [];
+  tr.changes.iterChanges((fromA, _toA, _fromB, _toB, inserted) => {
+    if (!/^\s/.test(inserted.sliceString(0, 1))) return;
+    const line = tr.startState.doc.lineAt(fromA);
+    const word = /(?:^|\s)＃([^\s#＃]+)$/.exec(line.text.slice(0, fromA - line.from));
+    if (word && TAG_TOKEN_RE.test(`#${word[1]}`)) fixes.push(fromA - word[1].length - 1);
+  });
+  if (fixes.length === 0) return tr;
+  const at = fixes.map((pos) => tr.changes.mapPos(pos));
+  return [tr, { changes: at.map((pos) => ({ from: pos, to: pos + 1, insert: "#" })), sequential: true }];
+});
+
 // Composed text can't be moved while uncommitted, so text composed at a decoration's end is
 // tracked and moved outside once committed.
 const composedDoneEffect = StateEffect.define<null>();
@@ -712,7 +739,7 @@ export function commitTypedLine(view: EditorView): boolean {
 export function visualMode(): Extension {
   return [
     rawField, armedField, visualField, composedField,
-    deleteGuard, typeOutsideDecoration, stepOverHidden, arrowWatch, composeWatch, composingColor,
+    deleteGuard, typeOutsideDecoration, halfWidthTagHash, stepOverHidden, arrowWatch, composeWatch, composingColor,
   ];
 }
 

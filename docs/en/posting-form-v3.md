@@ -12,16 +12,18 @@ Below is an overview of how typing, formatting, and deleting work in the updated
 
 ## 1. What Gets Formatted vs. What Stays as Plain Text
 
-| Element                                                     | Appearance in the Editor                                    |
-| :---------------------------------------------------------- | :---------------------------------------------------------- |
-| **Bold, italics, strikethrough, highlights**                | Hides the markers and shows the styled text                 |
-| **Inline code**                                             | Hides the backticks and applies monospaced code styling     |
-| **Inline math** (`$…$`)                                     | Hides the dollar signs and renders the formula              |
-| **Links**                                                   | Hides the brackets and shows the label in your accent color |
-| **Lists, task lists, numbered lists**                       | Replaces markers with real bullets, checkboxes, or numbers  |
-| **Blockquotes**                                             | Swaps out `>` for a left quote bar                          |
-| **Code blocks and math blocks**                             | Kept as raw text, including fences and delimiters           |
-| **Manual image embeds** (`![[Image.png]]`) and **raw URLs** | Kept as raw text, exactly as typed                          |
+| Element                                      | Appearance in the Editor                                    |
+| :------------------------------------------- | :---------------------------------------------------------- |
+| **Bold, italics, strikethrough, highlights** | Hides the markers and shows the styled text                 |
+| **Inline code**                              | Hides the backticks and applies monospaced code styling     |
+| **Inline math** (`$…$`)                      | Hides the dollar signs and renders the formula              |
+| **Links**                                    | Hides the brackets and shows the label in your accent color |
+| **Tags**                                     | Shown in your accent color once you finish typing them      |
+| **Lists, task lists, numbered lists**        | Replaces markers with real bullets, checkboxes, or numbers  |
+| **Blockquotes**                              | Swaps out `>` for a left quote bar                          |
+| **Code blocks and math blocks**              | Kept as raw text, including fences and delimiters           |
+| **Manual image embeds** (`![[Image.png]]`)   | Kept as raw text, exactly as typed                          |
+| **Raw URLs**                                 | Kept as typed, shown in your accent color                   |
 
 - You can check or uncheck tasks right in the editor simply by clicking or tapping them.
 
@@ -83,7 +85,7 @@ Applying bold, italics, strikethrough, highlights, inline code, math, or links t
 Selecting formatted text and clicking another style button applies the new formatting inside the existing one. This lets you combine things like bold with a highlight, or strikethrough with a colored highlight.
 
 - Clicking the button of a style that is already applied removes only that style, leaving any other layers alone.
-- Bold and italics can be combined on selected text. In pre-input mode (no selection), you can only use one at a time.
+- Bold and italics can be combined on selected text. When pressed without selecting text, only one can be used at a time.
 - Applying a style to the text of a link wraps the formatting around the whole link.
 
 ### Code and Math Limitations
@@ -92,12 +94,12 @@ Selecting formatted text and clicking another style button applies the new forma
 - If your selection touches formatting or a link, the code and math buttons are greyed out.
 - Selecting the inside of a code snippet (or formula) and clicking its button removes the code (or math) formatting.
 
-### Pre-Input Mode for Bold and Italics
+### Pressing Bold or Italics Without Selecting Text
 
-Clicking bold or italics without selecting any text turns on pre-input mode: whatever you type next is styled automatically. Clicking the button again turns the mode off.
+Clicking bold or italics without selecting any text styles whatever you type next. Clicking the button again closes the formatting.
 
-- Pressing `Backspace` before typing anything cancels pre-input mode.
-- If you submit your post while pre-input mode is still on, the formatting is closed automatically at the end of that line.
+- Pressing `Backspace` before typing anything cancels it.
+- If you submit your post without closing it, the formatting is closed automatically at the end of that line.
 
 ---
 
@@ -178,4 +180,4 @@ Selecting **Quote post** from a post's menu attaches that post as a card below t
 
 - Check whether your cursor or selection touches inline code, math, or existing formatting or links. Section 5 covers these rules in detail.
 - Strikethrough and highlights need selected text. Link needs selected text, or your cursor resting on a link.
-- You cannot turn on bold while italics is in pre-input mode, and vice versa.
+- You cannot turn on bold while italics is lit up from being pressed without selecting text, and vice versa.

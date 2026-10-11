@@ -1,5 +1,16 @@
 # Release Notes
 
+## 3.0.1 - 2026-10-11
+
+### Improvements
+
+- Improved plugin performance
+- Tags and URLs in the post editor are now shown in the accent color
+- Tag suggestions now open with nothing selected
+- Tags written with a full-width "＃" are now changed to "#" once you finish typing them
+
+---
+
 ## 3.0.0 - 2026-10-11
 
 ### Important Changes

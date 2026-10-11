@@ -63,8 +63,10 @@ export function highlightColor(inner: string): { color: string; length: number }
 /** A six-digit hex color, the only form the settings accept. */
 export const HEX_COLOR_RE = /^#[0-9a-fA-F]{6}$/;
 
+// No String.raw: any tagged template stops V8 caching the plugin's eval, slowing startup.
+
 /** Body of a quote-card marker: a link to a memo's block id. */
-const QUOTE_MARKER_SOURCE = String.raw`\[\[[^[\]]+#\^wr-\d{17}\]\]`;
+const QUOTE_MARKER_SOURCE = /\[\[[^[\]]+#\^wr-\d{17}\]\]/.source;
 
 /** Tests whether a string contains a quote-card marker. Safe to share: not sticky. */
 export const QUOTE_MARKER_RE = new RegExp(QUOTE_MARKER_SOURCE);
@@ -77,7 +79,7 @@ export const QUOTE_MARKER_ONLY_LINE_RE = new RegExp(`^\\s*${QUOTE_MARKER_SOURCE}
  * A tag: # and what follows up to whitespace, another #, or a decoration delimiter, so a tag at
  * the end of bold or a highlight leaves its closing delimiter alone (as Obsidian reads it).
  */
-export const TAG_SOURCE = String.raw`#[^\s#*=~]+`;
+export const TAG_SOURCE = /#[^\s#*=~]+/.source;
 /** A whole string that is one tag. */
 export const TAG_TOKEN_RE = new RegExp(`^${TAG_SOURCE}$`);
 
@@ -119,10 +121,10 @@ function decorationSource(mark: string, char: string, nested = ""): string {
 }
 
 // Bold and italic at once: read as bold around an italic.
-const BOLD_ITALIC_SOURCE = decorationSource(String.raw`\*\*\*`, String.raw`\*`);
+const BOLD_ITALIC_SOURCE = decorationSource(/\*\*\*/.source, /\*/.source);
 // A lone asterisk inside bold is italic's delimiter; a pair inside italic is bold's.
-const BOLD_SOURCE = decorationSource(String.raw`\*\*`, String.raw`\*`, String.raw`(?<!\*)\*(?!\*)`);
-const ITALIC_SOURCE = decorationSource(String.raw`\*`, String.raw`\*`, String.raw`\*\*`);
+const BOLD_SOURCE = decorationSource(/\*\*/.source, /\*/.source, /(?<!\*)\*(?!\*)/.source);
+const ITALIC_SOURCE = decorationSource(/\*/.source, /\*/.source, /\*\*/.source);
 const STRIKE_SOURCE = decorationSource("~~", "~");
 const HIGHLIGHT_SOURCE = decorationSource("==", "=");
 
@@ -158,18 +160,18 @@ export function inlineTokenPattern(): RegExp {
   return new RegExp(
     "(" +
       [
-        String.raw`\$[^$]+\$`,
+        /\$[^$]+\$/.source,
         "`[^`]+`",
         BOLD_ITALIC_SOURCE,
         BOLD_SOURCE,
         ITALIC_SOURCE,
         STRIKE_SOURCE,
         HIGHLIGHT_SOURCE,
-        String.raw`!\[\[[^\]]+\]\]`,
-        String.raw`\[\[[^\]]+\]\]`,
-        String.raw`\[[^[\]\n]+\]\((?:https?|obsidian):\/\/[^\s)]+\)`,
+        /!\[\[[^\]]+\]\]/.source,
+        /\[\[[^\]]+\]\]/.source,
+        /\[[^[\]\n]+\]\((?:https?|obsidian):\/\/[^\s)]+\)/.source,
         TAG_SOURCE,
-        String.raw`(?:https?|obsidian):\/\/[^\s<>"'\]]+`,
+        /(?:https?|obsidian):\/\/[^\s<>"'\]]+/.source,
       ].join("|") +
       ")",
     "g"

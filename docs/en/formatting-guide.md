@@ -35,13 +35,13 @@ Makes the selected text bold (italic). Click the button again to remove it.
 
 - You can also apply it to text that already has other formatting. Bold and italic can be combined, too.
 
-### When No Text Is Selected (Pre-Input Mode)
+### When Pressed Without Selecting Text
 
 Clicking the button lights it up, and whatever you type next is shown in bold (italic). Click the button again to close the formatting.
 
-- Pressing `Backspace` before typing anything cancels pre-input mode.
+- Pressing `Backspace` before typing anything cancels it.
 - If you post without closing it, the formatting is closed automatically at the end of that line.
-- While one of them is in pre-input mode, the other button (italic for bold, and vice versa) is unavailable.
+- While one of them is lit up, the other button (italic for bold, and vice versa) is unavailable.
 - While you are converting text with an IME (such as Japanese input), the lit-up button pauses briefly so you do not close the formatting by accident.
 
 ---

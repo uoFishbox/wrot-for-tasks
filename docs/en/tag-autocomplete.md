@@ -9,14 +9,14 @@ Here’s a quick walkthrough on how to use it, how it works behind the scenes, a
 
 ## The Basics
 
-1. Type `#` in the post box (the full-width `＃` works as well).
+1. Type `#` in the post box (the full-width `＃` works as well, and a tag written with it turns into `#` once you finish typing it).
 2. A dropdown will show tags from your previous posts.
 3. Keep typing to filter the list in real time.
 4. Pick the tag you want, and you're good to go.
 
 ### Selecting and Applying Tags
 
-- **Keyboard**: Navigate with the `↑` and `↓` arrows, then hit `Enter` or `Tab` to insert the tag.
+- **Keyboard**: The list opens with nothing selected. Press `↓` to start from the top or `↑` to start from the bottom, then hit `Enter` or `Tab` to insert the tag. Pressing `Enter` before picking one just starts a new line.
 - **Mouse / Touch**: Just click or tap the tag from the list.
 
 > **Tip**: Your posting shortcuts (`Ctrl + Enter` / `Cmd + Enter`) still work while the tag list is open, so you can send your post right away without closing the popup first.

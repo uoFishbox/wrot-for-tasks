@@ -64,7 +64,7 @@ Buttons you move off the toolbar will live inside the ⋯ menu. Items in this me
 Almost everything works the exact same way as it does on the toolbar, with just two small exceptions:
 
 - **Bold and Italic**:
-  On the toolbar, you can turn on these styles before you start typing (pre-input mode). Inside the menu, they **only work when you have text selected** and stay greyed out otherwise.
+  On the toolbar, you can press these without selecting text and style as you type. Inside the menu, they **only work when you have text selected** and stay greyed out otherwise.
 - **Pin later**:
   If a note is pinned for a specific date, a checkmark appears next to this item (just like the button lighting up on the toolbar).
 
