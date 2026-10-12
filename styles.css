@@ -370,7 +370,7 @@ body.wr-font-follow .wr-calendar-nav-btn .svg-icon {
 }
 
 .workspace-leaf-content[data-type="wrot-view"] .wr-tag-suggest-item {
-  padding: 3px 10px;
+  padding: 5px 10px;
   border-radius: 5px;
   font-size: var(--wr-font-ui-small);
   color: var(--text-normal);
@@ -387,6 +387,10 @@ body.wr-font-follow .wr-calendar-nav-btn .svg-icon {
 .workspace-leaf-content[data-type="wrot-view"] .wr-tag-suggest-item-selected,
 .workspace-leaf-content[data-type="wrot-view"] .wr-tag-suggest-item-selected:hover {
   background: rgba(var(--mono-rgb-100), 0.05);
+}
+
+.is-mobile .workspace-leaf-content[data-type="wrot-view"] .wr-tag-suggest-item {
+  padding: 8px 12px;
 }
 
 /* The link button's window, positioned by JS below the form. */

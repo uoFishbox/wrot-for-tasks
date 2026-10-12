@@ -64,7 +64,7 @@ Unlike color rules, tag order doesn't matter here. Any tag set to be excluded wi
 
 ## First-Time Startup
 
-When you run this feature for the first time, Wrot generates a small helper file called `tag-integration.json` to handle your tags. Because of this, it might take a moment for things to populate in the graph or search results on your very first run. Everything will update instantly from the second time onward.
+When you run this feature for the first time, Wrot generates a small helper file called `integration.json` to handle your tags. Because of this, it might take a moment for things to populate in the graph or search results on your very first run. Everything will update instantly from the second time onward.
 
 ---
 

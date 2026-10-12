@@ -15,7 +15,7 @@ import type WrotPlugin from "../main";
 // picking up injected entries is unofficial behavior — keep the failure mode limited to
 // "tags just don't show / aren't searchable".
 // Perf: never scan the whole vault (no Thino-style proportional cost). A note→tags index
-// persisted in tag-integration.json is injected at startup without file reads; only
+// persisted in integration.json is injected at startup without file reads; only
 // mtime-changed notes are re-read to reconcile.
 //
 // Memo note links ride the same index into cache.links/embeds and are re-resolved, so the graph, backlinks and rename updates count them.
@@ -35,6 +35,13 @@ const RECONCILE_SAVE_INTERVAL = 200;
 // right after layout, so it has to share the main thread with the first paint.
 const RECONCILE_YIELD_INTERVAL = 25;
 
+// Notes injected from the index before yielding.
+const INJECT_YIELD_INTERVAL = 100;
+
+function yieldToEventLoop(): Promise<void> {
+  return new Promise<void>((resolve) => window.setTimeout(resolve, 0));
+}
+
 // Key holding the last completed-scan timestamp in the persisted index. Obsidian forbids "#" in
 // note names, so this can never collide with a real path. Readers that predate it unpack the
 // number, get null and drop it; the value simply reads as "never scanned" when absent.
@@ -42,8 +49,10 @@ const SCANNED_AT_KEY = "#scannedAt";
 
 // Index format. 2 added links; an index without it lacks the links of notes that held no tags,
 // and its scan mark would skip those notes for good, so it is dropped and rebuilt once.
+// 3 packs links per token; 2 still reads.
 const VERSION_KEY = "#v";
-const INDEX_VERSION = 2;
+const INDEX_VERSION = 3;
+const READABLE_VERSIONS = new Set([2, 3]);
 
 function isWrTag(t: TagCache): boolean {
   return (t as WrTagCache).wrGraph === true;
@@ -88,7 +97,11 @@ interface GraphTagIndexEntry {
 interface PersistedEntry {
   m: number; // mtime
   t: Record<string, [number, number, number][]>; // "#tag" → [line, col, offset][]
-  l?: [string, number, number, number][]; // [token, line, col, offset][]
+  l?: Record<string, [number, number, number][]>; // token as written → [line, col, offset][]
+}
+
+function isPosition(p: unknown): p is [number, number, number] {
+  return Array.isArray(p) && p.length === 3 && p.every((n) => typeof n === "number");
 }
 
 function packEntry(entry: GraphTagIndexEntry): PersistedEntry {
@@ -97,7 +110,13 @@ function packEntry(entry: GraphTagIndexEntry): PersistedEntry {
     (t[occ.tag] ??= []).push([occ.line, occ.col, occ.offset]);
   }
   const packed: PersistedEntry = { m: entry.mtime, t };
-  if (entry.links.length > 0) packed.l = entry.links.map((o) => [o.original, o.line, o.col, o.offset]);
+  if (entry.links.length > 0) {
+    const l: NonNullable<PersistedEntry["l"]> = {};
+    for (const o of entry.links) {
+      (l[o.original] ??= []).push([o.line, o.col, o.offset]);
+    }
+    packed.l = l;
+  }
   return packed;
 }
 
@@ -110,25 +129,27 @@ function unpackEntry(v: unknown): GraphTagIndexEntry | null {
   const tags: TagOccurrence[] = [];
   for (const [tag, positions] of Object.entries(e.t)) {
     if (!tag.startsWith("#") || !Array.isArray(positions)) return null;
-    for (const p of positions) {
-      if (!Array.isArray(p) || p.length !== 3 || p.some((n) => typeof n !== "number")) {
-        return null;
-      }
-      tags.push({ tag, line: p[0] as number, col: p[1] as number, offset: p[2] as number });
+    for (const p of positions as unknown[]) {
+      if (!isPosition(p)) return null;
+      tags.push({ tag, line: p[0], col: p[1], offset: p[2] });
     }
   }
   const links: LinkOccurrence[] = [];
-  if (e.l !== undefined) {
-    if (!Array.isArray(e.l)) return null;
+  if (Array.isArray(e.l)) {
     for (const p of e.l as unknown[]) {
-      if (
-        !Array.isArray(p) || p.length !== 4 || typeof p[0] !== "string" ||
-        p.slice(1).some((n) => typeof n !== "number")
-      ) {
-        return null;
-      }
+      if (!Array.isArray(p) || typeof p[0] !== "string" || !isPosition(p.slice(1))) return null;
       links.push({ original: p[0], line: p[1] as number, col: p[2] as number, offset: p[3] as number });
     }
+  } else if (e.l !== undefined) {
+    if (typeof e.l !== "object" || e.l === null) return null;
+    for (const [original, positions] of Object.entries(e.l)) {
+      if (!Array.isArray(positions)) return null;
+      for (const p of positions as unknown[]) {
+        if (!isPosition(p)) return null;
+        links.push({ original, line: p[0], col: p[1], offset: p[2] });
+      }
+    }
+    links.sort((a, b) => a.offset - b.offset);
   }
   return { tags, links, mtime: e.m };
 }
@@ -178,7 +199,8 @@ export class GraphTagInjector {
   async start(): Promise<void> {
     this.stopped = false;
     await this.loadIndex();
-    this.injectFromIndex();
+    await this.injectFromIndex();
+    if (this.stopped) return;
     this.refresh();
     await this.reconcile();
   }
@@ -198,10 +220,17 @@ export class GraphTagInjector {
     return Promise.resolve();
   }
 
-  private injectFromIndex(): void {
+  private async injectFromIndex(): Promise<void> {
     const { vault, metadataCache } = this.plugin.app;
     const excluded = this.excludedTagSet();
+    let sinceLastYield = 0;
     for (const [path, entry] of this.index) {
+      if (this.stopped) return;
+      if (++sinceLastYield >= INJECT_YIELD_INTERVAL) {
+        sinceLastYield = 0;
+        await yieldToEventLoop();
+        if (this.stopped) return;
+      }
       const file = vault.getAbstractFileByPath(path);
       if (!(file instanceof TFile)) {
         // Drop leftovers for notes deleted while the plugin was off.
@@ -255,7 +284,7 @@ export class GraphTagInjector {
       sinceLastYield++;
       if (sinceLastYield >= RECONCILE_YIELD_INTERVAL) {
         sinceLastYield = 0;
-        await new Promise<void>((resolve) => window.setTimeout(resolve, 0));
+        await yieldToEventLoop();
       }
     }
     // Only a pass that walked every note may move the mark; an interrupted one would otherwise
@@ -299,7 +328,7 @@ export class GraphTagInjector {
   }
 
   // Called when "exclude from integration" rules change. The index holds raw tags,
-  // so re-inject without re-reading files.
+  // so re-inject without re-reading files. Links are left as is.
   rebuild(): void {
     const { vault, metadataCache } = this.plugin.app;
     const excluded = this.excludedTagSet();
@@ -308,7 +337,7 @@ export class GraphTagInjector {
       if (!(file instanceof TFile)) continue;
       const cache = metadataCache.getFileCache(file);
       if (!cache) continue;
-      this.applyToCache(path, cache, entry, file, excluded);
+      this.applyToCache(path, cache, entry, file, excluded, false);
     }
     this.requestRefresh();
   }
@@ -342,7 +371,8 @@ export class GraphTagInjector {
     cache: CachedMetadata,
     entry: GraphTagIndexEntry,
     file: TFile,
-    excludedTags?: Set<string>
+    excludedTags?: Set<string>,
+    withLinks = true
   ): void {
     const excluded = excludedTags ?? this.excludedTagSet();
     const tags = this.enabled
@@ -368,19 +398,21 @@ export class GraphTagInjector {
 
     // Offsets read from an older version of the note would send a rename update to the
     // wrong text, so links wait for reconcile (or the next change) to read it afresh.
-    const refs = entry.mtime === file.stat.mtime
-      ? entry.links.map(toRefCache).filter((r): r is WrRefCache => r !== null)
-      : [];
-    const hadRefs = this.stripRefs(cache);
-    if (refs.length > 0) {
-      const links = refs.filter((r) => !r.original.startsWith("!"));
-      const embeds = refs.filter((r) => r.original.startsWith("!"));
-      if (links.length > 0) cache.links = [...(cache.links ?? []), ...links];
-      if (embeds.length > 0) cache.embeds = [...(cache.embeds ?? []), ...embeds];
+    if (withLinks) {
+      const refs = entry.mtime === file.stat.mtime
+        ? entry.links.map(toRefCache).filter((r): r is WrRefCache => r !== null)
+        : [];
+      const hadRefs = this.stripRefs(cache);
+      if (refs.length > 0) {
+        const links = refs.filter((r) => !r.original.startsWith("!"));
+        const embeds = refs.filter((r) => r.original.startsWith("!"));
+        if (links.length > 0) cache.links = [...(cache.links ?? []), ...links];
+        if (embeds.length > 0) cache.embeds = [...(cache.embeds ?? []), ...embeds];
+      }
+      if (hadRefs || refs.length > 0) this.resolve(path);
     }
-    if (hadRefs || refs.length > 0) this.resolve(path);
 
-    if (tags.length > 0 || refs.length > 0) this.trackedPaths.add(path);
+    if (tags.length > 0 || this.hasWrRefs(cache)) this.trackedPaths.add(path);
     else this.trackedPaths.delete(path);
   }
 
@@ -546,19 +578,25 @@ export class GraphTagInjector {
   }
 
   // Index persistence: same conventions as tags.json (plugin dir, failures ignored).
-  private indexPath(): string | null {
+  private indexPath(name = "integration.json"): string | null {
     const dir = this.plugin.manifest.dir;
-    return dir ? normalizePath(`${dir}/tag-integration.json`) : null;
+    return dir ? normalizePath(`${dir}/${name}`) : null;
   }
 
   private async loadIndex(): Promise<void> {
     const path = this.indexPath();
     if (!path) return;
+    const { adapter } = this.plugin.app.vault;
     try {
-      if (!(await this.plugin.app.vault.adapter.exists(path))) return;
+      // Earlier name.
+      const legacy = this.indexPath("tag-integration.json");
+      if (legacy && !(await adapter.exists(path)) && (await adapter.exists(legacy))) {
+        await adapter.rename(legacy, path);
+      }
+      if (!(await adapter.exists(path))) return;
       const parsed: unknown = JSON.parse(await this.plugin.app.vault.adapter.read(path));
       if (typeof parsed !== "object" || parsed === null) return;
-      if ((parsed as Record<string, unknown>)[VERSION_KEY] !== INDEX_VERSION) return;
+      if (!READABLE_VERSIONS.has((parsed as Record<string, unknown>)[VERSION_KEY] as number)) return;
       for (const [notePath, raw] of Object.entries(parsed)) {
         if (notePath === VERSION_KEY) continue;
         if (notePath === SCANNED_AT_KEY) {

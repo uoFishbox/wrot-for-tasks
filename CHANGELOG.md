@@ -1,5 +1,14 @@
 # Release Notes
 
+## 3.0.2 - 2026-10-12
+
+### Improvements
+
+- Improved the internal structure
+- Made tag suggestions easier to tap
+
+---
+
 ## 3.0.1 - 2026-10-11
 
 ### Improvements
