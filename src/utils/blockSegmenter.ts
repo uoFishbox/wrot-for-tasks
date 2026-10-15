@@ -13,6 +13,15 @@ export interface BlockRange {
 }
 
 const CODE_FENCE_RE = /^(\s*)(~{3,})(.*)$/;
+// A backtick in the info string makes the line inline code, not a fence (CommonMark).
+const BACKTICK_FENCE_RE = /^([ \t]*)(`{3,})([^`]*)$/gm;
+
+/** Rewrites typed backtick fences as tilde fences so they cannot close the outer wr block. */
+export function toTildeFences(text: string): string {
+  return text.replace(BACKTICK_FENCE_RE, (_, indent: string, ticks: string, rest: string) =>
+    indent + "~".repeat(ticks.length) + rest
+  );
+}
 const LANG_SANITIZE_RE = /^[a-zA-Z0-9_+-]{0,32}$/;
 
 function sanitizeLang(raw: string): string {

@@ -4,6 +4,7 @@ import { parseMemos, Memo } from "../utils/memoParser";
 import { appendMemo, deleteMemo, toggleCheckbox, updateMemo } from "../utils/memoWriter";
 import { getOrCreateDailyNote, getDailyNoteFile, dailyNotePathFor, dailyNoteTemplateFile } from "../utils/dailyNote";
 import { headingLocator, waitForTemplater } from "../utils/postHeading";
+import { toTildeFences } from "../utils/blockSegmenter";
 import { QUOTE_LINK_RE, renderTextWithTagsAndUrls, renderUrlPreviews } from "../utils/urlRenderer";
 import { invalidateMemoCache, renderQuoteCard } from "../utils/quoteCard";
 import { ensureBlockIdOnFence } from "../utils/memoWriter";
@@ -1677,7 +1678,7 @@ export class WrotView extends ItemView {
     // for the post rather than left open.
     const text = this.activeFormatMode ? this.closeArmedOpener(this.composer.value) : this.composer.value;
     this.activeFormatMode = null;
-    const rawText = typed ? text.trim().replace(/＃/g, "#") : "";
+    const rawText = typed ? toTildeFences(text.trim().replace(/＃/g, "#")) : "";
 
     if (this.editingMemo) {
       await this.applyEdit(rawText);

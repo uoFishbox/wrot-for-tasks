@@ -1,5 +1,18 @@
 # Release Notes
 
+## 3.0.3 - 2026-10-15
+
+### Updates
+
+- Updated dependencies
+
+### Improvements
+
+- Code blocks written with backticks are now changed to tildes when you post
+- Improved translations
+
+---
+
 ## 3.0.2 - 2026-10-12
 
 ### Improvements
@@ -25,7 +38,7 @@
 ### Important Changes
 
 - Raised the minimum required version to Obsidian 1.14.4.
-- Redesigned the post editor so Markdown syntax is hidden and your text looks close to how it will appear. See [New Posting Form in Ver3.0.0 and Up](https://github.com/villyoshioka/Wrot/blob/3.0.0/docs/en/posting-form-v3.md) for what has changed.
+- Redesigned the post editor so Markdown syntax is hidden and your text looks close to how it will appear. See [New Posting Form in Ver3.0.0 and Up](https://github.com/villyoshioka/Wrot/blob/3.0.1/docs/en/posting-form-v3.md) for what has changed.
 - Removed the Embed button from the toolbar and merged it into the Link button. If you had customized your toolbar layout, the Embed button is removed automatically.
 
 ### Updates

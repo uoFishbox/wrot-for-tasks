@@ -52,7 +52,7 @@ const ja = {
 
   "settings.item.tagSuggest.name": "タグ入力補完",
   "settings.item.tagSuggest.desc":
-    "# に続けて入力した際に候補を表示します。\nオフにすると、これまでに学習した候補もリセットされます。",
+    "# に続けて入力した際に候補を表示します。\nオフにすると、これまでに記録した候補もリセットされます。",
 
   "settings.item.pinLimit.name": "ピン留めの上限",
   "settings.item.pinLimit.desc": "「ピン留め」と「あとでピン留め」の上限は個別に設定されます。\n上限を下げた場合、超過した分のピン留めは解除されます。",

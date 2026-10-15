@@ -68,4 +68,4 @@ If you want to turn this off, head over to "Advanced" and toggle **Tag autocompl
 
 ### Want to reset your list and start fresh?
 
-- Since you can't delete tags one by one, simply toggle "Tag autocomplete" OFF and then back ON in settings. This wipes the slate clean so Wrot can start learning your tags from scratch.
+- Since you can't delete tags one by one, simply toggle "Tag autocomplete" OFF and then back ON in settings. This wipes the slate clean so Wrot can start recording your tags from scratch.
