@@ -1,5 +1,17 @@
 # Release Notes
 
+## 3.0.4 - 2026-10-17
+
+### Updates
+
+- Updated dependencies
+
+### Bug Fixes
+
+- Fixed the cursor disappearing instead of the menu opening when long-pressing the post editor on mobile under certain conditions
+
+---
+
 ## 3.0.3 - 2026-10-15
 
 ### Updates

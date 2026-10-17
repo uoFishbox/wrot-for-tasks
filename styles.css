@@ -553,6 +553,7 @@ body .wr-textarea .cm-scroller {
 /* caret-color: CodeMirror's base theme hardcodes black/white; Obsidian's own fields use
    its caret variable (the accent on mobile), which the textarea used to pick up. */
 body .wr-textarea .cm-content {
+  position: relative;
   padding: 0;
   color: inherit;
   caret-color: var(--caret-color);
@@ -575,11 +576,12 @@ body .wr-textarea:not(#x#y#z) {
   background: transparent;
 }
 
-/* Inline rather than CodeMirror's inline-block: a placeholder that wraps then forms
-   separate line boxes, so the caret beside it stays one line tall instead of spanning it. */
-body .wr-textarea .cm-placeholder {
-  display: inline;
+body .wr-textarea.wr-composer-empty .cm-content::before {
+  content: attr(aria-placeholder);
+  position: absolute;
+  inset: 0 0 auto 0;
   color: var(--text-faint);
+  pointer-events: none;
 }
 
 /* Min-width so a wide number grows the slot. */

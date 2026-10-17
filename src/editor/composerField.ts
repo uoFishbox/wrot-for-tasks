@@ -1,9 +1,11 @@
 import { Compartment, EditorState, StateEffect, StateField } from "@codemirror/state";
-import { Decoration, DecorationSet, EditorView, keymap, placeholder } from "@codemirror/view";
+import { Decoration, DecorationSet, EditorView, keymap } from "@codemirror/view";
 import { history, historyKeymap, insertNewline, standardKeymap } from "@codemirror/commands";
 import { armEffectOf, armedOpener, checkStrikethrough, commitTypedLine, drawnListMarkerAt, redrawEffect, visualMode } from "./composerVisual";
 
 type Listener = (e: Event) => void;
+
+const placeholderAttr = (text: string) => EditorView.contentAttributes.of({ "aria-placeholder": text });
 
 // The range a popover is working on (the link window), painted as selected while the
 // popover's own field holds the focus and the editor's real selection is not drawn.
@@ -65,7 +67,9 @@ export class ComposerField {
           // classes change (focus adds one), dropping anything added to the element by hand.
           EditorView.editorAttributes.of({ class: "wr-textarea" }),
           EditorView.contentAttributes.of({ spellcheck: "true", autocorrect: "on", autocapitalize: "on" }),
-          this.placeholderConf.of(placeholder(placeholderText)),
+          // Not CodeMirror's placeholder widget: on mobile it breaks the long-press menu.
+          this.placeholderConf.of(placeholderAttr(placeholderText)),
+          EditorView.editorAttributes.compute(["doc"], (s) => ({ class: s.doc.length ? "" : "wr-composer-empty" })),
           this.readOnlyConf.of(EditorState.readOnly.of(false)),
           visualMode(),
           heldRangeField,
@@ -148,7 +152,7 @@ export class ComposerField {
   }
 
   setPlaceholder(text: string): void {
-    this.view.dispatch({ effects: this.placeholderConf.reconfigure(placeholder(text)) });
+    this.view.dispatch({ effects: this.placeholderConf.reconfigure(placeholderAttr(text)) });
   }
 
   /**

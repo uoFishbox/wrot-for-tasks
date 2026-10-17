@@ -229,7 +229,7 @@ export function buildPaletteCss(palette: WrPalette): string {
         --checkbox-color-hover: var(--text-accent);
         accent-color: var(--text-accent);
       }
-      body .wr-textarea .cm-placeholder {
+      body .wr-textarea.wr-composer-empty .cm-content::before {
         color: ${faintColor};
       }
       body .wr-toolbar-btn.wr-toolbar-active {
