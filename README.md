@@ -7,6 +7,8 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow)](https://opensource.org/licenses/MIT)
 [![release](https://img.shields.io/github/v/release/villyoshioka/Wrot)](https://github.com/villyoshioka/Wrot/releases/latest)
 
+![Wrot timeline in the main editor area](https://raw.githubusercontent.com/villyoshioka/Wrot/main/docs/images/timeline-desktop-en.png)
+
 ---
 
 ## What is Wrot?
@@ -16,6 +18,11 @@ Write + Jot = **Wrot**. It brings effortless micro-journaling to Obsidian, combi
 Think of it as your own private social feed. You get the quick, low-friction feel of posting online, but with zero algorithm, zero audience, and zero pressure. Dump random thoughts, quick updates, or fleeting ideas as they happen.
 
 Because every post drops straight into your daily notes, Wrot works hand-in-hand with Obsidian’s native search, backlinks, and review workflows without breaking a sweat.
+
+<p align="center">
+  <img src="https://raw.githubusercontent.com/villyoshioka/Wrot/main/docs/images/posting-mobile.gif" alt="Posting from the Wrot timeline on iPhone" width="280">
+  <img src="https://raw.githubusercontent.com/villyoshioka/Wrot/main/docs/images/timeline-mobile.png" alt="Wrot timeline on iPhone" width="280">
+</p>
 
 ---
 
@@ -116,6 +123,8 @@ Wrot gives you fine-grained control over how your feed looks and behaves.
 - **Button setup**: Customize post and update labels/icons, or hide the delete button from the post menu.
 - **Timestamp format**: Adjust how dates and times display (e.g., `YYYY/MM/DD HH:mm:ss`).
 - **Link previews**: Turn OGP link preview cards on or off.
+
+![Wrot timeline docked in the right sidebar](https://raw.githubusercontent.com/villyoshioka/Wrot/main/docs/images/sidebar-desktop-en.png)
 
 ---
 

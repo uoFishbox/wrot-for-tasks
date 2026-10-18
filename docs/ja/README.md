@@ -7,6 +7,8 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow)](https://opensource.org/licenses/MIT)
 [![release](https://img.shields.io/github/v/release/villyoshioka/Wrot)](https://github.com/villyoshioka/Wrot/releases/latest)
 
+![メインエリアに開いた Wrot のタイムライン](https://raw.githubusercontent.com/villyoshioka/Wrot/main/docs/images/timeline-desktop-ja.png)
+
 ---
 
 ## Wrot とは？
@@ -16,6 +18,11 @@ Write + Jot = **Wrot**。「書く」と「さっとメモする」を組み合�
 SNS のような気軽さで書けて、書いたものは誰にも見られず、勝手に整理もされません。思考の断片や日々のつぶやきを気兼ねなく残せる、あなただけの空間をつくります。
 
 投稿内容はそのままデイリーノートへ保存されるため、Obsidian 本来の検索性やリンク構造、振り返りのワークフローを損なうことなくシームレスに活用できます。
+
+<p align="center">
+  <img src="https://raw.githubusercontent.com/villyoshioka/Wrot/main/docs/images/posting-mobile.gif" alt="iPhone の Wrot から投稿する様子" width="280">
+  <img src="https://raw.githubusercontent.com/villyoshioka/Wrot/main/docs/images/timeline-mobile.png" alt="iPhone での Wrot のタイムライン" width="280">
+</p>
 
 ---
 
@@ -116,6 +123,8 @@ Wrot は **11 言語 12 ロケール** に対応しています。Obsidian の�
 - ボタン設定: 投稿・更新ボタンのラベル／アイコン変更、投稿メニュー内の削除ボタン表示切り替え
 - フォーマット: タイムスタンプの表示形式（例: `YYYY/MM/DD HH:mm:ss`）
 - プレビュー機能: OGP カードプレビューの有効化／無効化
+
+![右サイドバーに置いた Wrot のタイムライン](https://raw.githubusercontent.com/villyoshioka/Wrot/main/docs/images/sidebar-desktop-ja.png)
 
 ---
 
