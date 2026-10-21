@@ -166,6 +166,10 @@ const zhTW = {
   "view.formatMenu.settings": "設定",
 
   "view.postMenu.copy": "複製",
+
+  "view.postMenu.copyMath": "複製公式",
+
+  "view.postMenu.copyCode": "複製程式碼",
   "view.postMenu.quotePost": "引用貼文",
   "view.postMenu.edit": "編輯",
   "view.postMenu.cancelEdit": "取消編輯",

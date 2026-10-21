@@ -39,6 +39,16 @@ Whenever you type out syntax like `**bold**` manually, the markers stay visible 
 
 - When you restore a draft or edit a previous post, all formatting opens up already rendered.
 
+### Brackets and Quotes
+
+Typing `(`, `[`, `{`, `"` or `'` adds the closing half automatically and puts the cursor between them.
+
+- Typing the closing half moves the cursor past the one already there instead of adding another.
+- Typing one with text selected wraps the selection in it.
+- Pressing `Backspace` between an empty pair deletes both halves.
+- The closing half is not added when you type `'` or `"` right after a letter (as in "don't"), or when you type any of them right before a letter.
+- Nothing is added automatically when Obsidian's "Auto-pair brackets" setting is turned off.
+
 ---
 
 ## 3. Deleting Text

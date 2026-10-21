@@ -74,6 +74,9 @@ The editor switches between inline code and a code block depending on whether te
 
 - When you insert a code block, your cursor lands inside it so you can start typing right away.
 - It cannot be applied to text that has formatting or a link (the button is greyed out).
+- Inside a code block, pressing `Tab` adds an indent. Whether it uses a tab or spaces, and how many spaces, follows Obsidian's "Indent using tabs" and "Indent visual width" settings. New lines start at the same indent as the line before.
+- In code blocks labeled `html`, `xml`, `svg`, `vue`, `svelte` and similar, typing the `>` that ends an opening tag adds its closing tag automatically. Typing `</` fills in the closing tag of the innermost tag that is still open.
+- **Copy code** in the post menu copies just the contents of a code block. If a post has more than one, the first line of each is listed so you can pick the one you want.
 
 ### Math (LaTeX)
 
@@ -85,6 +88,7 @@ Just like code, this switches between inline math and a math block depending on 
 | **No selection**  | `$$ … $$` (math block)          |
 
 - It cannot be applied to text that has formatting or a link (the button is greyed out).
+- **Copy math** in the post menu copies just the formula inside a math block. If a post has more than one, the first line of each is listed so you can pick the one you want.
 
 ### Quote
 

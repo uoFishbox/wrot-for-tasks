@@ -166,6 +166,10 @@ const zhCN = {
   "view.formatMenu.settings": "设置",
 
   "view.postMenu.copy": "复制",
+
+  "view.postMenu.copyMath": "复制公式",
+
+  "view.postMenu.copyCode": "复制代码",
   "view.postMenu.quotePost": "引用此条内容",
   "view.postMenu.edit": "编辑",
   "view.postMenu.cancelEdit": "取消编辑",

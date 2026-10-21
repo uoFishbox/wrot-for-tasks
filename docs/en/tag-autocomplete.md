@@ -60,6 +60,7 @@ If you want to turn this off, head over to "Advanced" and toggle **Tag autocompl
 
 - Double-check that "Tag autocomplete" is turned ON under "Advanced".
 - Keep in mind that Wrot only suggests tags you've posted in the past. New tags won't show up until you've used them once.
+- Suggestions don't appear while you're typing inside a code block (between `~~~` fences).
 
 ### A tag I used isn't showing up
 

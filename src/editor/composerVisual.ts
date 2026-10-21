@@ -611,7 +611,8 @@ const typeOutsideDecoration = EditorState.transactionFilter.of((tr) => {
   if (dest === null) return tr;
   return {
     changes: { from: dest, insert },
-    selection: EditorSelection.cursor(dest + insert.length),
+    // Same offset into the moved text: an auto-closed pair keeps the caret between its halves.
+    selection: EditorSelection.cursor(dest + (tr.newSelection.main.head - at)),
     userEvent: tr.annotation(Transaction.userEvent),
     scrollIntoView: tr.scrollIntoView,
   };

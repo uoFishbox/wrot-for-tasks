@@ -161,6 +161,10 @@ const de = {
   "view.formatMenu.settings": "Einstellungen",
 
   "view.postMenu.copy": "Kopieren",
+
+  "view.postMenu.copyMath": "Formel kopieren",
+
+  "view.postMenu.copyCode": "Code kopieren",
   "view.postMenu.quotePost": "Zitieren",
   "view.postMenu.edit": "Bearbeiten",
   "view.postMenu.cancelEdit": "Bearbeitung abbrechen",
@@ -176,7 +180,7 @@ const de = {
   "view.dateNav.todaySuffix": " (Heute)",
 
   "view.empty.noMemos": "Keine Einträge vorhanden",
-  "view.notice.saveFailed": "Fehler beim Speichern der Notiz: {error}",
+  "view.notice.saveFailed": "Fehler beim Speichern des Beitrags: {error}",
   "view.notice.postHeadingMissing": "Die angegebene Überschrift wurde in dieser Notiz nicht gefunden. Der Eintrag wurde am Dateiende angehängt.",
   "view.notice.postHeadingNoTemplate": "Vorlage für tägliche Notizen nicht gefunden. Überschrift wurde auf „Keine“ zurückgesetzt.",
   "view.notice.searchPluginNotFound": "Das Kern-Plugin „Suche“ ist nicht aktiviert.",

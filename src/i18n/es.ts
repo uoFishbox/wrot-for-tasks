@@ -167,6 +167,10 @@ const es = {
   "view.formatMenu.settings": "Ajustes",
 
   "view.postMenu.copy": "Copiar",
+
+  "view.postMenu.copyMath": "Copiar fórmula",
+
+  "view.postMenu.copyCode": "Copiar código",
   "view.postMenu.quotePost": "Citar publicación",
   "view.postMenu.edit": "Editar",
   "view.postMenu.cancelEdit": "Cancelar edición",

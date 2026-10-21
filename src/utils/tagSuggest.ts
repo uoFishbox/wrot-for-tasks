@@ -1,4 +1,4 @@
-import { extractNonBlockText } from "./blockSegmenter";
+import { extractNonBlockText, findBlockRanges } from "./blockSegmenter";
 import { TAG_TOKEN_RE, inlineTokens } from "./patterns";
 import type { ComposerField } from "../editor/composerField";
 
@@ -198,6 +198,12 @@ export class TagSuggest {
     }
     const word = value.slice(wordStart, pos);
     if (!word.startsWith("#") && !word.startsWith("＃")) return null;
+    // Inside a code block (an unclosed one runs to the end), # is code, not a tag.
+    const line = value.slice(0, pos).split("\n").length - 1;
+    const inCode = findBlockRanges(value.split("\n")).some(
+      (b) => b.kind === "codeblock" && line >= b.startLine && line <= b.endLine
+    );
+    if (inCode) return null;
     const hashIdx = Math.max(word.lastIndexOf("#"), word.lastIndexOf("＃"));
     return {
       start: wordStart + hashIdx,

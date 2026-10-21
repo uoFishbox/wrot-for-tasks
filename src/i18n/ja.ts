@@ -32,23 +32,23 @@ const ja = {
   "settings.item.textColorDark.desc": "テキストとアイコンに使用されます。",
 
   "settings.item.submitLabel.name": "投稿ボタンのテキスト",
-  "settings.item.submitLabel.desc": "空欄にするとアイコンのみ表示されます（アイコン設定時のみ）。",
+  "settings.item.submitLabel.desc": "アイコンを設定している場合は、空欄にするとアイコンだけが表示されます。",
   "settings.item.submitIcon.name": "投稿ボタンのアイコン",
   // {linkOpen}/{linkClose} placeholders mark the part wrapped in an anchor element.
   "settings.item.submitIcon.desc": "アイコン名は {linkOpen}こちら{linkClose} からコピーできます。\n空欄にすると非表示になります。",
   "settings.item.updateLabel.name": "更新ボタンのテキスト",
-  "settings.item.updateLabel.desc": "投稿の編集時に表示されます。\n空欄にするとアイコンのみ表示されます（アイコン設定時のみ）。",
+  "settings.item.updateLabel.desc": "投稿の編集時に表示されます。\nアイコンを設定している場合は、空欄にするとアイコンだけが表示されます。",
   "settings.item.updateIcon.name": "更新ボタンのアイコン",
   "settings.item.updateIcon.desc": "アイコン名は {linkOpen}こちら{linkClose} からコピーできます。\n空欄にすると投稿ボタンと同じアイコンになります。",
   "settings.item.submitGradient.name": "投稿フォームのグラデーション",
   "settings.item.submitGradient.desc": "オンにすると、投稿フォームのアクセントがグラデーションになります。",
   "settings.item.submitGradientMode.name": "グラデーションの明るさ",
-  "settings.item.submitGradientMode.desc": "自動では、アクセントカラーの明るさに合わせて切り替わります。",
+  "settings.item.submitGradientMode.desc": "「自動」にすると、アクセントカラーの明るさに合わせて切り替わります。",
   "settings.option.submitGradientMode.auto": "自動",
   "settings.option.submitGradientMode.light": "明るく",
   "settings.option.submitGradientMode.dark": "暗く",
   "settings.item.inputPlaceholder.name": "投稿フォームの空欄メッセージ",
-  "settings.item.inputPlaceholder.desc": "空欄にするとメッセージを非表示にします。",
+  "settings.item.inputPlaceholder.desc": "空欄にすると非表示になります。",
 
   "settings.item.tagSuggest.name": "タグ入力補完",
   "settings.item.tagSuggest.desc":
@@ -63,7 +63,7 @@ const ja = {
   "settings.item.pinFixed.desc": "オフにすると、ピン留めされた投稿もタイムラインと一緒にスクロールします。",
 
   "settings.item.ogp.name": "URLプレビュー",
-  "settings.item.ogp.desc": "URLからプレビュー情報を取得して表示します。\nオフにすると外部への通信を行いません。",
+  "settings.item.ogp.desc": "URLからプレビュー情報を取得して表示します。\nオフにすると、外部と通信しません。",
 
   "settings.item.checkStrikethrough.name": "チェック済みの取り消し線",
   "settings.item.checkStrikethrough.desc": "オフにすると、チェック後も文字に取り消し線が引かれません。",
@@ -96,7 +96,7 @@ const ja = {
 
   "settings.item.tagColorRules.name": "タグ別ルールを使う",
   "settings.item.tagColorRules.desc":
-    "タグごとに投稿の色や本体統合の扱いなどを変更できます。\n色は、本文中で先に登場したタグのものが優先されます。",
+    "タグごとに投稿の色や本体統合の扱いなどを変更できます。\n色は本文中で先に登場したタグのものが優先されます。",
 
   "settings.tagRule.label": "ルール {n}",
   "settings.tagRule.tag.name": "タグ",
@@ -105,7 +105,7 @@ const ja = {
   "settings.tagRule.bg.name": "背景色",
   "settings.tagRule.bg.desc": "投稿の背景色に適用されます。",
   "settings.tagRule.fg.name": "文字色",
-  "settings.tagRule.fg.desc": "タグ、リンク、URLの色はアクセントカラーの設定が適用されます。",
+  "settings.tagRule.fg.desc": "タグ、リンク、URLにはアクセントカラーの設定が適用されます。",
   "settings.tagRule.accent.name": "アクセントカラー",
   "settings.tagRule.accent.desc": "未設定の場合はテーマのアクセントカラーが適用されます。",
   "settings.tagRule.sub.name": "サブカラー",
@@ -167,6 +167,10 @@ const ja = {
   "view.formatMenu.settings": "設定",
 
   "view.postMenu.copy": "コピー",
+
+  "view.postMenu.copyMath": "数式をコピー",
+
+  "view.postMenu.copyCode": "コードをコピー",
   "view.postMenu.quotePost": "投稿を引用",
   "view.postMenu.edit": "編集",
   "view.postMenu.cancelEdit": "編集をキャンセル",
@@ -182,8 +186,8 @@ const ja = {
   // Suffix appended to the date label; keyed so each locale can restyle it, brackets included.
   "view.dateNav.todaySuffix": "（今日）",
 
-  "view.empty.noMemos": "表示できるメモがありません",
-  "view.notice.saveFailed": "メモの保存に失敗しました: {error}",
+  "view.empty.noMemos": "表示できる投稿がありません",
+  "view.notice.saveFailed": "投稿の保存に失敗しました: {error}",
   "view.notice.postHeadingMissing": "このノートには設定した見出しが無いため、末尾に追加しました",
   "view.notice.postHeadingNoTemplate": "デイリーノートのテンプレートが見つからないため、テンプレートの見出し指定を「指定なし」に戻しました",
   "view.notice.searchPluginNotFound": "検索プラグインが見つかりません",

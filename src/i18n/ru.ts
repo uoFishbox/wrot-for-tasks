@@ -162,6 +162,10 @@ const ru = {
   "view.formatMenu.settings": "Настройки",
 
   "view.postMenu.copy": "Копировать",
+
+  "view.postMenu.copyMath": "Копировать формулу",
+
+  "view.postMenu.copyCode": "Копировать код",
   "view.postMenu.quotePost": "Цитировать запись",
   "view.postMenu.edit": "Редактировать",
   "view.postMenu.cancelEdit": "Отменить редактирование",

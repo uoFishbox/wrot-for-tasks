@@ -2235,6 +2235,15 @@ body.wr-font-follow.is-phone .wr-menu {
   padding-top: 0;
 }
 
+/* First line of a block in the "Copy code" / "Copy math" picker, cut short to fit the menu. */
+.wr-menu .wr-block-pick {
+  display: block;
+  max-width: 16em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 /* The confirm wording is far longer than the label it replaces, and the menu is
    already sized and placed by the time it swaps in. Let this one row wrap rather
    than run past the menu edge; growing taller is fine, being cut off is not. */

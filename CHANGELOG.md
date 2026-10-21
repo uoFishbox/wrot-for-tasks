@@ -1,5 +1,29 @@
 # Release Notes
 
+## 3.1.0 - 2026-10-21
+
+### Updates
+
+- Updated dependencies
+
+### New Features
+
+- Added a way to copy just the code or math from the post menu
+
+### Improvements
+
+- Tab now indents inside code blocks in the post form
+- Brackets and quotes now close automatically in the post form, and closing tags are filled in inside HTML and similar code blocks
+- Improved translations
+
+### Bug Fixes
+
+- Fixed tag suggestions appearing when typing # inside a code block
+- Fixed pins and Pin Later pins sometimes being removed under certain conditions
+- Fixed checkboxes toggled in the daily note not showing up in the timeline right away
+
+---
+
 ## 3.0.4 - 2026-10-17
 
 ### Updates

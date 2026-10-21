@@ -163,6 +163,10 @@ const pt = {
   "view.formatMenu.settings": "Configurações",
 
   "view.postMenu.copy": "Copiar",
+
+  "view.postMenu.copyMath": "Copiar fórmula",
+
+  "view.postMenu.copyCode": "Copiar código",
   "view.postMenu.quotePost": "Citar postagem",
   "view.postMenu.edit": "Editar",
   "view.postMenu.cancelEdit": "Cancelar edição",

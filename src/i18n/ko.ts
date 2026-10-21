@@ -162,6 +162,10 @@ const ko = {
   "view.formatMenu.settings": "설정",
 
   "view.postMenu.copy": "복사",
+
+  "view.postMenu.copyMath": "수식 복사",
+
+  "view.postMenu.copyCode": "코드 복사",
   "view.postMenu.quotePost": "게시물 인용",
   "view.postMenu.edit": "수정",
   "view.postMenu.cancelEdit": "수정 취소",

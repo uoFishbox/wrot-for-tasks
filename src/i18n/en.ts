@@ -166,6 +166,10 @@ const en = {
   "view.formatMenu.settings": "Settings",
 
   "view.postMenu.copy": "Copy",
+
+  "view.postMenu.copyMath": "Copy math",
+
+  "view.postMenu.copyCode": "Copy code",
   "view.postMenu.quotePost": "Quote post",
   "view.postMenu.edit": "Edit",
   "view.postMenu.cancelEdit": "Cancel edit",

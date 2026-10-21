@@ -1,6 +1,7 @@
 import { Compartment, EditorState, StateEffect, StateField } from "@codemirror/state";
 import { Decoration, DecorationSet, EditorView, keymap } from "@codemirror/view";
 import { history, historyKeymap, insertNewline, standardKeymap } from "@codemirror/commands";
+import { autoPairs } from "./composerPairs";
 import { armEffectOf, armedOpener, checkStrikethrough, commitTypedLine, drawnListMarkerAt, redrawEffect, visualMode } from "./composerVisual";
 
 type Listener = (e: Event) => void;
@@ -49,12 +50,13 @@ export class ComposerField {
   private strikeConf = new Compartment();
   private holder: object | null = null;
 
-  constructor(parent: HTMLElement, placeholderText: string, strikeDone: boolean) {
+  constructor(parent: HTMLElement, placeholderText: string, strikeDone: boolean, autoPair: () => boolean) {
     this.view = new EditorView({
       parent,
       state: EditorState.create({
         extensions: [
           history(),
+          autoPairs(autoPair),
           // Plain newline first: the standard binding copies the line's indentation,
           // which a textarea never did. Lists get their marker from the view's handler.
           keymap.of([

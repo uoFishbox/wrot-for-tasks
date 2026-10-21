@@ -167,6 +167,10 @@ const fr = {
   "view.formatMenu.settings": "Paramètres",
 
   "view.postMenu.copy": "Copier le texte",
+
+  "view.postMenu.copyMath": "Copier la formule",
+
+  "view.postMenu.copyCode": "Copier le code",
   "view.postMenu.quotePost": "Citer cette publication",
   "view.postMenu.edit": "Modifier",
   "view.postMenu.cancelEdit": "Annuler la modification",

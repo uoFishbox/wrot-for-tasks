@@ -9,12 +9,56 @@
 
 import { ListDepthTracker, type ListLine, nestThreshold, parseListLine } from "./listParser";
 import type { ComposerField } from "../editor/composerField";
+import { findBlockRanges } from "./blockSegmenter";
 import { findLinkAt } from "../editor/composerLink";
 import { HIGHLIGHT_EMOJI, decorationInner, highlightColor, inlineTokens } from "./patterns";
 
 function commit(ta: ComposerField): void {
   ta.focus();
   ta.dispatchEvent(new Event("input"));
+}
+
+/**
+ * Types an indent at the caret when it sits inside a code block (an unclosed one runs to the
+ * end). Returns false elsewhere, leaving Tab to its usual job.
+ */
+export function insertCodeIndent(ta: ComposerField, indent: string): boolean {
+  const val = ta.value;
+  const start = ta.selectionStart;
+  if (!insideCodeBlock(val, start)) return false;
+  ta.value = val.slice(0, start) + indent + val.slice(ta.selectionEnd);
+  ta.setSelectionRange(start + indent.length, start + indent.length);
+  ta.dispatchEvent(new Event("input"));
+  return true;
+}
+
+/** Enter inside a code block starts the new line at the current line's indent. */
+export function continueCodeIndentOnEnter(ta: ComposerField): boolean {
+  const val = ta.value;
+  const start = ta.selectionStart;
+  if (!insideCodeBlock(val, start)) return false;
+  const lineStart = val.lastIndexOf("\n", start - 1) + 1;
+  const indent = /^[ \t]*/.exec(val.slice(lineStart, start))?.[0] ?? "";
+  const insert = "\n" + indent;
+  ta.value = val.slice(0, start) + insert + val.slice(ta.selectionEnd);
+  ta.setSelectionRange(start + insert.length, start + insert.length);
+  ta.dispatchEvent(new Event("input"));
+  return true;
+}
+
+const CODE_FENCE_CLOSE_RE = /^\s*~{3,}\s*$/;
+
+// Between a code block's fences; an unclosed block runs to the end.
+function insideCodeBlock(val: string, pos: number): boolean {
+  const lines = val.split("\n");
+  const line = val.slice(0, pos).split("\n").length - 1;
+  return findBlockRanges(lines).some(
+    (b) =>
+      b.kind === "codeblock" &&
+      line > b.startLine &&
+      line <= b.endLine &&
+      !(line === b.endLine && CODE_FENCE_CLOSE_RE.test(lines[line]))
+  );
 }
 
 function currentLineBounds(val: string, pos: number): { start: number; end: number } {
@@ -136,6 +180,8 @@ function normalizeRunAroundCaret(ta: ComposerField): void {
   const endLine = lineOf(ta.selectionEnd);
   const { depth: quoteDepth, item: caretItem } = splitQuoted(lines[caretLine]);
   if (!caretItem) return;
+  // A "- " line in code is code: its indent stays as typed.
+  if (insideCodeBlock(ta.value, ta.selectionStart)) return;
   const inRun = (i: number): boolean => {
     const l = splitQuoted(lines[i]);
     return l.item !== null && l.depth === quoteDepth;
@@ -211,6 +257,7 @@ function childIndent(val: string, rowStart: number, depth: number, indentWidth: 
 export function shiftListIndent(ta: ComposerField, outdent: boolean): boolean {
   const val = ta.value;
   const selStart = ta.selectionStart;
+  if (insideCodeBlock(val, selStart)) return false;
   const selEnd = ta.selectionEnd;
   const blockStart = selStart > 0 ? val.lastIndexOf("\n", selStart - 1) + 1 : 0;
   const trailing = val.indexOf("\n", selEnd);

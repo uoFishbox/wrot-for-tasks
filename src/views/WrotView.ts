@@ -4,7 +4,7 @@ import { parseMemos, Memo } from "../utils/memoParser";
 import { appendMemo, deleteMemo, toggleCheckbox, updateMemo } from "../utils/memoWriter";
 import { getOrCreateDailyNote, getDailyNoteFile, dailyNotePathFor, dailyNoteTemplateFile } from "../utils/dailyNote";
 import { headingLocator, waitForTemplater } from "../utils/postHeading";
-import { toTildeFences } from "../utils/blockSegmenter";
+import { segmentBlocks, toTildeFences } from "../utils/blockSegmenter";
 import { QUOTE_LINK_RE, renderTextWithTagsAndUrls, renderUrlPreviews } from "../utils/urlRenderer";
 import { invalidateMemoCache, renderQuoteCard } from "../utils/quoteCard";
 import { ensureBlockIdOnFence } from "../utils/memoWriter";
@@ -20,9 +20,11 @@ import { isMathJaxReady, requestMathJax } from "../utils/mathjax";
 import {
   closeInlineMarker,
   effectBlocked,
+  continueCodeIndentOnEnter,
   continueListOnEnter,
   continueQuoteOnEnter,
   insertAtLineStart,
+  insertCodeIndent,
   insertFenceBlock,
   insideDecoration,
   isInsideMarker,
@@ -766,7 +768,8 @@ export class WrotView extends ItemView {
     this.composer = new ComposerField(
       inputArea,
       this.plugin.settings.inputPlaceholder,
-      this.plugin.settings.checkStrikethrough
+      this.plugin.settings.checkStrikethrough,
+      () => this.obsidianConfig("autoPairBrackets") !== false
     );
 
     // Enablement is read per call, so the settings toggle takes effect immediately.
@@ -795,6 +798,7 @@ export class WrotView extends ItemView {
       if (e.key === "Enter" && !e.shiftKey) {
         // Hand-typed syntax converts on the first Enter; the line breaks on the next.
         if (
+          continueCodeIndentOnEnter(this.composer) ||
           this.composer.commitTypedLine() ||
           continueListOnEnter(this.composer) ||
           continueQuoteOnEnter(this.composer)
@@ -809,9 +813,10 @@ export class WrotView extends ItemView {
           else if (this.composer.selectionStart < markerEnd) this.composer.setSelectionRange(markerEnd, markerEnd);
         }
       }
-      // Tab only moves list items; anywhere else it still leaves the field.
+      // Tab indents inside a code block and moves list items; anywhere else it still leaves the field.
       if (e.key === "Tab") {
-        if (shiftListIndent(this.composer, e.shiftKey)) e.preventDefault();
+        if (!e.shiftKey && insertCodeIndent(this.composer, this.indentUnit())) e.preventDefault();
+        else if (shiftListIndent(this.composer, e.shiftKey)) e.preventDefault();
       }
     });
 
@@ -1621,6 +1626,18 @@ export class WrotView extends ItemView {
 
   // The folder attached images go to, or undefined to leave the choice to Obsidian's
   // own attachment setting.
+  // Obsidian's own editor settings; getConfig is not in the public typings.
+  private obsidianConfig(key: string): unknown {
+    return (this.app.vault as unknown as { getConfig(key: string): unknown }).getConfig(key);
+  }
+
+  // A tab, or that many spaces, as the note editor would indent.
+  private indentUnit(): string {
+    if (this.obsidianConfig("useTab") !== false) return "\t";
+    const size = this.obsidianConfig("tabSize");
+    return " ".repeat(typeof size === "number" && size > 0 ? size : 4);
+  }
+
   private attachmentFolder(): string | undefined {
     const { useCustomAttachmentFolder, attachmentFolder } = this.plugin.settings;
     return useCustomAttachmentFolder ? attachmentFolder : undefined;
@@ -1986,40 +2003,16 @@ export class WrotView extends ItemView {
     return moment(entry.from, "YYYY-MM-DD").isSameOrBefore(moment(), "day");
   }
 
+  // Same verdict as refresh: a pin whose note is missing or not yet re-read after sync stays.
   private async cleanupOrphanPins(): Promise<boolean> {
     const settings = this.plugin.settings;
-    const cache = new Map<string, Memo[] | null>();
-    // One cache across both lists: the same note commonly holds pins of either kind.
-    const alive = async (pin: PinEntry): Promise<boolean> => {
-      let memos = cache.get(pin.file);
-      if (memos === undefined) {
-        const file = this.app.vault.getAbstractFileByPath(pin.file);
-        if (!(file instanceof TFile)) {
-          cache.set(pin.file, null);
-          return false;
-        }
-        const content = await this.app.vault.cachedRead(file);
-        memos = parseMemos(content);
-        cache.set(pin.file, memos);
-      }
-      return memos !== null && memos.some((m) => m.time === pin.timestamp);
-    };
-
-    const survivingPins: PinEntry[] = [];
-    for (const pin of settings.pins) {
-      if (await alive(pin)) survivingPins.push(pin);
-    }
-    const survivingScheduled: ScheduledPinEntry[] = [];
-    for (const pin of settings.scheduledPins ?? []) {
-      if (await alive(pin)) survivingScheduled.push(pin);
-    }
-
-    const changed =
-      survivingPins.length !== settings.pins.length ||
-      survivingScheduled.length !== (settings.scheduledPins?.length ?? 0);
-    if (!changed) return false;
-    settings.pins = survivingPins;
-    settings.scheduledPins = survivingScheduled;
+    const stale = new Set<PinEntry>([
+      ...(await this.resolvePinEntries(settings.pins)).stale,
+      ...(await this.resolvePinEntries(settings.scheduledPins)).stale,
+    ]);
+    if (stale.size === 0) return false;
+    settings.pins = settings.pins.filter((p) => !stale.has(p));
+    settings.scheduledPins = (settings.scheduledPins ?? []).filter((p) => !stale.has(p));
     await this.plugin.savePins();
     return true;
   }
@@ -2468,6 +2461,34 @@ export class WrotView extends ItemView {
             await navigator.clipboard.writeText(memo.content);
           })
         );
+        // Copies one block's inside; with several, a second menu off the same button names each by its first line.
+        const addBlockCopy = (title: string, icon: string, texts: string[]): void => {
+          const blocks = texts.filter((s) => s.trim() !== "");
+          if (blocks.length === 0) return;
+          menu.addItem((item) =>
+            item.setTitle(title).setIcon(icon).onClick(async () => {
+              if (blocks.length === 1) {
+                await navigator.clipboard.writeText(blocks[0]);
+                return;
+              }
+              this.openMenu(menuBtn, (picker) => {
+                for (const text of blocks) {
+                  const label = createFragment((f) =>
+                    f.createSpan({ cls: "wr-block-pick", text: text.split("\n").find((l) => l.trim() !== "")?.trim() })
+                  );
+                  picker.addItem((pick) =>
+                    pick.setTitle(label).onClick(async () => {
+                      await navigator.clipboard.writeText(text);
+                    })
+                  );
+                }
+              });
+            })
+          );
+        };
+        const segments = segmentBlocks(memo.content);
+        addBlockCopy(t("view.postMenu.copyMath"), "sigma", segments.flatMap((s) => (s.kind === "mathblock" ? [s.tex] : [])));
+        addBlockCopy(t("view.postMenu.copyCode"), "code", segments.flatMap((s) => (s.kind === "codeblock" ? [s.code] : [])));
         menu.addItem((item) => {
           item.setTitle(t("view.postMenu.quotePost")).setIcon("quote").onClick(() => {
             // eslint-disable-next-line @typescript-eslint/no-floating-promises -- fire-and-forget; failure is non-critical

@@ -170,6 +170,10 @@ const it = {
   "view.formatMenu.settings": "Impostazioni",
 
   "view.postMenu.copy": "Copia testo",
+
+  "view.postMenu.copyMath": "Copia formula",
+
+  "view.postMenu.copyCode": "Copia codice",
   "view.postMenu.quotePost": "Cita post",
   "view.postMenu.edit": "Modifica",
   "view.postMenu.cancelEdit": "Annulla modifica",

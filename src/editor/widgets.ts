@@ -1,6 +1,6 @@
 import { EditorView, WidgetType } from "@codemirror/view";
 import type { App } from "obsidian";
-import { loadPrism, renderMath, finishRenderMath } from "obsidian";
+import { MarkdownView, editorInfoField, loadPrism, renderMath, finishRenderMath } from "obsidian";
 import type WrotPlugin from "../main";
 import { isMathJaxReady, requestMathJax } from "../utils/mathjax";
 import {
@@ -68,6 +68,9 @@ export class CheckboxWidget extends WidgetType {
       const next = view.state.doc.sliceString(statePos, statePos + 1) === " ";
       cb.checked = next;
       view.dispatch({ changes: { from: statePos, to: statePos + 1, insert: next ? "x" : " " } });
+      // Written now rather than on Obsidian's delayed autosave, so the timeline follows at once.
+      const owner = view.state.field(editorInfoField, false);
+      if (owner instanceof MarkdownView) void owner.save();
     });
     wrap.appendChild(cb);
     return wrap;
