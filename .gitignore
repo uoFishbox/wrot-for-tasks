@@ -5,6 +5,11 @@ node_modules/
 .kilo/
 .env
 data.json
+draft.json
+integration.json
+layout.json
+pins.json
+tags.json
 CLAUDE.md
 AGENTS.md
 dist/
