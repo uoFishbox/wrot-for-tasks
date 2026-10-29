@@ -195,6 +195,7 @@ const ru = {
   "settings.item.submitIcon.lucideUrl": "https://lucide.dev/icons/",
 
   "calendar.monthYearFormat": "LLLL YYYY [г.]",
+  "calendar.tasks.incomplete": "Незавершённые задачи",
 
   "defaults.headerDateFormat": "D MMMM YYYY [г.]",
 

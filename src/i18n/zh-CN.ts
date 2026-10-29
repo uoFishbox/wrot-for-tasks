@@ -199,6 +199,7 @@ const zhCN = {
   "settings.item.submitIcon.lucideUrl": "https://lucide.dev/icons/",
 
   "calendar.monthYearFormat": "YYYY[年]M[月]",
+  "calendar.tasks.incomplete": "有未完成任务",
 
   "defaults.headerDateFormat": "YYYY/MM/DD",
 

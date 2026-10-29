@@ -1,5 +1,5 @@
 import { App, Plugin, TFile, WorkspaceLeaf, Notice, normalizePath, MarkdownView } from "obsidian";
-import { VIEW_TYPE_WROT } from "./constants";
+import { CALENDAR_HOVER_SOURCE, VIEW_TYPE_WROT } from "./constants";
 import {
   WrotSettings,
   DEFAULT_SETTINGS,
@@ -63,6 +63,10 @@ export default class WrotPlugin extends Plugin {
     this.patchOpeningBehavior();
     initI18n();
     await this.loadSettings();
+    this.registerHoverLinkSource(CALENDAR_HOVER_SOURCE, {
+      display: this.manifest.name,
+      defaultMod: false,
+    });
     // Started after layout: reads issued during load queue ahead of Obsidian's own styles.css read in the fs pool and count against startup.
     this.deferredState = new Promise((resolve) => {
       this.app.workspace.onLayoutReady(() => {

@@ -203,6 +203,7 @@ const it = {
   "settings.item.submitIcon.lucideUrl": "https://lucide.dev/icons/",
 
   "calendar.monthYearFormat": "MMMM YYYY",
+  "calendar.tasks.incomplete": "Attività da completare",
 
   "defaults.headerDateFormat": "D MMMM YYYY",
 

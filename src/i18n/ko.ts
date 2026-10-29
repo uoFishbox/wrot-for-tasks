@@ -195,6 +195,7 @@ const ko = {
   "settings.item.submitIcon.lucideUrl": "https://lucide.dev/icons/",
 
   "calendar.monthYearFormat": "YYYY[년] M[월]",
+  "calendar.tasks.incomplete": "미완료 작업 있음",
 
   "defaults.headerDateFormat": "YYYY년 MM월 DD일",
 

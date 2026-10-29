@@ -1,11 +1,12 @@
 {
   "name": "wrot",
-  "version": "3.1.0",
+  "version": "3.2.0",
   "description": "Micro-journal your day in a timeline, one \"tweet\" at a time.",
   "type": "module",
   "scripts": {
     "dev": "node esbuild.config.mjs",
     "lint": "eslint .",
+    "test:calendar": "node --test scripts/test-calendar-tasks.mjs",
     "build": "tsc -noEmit -skipLibCheck && node esbuild.config.mjs production"
   },
   "devDependencies": {

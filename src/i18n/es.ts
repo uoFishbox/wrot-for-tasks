@@ -201,6 +201,7 @@ const es = {
   "settings.item.submitIcon.lucideUrl": "https://lucide.dev/icons/",
 
   "calendar.monthYearFormat": "MMMM [de] YYYY",
+  "calendar.tasks.incomplete": "Tareas pendientes",
 
   "defaults.headerDateFormat": "D [de] MMMM [de] YYYY",
 

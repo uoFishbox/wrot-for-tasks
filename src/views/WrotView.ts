@@ -685,6 +685,7 @@ export class WrotView extends ItemView {
       }
       calendarBtn.toggleClass("wr-toolbar-active", true);
       this.calendarPopover = openCalendarPopover({
+        app: this.app,
         anchor: calendarBtn,
         container: this.contentEl,
         initialDate: this.currentDate,
@@ -2183,6 +2184,7 @@ export class WrotView extends ItemView {
       this.schedulePickerAnchor = trigger;
       const form = trigger.closest<HTMLElement>(".wr-input-area") ?? undefined;
       this.schedulePopover = openCalendarPopover({
+        app: this.app,
         anchor: trigger,
         alignTo: form,
         container: this.contentEl,

@@ -147,7 +147,7 @@ body.wr-font-follow .wr-nav-btn .svg-icon {
   position: absolute;
   z-index: 50;
   width: max-content;
-  padding: 8px;
+  padding: 12px;
   background: var(--wr-bg-color, #f8f8f8);
   border: 1px solid rgba(var(--mono-rgb-100), 0.12);
   border-radius: 10px;
@@ -160,11 +160,11 @@ body.wr-font-follow .wr-nav-btn .svg-icon {
   align-items: center;
   justify-content: space-between;
   gap: 8px;
-  margin-bottom: 6px;
+  margin-bottom: 8px;
 }
 
 .workspace-leaf-content[data-type="wrot-view"] .wr-calendar-month-label {
-  font-size: var(--wr-font-ui-small);
+  font-size: calc(var(--wr-font-ui-small) + 2px);
   font-weight: 600;
   color: var(--text-normal);
   text-align: center;
@@ -242,12 +242,12 @@ body.wr-font-follow .wr-calendar-nav-btn .svg-icon {
 .workspace-leaf-content[data-type="wrot-view"] .wr-calendar-weekdays {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
-  margin-bottom: 2px;
+  margin-bottom: 4px;
 }
 
 .workspace-leaf-content[data-type="wrot-view"] .wr-calendar-weekday {
   text-align: center;
-  font-size: var(--wr-font-ui-smaller);
+  font-size: calc(var(--wr-font-ui-smaller) + 2px);
   color: var(--text-muted);
   padding: 2px 0;
 }
@@ -271,10 +271,10 @@ body.wr-font-follow .wr-calendar-nav-btn .svg-icon {
   box-shadow: none;
   cursor: pointer;
   color: var(--text-normal);
-  font-size: var(--wr-font-ui-small);
+  font-size: calc(var(--wr-font-ui-small) + 2px);
   line-height: 1;
   min-height: 0;
-  padding: 8px 0;
+  padding: 10px 0;
   border-radius: 14px;
   display: flex;
   align-items: center;
@@ -293,20 +293,21 @@ body.wr-font-follow .wr-calendar-nav-btn .svg-icon {
 }
 
 .workspace-leaf-content[data-type="wrot-view"] .wr-calendar-day {
+  position: relative;
   background: none;
   border: none;
   box-shadow: none;
   cursor: pointer;
   color: var(--text-normal);
-  font-size: var(--wr-font-ui-small);
+  font-size: calc(var(--wr-font-ui-small) + 2px);
   line-height: 1;
   min-height: 0;
   padding: 0;
   /* Obsidian gives every button a fixed height; with width: 100% + aspect-ratio the
      cell width was derived from that height, so two heavy digits overflowed. A definite
-     em width (28px at the 13px default) plus height: auto makes the font size decide
+     em width (40px at the 15px default) plus height: auto makes the font size decide
      and keeps the cell square. max-width lets narrow panes shrink it. */
-  width: 2.154em;
+  width: 2.667em;
   height: auto;
   max-width: 100%;
   min-width: 0;
@@ -316,6 +317,24 @@ body.wr-font-follow .wr-calendar-nav-btn .svg-icon {
   align-items: center;
   justify-content: center;
   border-radius: var(--wr-cal-day-radius, 50%);
+}
+
+.workspace-leaf-content[data-type="wrot-view"] .wr-calendar-task-dots {
+  position: absolute;
+  bottom: 0.2em;
+  left: 0;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.workspace-leaf-content[data-type="wrot-view"] .wr-calendar-task-dot {
+  display: block;
+  flex-shrink: 0;
+  /* Include the SVG's padding while keeping the circle itself the same size. */
+  width: 0.375em;
+  height: 0.375em;
 }
 
 .workspace-leaf-content[data-type="wrot-view"] .wr-calendar-day:hover {
@@ -2652,7 +2671,7 @@ body.is-mobile .wr-calendar-btn.wr-toolbar-active:hover:not(#x#y#z) {
 
 /* Mobile: finger-sized day cells; wider cap, max-height lids the vertical size */
 body.is-mobile .wr-calendar-day {
-  width: 2.615em;
+  width: 2.933em;
 }
 
 /* Mobile: on touch :hover sticks until the next tap, so after switching from

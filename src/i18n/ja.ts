@@ -203,6 +203,7 @@ const ja = {
   // Month/year label atop the calendar popover, as moment format tokens.
   // Literal chars (年/月) must be bracketed so moment does not parse them as tokens.
   "calendar.monthYearFormat": "YYYY[年]M[月]",
+  "calendar.tasks.incomplete": "未完了のタスクあり",
 
   // Locale-dependent defaults adopted on fresh install instead of DEFAULT_SETTINGS.
   "defaults.headerDateFormat": "YYYY年MM月DD日",

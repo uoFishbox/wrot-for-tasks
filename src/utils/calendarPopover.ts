@@ -1,11 +1,15 @@
-import { setIcon } from "obsidian";
+import { App, CachedMetadata, HoverParent, TFile, setIcon } from "obsidian";
+import { CALENDAR_HOVER_SOURCE } from "../constants";
 import { t } from "../i18n";
+import { dailyNotePathFor } from "./dailyNote";
+import { incompleteDailyNoteTasks } from "./dailyNoteTasks";
 
 declare const moment: typeof import("moment");
 
 type Moment = ReturnType<typeof moment>;
 
 interface CalendarPopoverOptions {
+  app: App;
   // Element the popover aligns to (the calendar button).
   anchor: HTMLElement;
   // Element whose right edge the popover's right edge meets, when that is not the anchor's.
@@ -36,12 +40,28 @@ export interface CalendarPopoverHandle {
 
 const GRID_CELLS = 6 * 7; // fixed 6 weeks so the height never changes per month
 
+function createTaskDot(container: HTMLElement): void {
+  const svg = container.createSvg("svg", {
+    cls: "wr-calendar-task-dot",
+    attr: {
+      // Leave space around the stroke so subpixel rendering cannot clip its edge.
+      viewBox: "-1 -1 12 12",
+      fill: "none",
+      stroke: "currentColor",
+      "stroke-width": "2",
+      "aria-hidden": "true",
+      focusable: "false",
+    },
+  });
+  svg.createSvg("circle", { attr: { cx: "5", cy: "5", r: "4" } });
+}
+
 // Custom calendar popover for jumping to a date. Replaces the OS input[type=date]
 // picker for a consistent look on all platforms; date math uses Obsidian's bundled moment.
 export function openCalendarPopover(
   opts: CalendarPopoverOptions
 ): CalendarPopoverHandle {
-  const { anchor, alignTo, container, initialDate, minDate, onSelect, onClose } = opts;
+  const { app, anchor, alignTo, container, initialDate, minDate, onSelect, onClose } = opts;
 
   // Month being shown, normalized to its first day.
   let viewMonth = initialDate.clone().startOf("month");
@@ -89,10 +109,63 @@ export function openCalendarPopover(
   const grid = popover.createDiv({ cls: "wr-calendar-grid" });
 
   let closed = false;
+  const hoverParent: HoverParent = { hoverPopover: null };
+  const closePreview = () => {
+    const preview = hoverParent.hoverPopover;
+    hoverParent.hoverPopover = null;
+    preview?.unload();
+    preview?.hoverEl.remove();
+  };
+  interface TaskCells {
+    cells: HTMLElement[];
+    revision: number;
+  }
+  // Paths also cover missing notes so creating a daily note updates the open calendar.
+  const taskCells = new Map<string, TaskCells>();
+
+  const showTasks = (entry: TaskCells, tasks: string[]) => {
+    for (const cell of entry.cells) {
+      cell.querySelector(".wr-calendar-task-dots")?.remove();
+      const labels: string[] = [];
+      if (tasks.length > 0) {
+        const dots = cell.createSpan({
+          cls: "wr-calendar-task-dots",
+          attr: { "aria-hidden": "true" },
+        });
+        createTaskDot(dots);
+        labels.push(t("calendar.tasks.incomplete"));
+        labels.push(...tasks.map((task) => `- ${task}`));
+      }
+      const label = [cell.getAttr("data-date"), ...labels].join("\n");
+      cell.setAttr("aria-label", label);
+    }
+  };
+
+  const onNoteChanged = (file: TFile, content: string, cache: CachedMetadata) => {
+    const entry = taskCells.get(file.path);
+    if (!entry) return;
+    entry.revision++;
+    showTasks(entry, incompleteDailyNoteTasks(content, cache));
+  };
+  const changedRef = app.metadataCache.on("changed", onNoteChanged);
+  const deletedRef = app.metadataCache.on("deleted", (file) => {
+    const entry = taskCells.get(file.path);
+    if (!entry) return;
+    entry.revision++;
+    showTasks(entry, []);
+  });
+  const renameRef = app.vault.on("rename", (file, oldPath) => {
+    if (taskCells.has(oldPath) || taskCells.has(file.path)) render();
+  });
 
   const close = () => {
     if (closed) return;
     closed = true;
+    closePreview();
+    taskCells.clear();
+    app.metadataCache.offref(changedRef);
+    app.metadataCache.offref(deletedRef);
+    app.vault.offref(renameRef);
     activeDocument.removeEventListener("pointerdown", onOutside, true);
     activeDocument.removeEventListener("keydown", onKeydown, true);
     popover.remove();
@@ -103,7 +176,8 @@ export function openCalendarPopover(
   // closing before a day cell's click lands.
   const onOutside = (e: PointerEvent) => {
     const target = e.target as Node | null;
-    if (target && (popover.contains(target) || anchor.contains(target))) {
+    if (target && (popover.contains(target) || anchor.contains(target) ||
+      hoverParent.hoverPopover?.hoverEl.contains(target))) {
       return;
     }
     close();
@@ -133,6 +207,8 @@ export function openCalendarPopover(
   };
 
   const renderMonth = () => {
+    closePreview();
+    taskCells.clear();
     monthLabel.setText(viewMonth.format(t("calendar.monthYearFormat")));
     weekdaysRow.setCssStyles({ display: "" });
     grid.removeClass("wr-calendar-grid-years");
@@ -149,7 +225,28 @@ export function openCalendarPopover(
       const cell = grid.createEl("button", {
         cls: "wr-calendar-day",
         text: String(day.date()),
+        attr: { "data-date": day.format("YYYY-MM-DD"), "aria-label": day.format("YYYY-MM-DD") },
       });
+      const path = dailyNotePathFor(day);
+      cell.addEventListener("mouseenter", (event) => {
+        // Resolve on every hover so notes created or removed while open are respected.
+        const file = app.vault.getAbstractFileByPath(path);
+        if (!(file instanceof TFile)) return;
+        app.workspace.trigger("hover-link", {
+          event,
+          source: CALENDAR_HOVER_SOURCE,
+          hoverParent,
+          targetEl: cell,
+          linktext: file.path,
+          sourcePath: "",
+        });
+      });
+      let entry = taskCells.get(path);
+      if (!entry) {
+        entry = { cells: [], revision: 0 };
+        taskCells.set(path, entry);
+      }
+      entry.cells.push(cell);
       if (!day.isSame(viewMonth, "month")) {
         cell.addClass("wr-calendar-day-outside");
       }
@@ -168,10 +265,25 @@ export function openCalendarPopover(
         close();
       });
     }
+
+    for (const [path, entry] of taskCells) {
+      const file = app.vault.getAbstractFileByPath(path);
+      if (!(file instanceof TFile)) continue;
+      const revision = entry.revision;
+      void app.vault.cachedRead(file).then((content) => {
+        // Ignore reads overtaken by edits, month navigation, renames or closing.
+        if (closed || taskCells.get(path) !== entry || entry.revision !== revision) return;
+        showTasks(entry, incompleteDailyNoteTasks(content, app.metadataCache.getFileCache(file)));
+      }).catch((error: unknown) => {
+        console.warn("Wrot: could not read calendar tasks", path, error);
+      });
+    }
   };
 
   // Year mode: the page of years containing viewMonth's year.
   const renderYears = () => {
+    closePreview();
+    taskCells.clear();
     const today = moment();
     const cur = viewMonth.year();
     // Page start year such that viewMonth's year falls within the page.

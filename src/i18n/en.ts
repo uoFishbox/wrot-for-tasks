@@ -199,6 +199,7 @@ const en = {
   "settings.item.submitIcon.lucideUrl": "https://lucide.dev/icons/",
 
   "calendar.monthYearFormat": "MMMM YYYY",
+  "calendar.tasks.incomplete": "Incomplete tasks",
 
   "defaults.headerDateFormat": "MMMM D, YYYY",
 
