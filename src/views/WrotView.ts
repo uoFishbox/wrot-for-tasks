@@ -16,6 +16,7 @@ import { TagSuggest, extractTagsForHistory, rebuildFocus } from "../utils/tagSug
 import { ComposerField } from "../editor/composerField";
 import { completeTimedTask } from "../editor/composerTimeTask";
 import { TimeTaskSuggest } from "../editor/timeTaskSuggest";
+import { RemainingTasks } from "./RemainingTasks";
 import { findLinkAt, isLinkableText, linkMarkdown } from "../editor/composerLink";
 import { HIGHLIGHT_EMOJI, TAG_SOURCE } from "../utils/patterns";
 import { isMathJaxReady, requestMathJax } from "../utils/mathjax";
@@ -191,6 +192,7 @@ export class WrotView extends ItemView {
   // catch-up whether there is anything to pick up.
   private lastRenderedDay: string | null = null;
   private listContainer!: HTMLElement;
+  private remainingTasks: RemainingTasks | null = null;
   private pinnedContainer: HTMLElement | null = null;
   private dateLabel!: HTMLElement;
   private dateNavEl!: HTMLElement;
@@ -319,6 +321,7 @@ export class WrotView extends ItemView {
     this.buildDateNav(container);
     this.buildInputArea(container);
     this.listContainer = container.createDiv({ cls: "wr-list" });
+    this.remainingTasks = this.addChild(new RemainingTasks(this.app, container, this.plugin));
 
     this.scope!.register(["Mod"], "Enter", (evt) => {
       if (this.composer?.hasFocus) {
@@ -375,6 +378,8 @@ export class WrotView extends ItemView {
   }
 
   onClose(): Promise<void> {
+    if (this.remainingTasks) this.removeChild(this.remainingTasks);
+    this.remainingTasks = null;
     if (this.draftTimer !== null) window.clearTimeout(this.draftTimer);
     this.draftTimer = null;
     // eslint-disable-next-line @typescript-eslint/no-floating-promises -- fire-and-forget; failure is non-critical

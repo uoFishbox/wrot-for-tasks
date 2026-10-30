@@ -1,18 +1,31 @@
 import type { CachedMetadata } from "obsidian";
-import { extractNonBlockText } from "./blockSegmenter";
+import { segmentBlocks } from "./blockSegmenter";
 import { parseListLine } from "./listParser";
 import { parseMemos } from "./memoParser";
 
+export interface DailyNoteTask {
+  line: number;
+  text: string;
+  time?: string;
+}
+
+/** Start of a leading H:mm / HH:mm time or time range, in minutes after midnight. */
+export function dailyNoteTaskStartMinutes(text: string): number | null {
+  const match = /^\s*([01]?\d|2[0-3]):([0-5]\d)(?:\s*-\s*(?:[01]?\d|2[0-3]):[0-5]\d)?(?=\s|$)/.exec(text);
+  return match ? Number(match[1]) * 60 + Number(match[2]) : null;
+}
+
 /** Native Markdown tasks plus the checkboxes Wrot renders inside its memo fences. */
-export function incompleteDailyNoteTasks(content: string, cache: CachedMetadata | null): string[] {
-  const tasks: { line: number; text: string }[] = [];
+export function incompleteDailyNoteTaskEntries(content: string, cache: CachedMetadata | null): DailyNoteTask[] {
+  const tasks: DailyNoteTask[] = [];
   const lines = content.split("\n");
   for (const item of cache?.listItems ?? []) {
     if (item.task !== " ") continue;
     const line = item.position.start.line;
-    const text = (lines[line] ?? "")
-      .replace(/^[\s>]*(?:[-+*]|\d+[.)])\s+\[ \](?:[ \t]+|$)/, "")
-      .trim();
+    const match = (lines[line] ?? "").match(/^[\s>]*(?:[-+*]|\d+[.)])\s+\[ \](?:[ \t]+|$)(.*)$/);
+    // Reads can finish before metadata has caught up with a checkbox write.
+    if (!match) continue;
+    const text = match[1].trim();
     tasks.push({ line, text });
   }
 
@@ -21,12 +34,27 @@ export function incompleteDailyNoteTasks(content: string, cache: CachedMetadata 
     if (!cache?.sections?.some((section) =>
       section.type === "code" && section.position.start.line === memo.lineStart
     )) continue;
-    for (const line of extractNonBlockText(memo.content).split("\n")) {
-      const item = parseListLine(line.replace(/^(?:\s*>\s?)*/, ""));
-      if (item?.kind === "check" && !item.checked) {
-        tasks.push({ line: memo.lineStart, text: item.content.trim() });
-      }
+    // rawBlock preserves blank lines stripped from memo.content, so source links
+    // still land on the actual task after blank lines or embedded code/math.
+    const body = memo.rawBlock.split("\n").slice(1);
+    if (body[body.length - 1]?.trim() === "```") body.pop();
+    for (const segment of segmentBlocks(body.join("\n"))) {
+      if (segment.kind !== "text") continue;
+      segment.text.split("\n").forEach((line, index) => {
+        const item = parseListLine(line.replace(/^(?:\s*>\s?)*/, ""));
+        if (item?.kind === "check" && !item.checked) {
+          tasks.push({
+            line: memo.lineStart + 1 + segment.startLine + index,
+            text: item.content.trim(),
+            time: memo.time,
+          });
+        }
+      });
     }
   }
-  return tasks.sort((a, b) => a.line - b.line).map((task) => task.text);
+  return tasks.sort((a, b) => a.line - b.line);
+}
+
+export function incompleteDailyNoteTasks(content: string, cache: CachedMetadata | null): string[] {
+  return incompleteDailyNoteTaskEntries(content, cache).map((task) => task.text);
 }

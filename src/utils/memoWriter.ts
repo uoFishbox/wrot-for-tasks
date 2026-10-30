@@ -3,15 +3,18 @@ import { App, TFile } from "obsidian";
 export async function toggleCheckbox(
   app: App,
   file: TFile,
-  lineNumber: number
+  lineNumber: number,
+  options: { expectedText?: string; checked?: boolean } = {}
 ): Promise<void> {
   await app.vault.process(file, (data) => {
     const lines = data.split("\n");
     if (lineNumber < 0 || lineNumber >= lines.length) return data;
     const line = lines[lineNumber];
-    const match = line.match(/^((?:>\s?)*[ \t\u3000]*- \[)([ x])(\] .*)$/);
+    const match = line.match(/^([\s>]*(?:[-+*]|\d+[.)])[ \t]+\[)([ xX])(\][ \t]*)(.*)$/);
     if (!match) return data;
-    lines[lineNumber] = match[1] + (match[2] === " " ? "x" : " ") + match[3];
+    if (options.expectedText !== undefined && match[4].trim() !== options.expectedText) return data;
+    const checked = options.checked ?? match[2] === " ";
+    lines[lineNumber] = match[1] + (checked ? "x" : " ") + match[3] + match[4];
     return lines.join("\n");
   });
 }

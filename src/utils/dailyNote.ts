@@ -44,6 +44,20 @@ export function dailyNotePathFor(date: ReturnType<typeof moment>): string {
   return buildNotePath(date).path;
 }
 
+/** Parse the entire configured path, including date tokens in parent folders. */
+export function dateForDailyNote(file: TFile): ReturnType<typeof moment> | null {
+  if (file.extension.toLowerCase() !== "md") return null;
+  const settings = getDailyNoteSettings();
+  const folder = normalizePath(settings?.folder?.trim() || "");
+  const prefix = folder && folder !== "/" ? `${folder}/` : "";
+  if (!file.path.startsWith(prefix)) return null;
+  const format = settings?.format || "YYYY-MM-DD";
+  const relative = file.path.slice(prefix.length);
+  const name = format.endsWith(".md") ? relative : relative.slice(0, -3);
+  const date = moment(name, format, true);
+  return date.isValid() && dailyNotePathFor(date) === file.path ? date : null;
+}
+
 /** The note's name as Templater's tp.file.title gives it: the basename, without folders. */
 export function dailyNoteTitle(date: ReturnType<typeof moment>): string {
   return buildNotePath(date).filename.split("/").pop() ?? "";

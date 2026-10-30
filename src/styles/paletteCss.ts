@@ -84,6 +84,7 @@ export function buildPaletteCss(palette: WrPalette): string {
       body .wr-content,
       body .wr-textarea,
       body .wr-date-label,
+      body .wr-remaining-tasks-header h3,
       body .wr-calendar-month-label,
       body .wr-calendar-day:not(.wr-calendar-day-selected):not(.wr-calendar-day-today):not(.wr-calendar-day-outside):not(.wr-calendar-day-disabled),
       body .wr-calendar-year:not(.wr-calendar-day-selected):not(.wr-calendar-day-today):not(.wr-calendar-day-disabled),
@@ -100,6 +101,10 @@ export function buildPaletteCss(palette: WrPalette): string {
         color: ${textColor};
       }
       body .wr-calendar-weekday,
+      body .wr-remaining-tasks-count,
+      body .wr-remaining-tasks-status,
+      body .wr-remaining-task-source,
+      body .wr-remaining-task-days,
       body .wr-calendar-nav-btn {
         color: ${mutedColor};
       }
