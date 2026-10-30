@@ -1,6 +1,7 @@
 import { App, CachedMetadata, Component, Notice, TFile } from "obsidian";
 import { dateForDailyNote } from "../utils/dailyNote";
 import { DailyNoteTask, dailyNoteTaskStartMinutes, incompleteDailyNoteTaskEntries } from "../utils/dailyNoteTasks";
+import { calendarDateValue, remainingTaskTimeLabel } from "../utils/remainingTaskTime";
 import { toggleCheckbox } from "../utils/memoWriter";
 import { renderTextWithTagsAndUrls, renderUrlPreviews } from "../utils/urlRenderer";
 import { renderQuoteCard } from "../utils/quoteCard";
@@ -10,12 +11,7 @@ import { t } from "../i18n";
 interface RemainingTask extends DailyNoteTask {
   filePath: string;
   noteDate: number;
-  startMinutes: number;
-}
-
-// Compare calendar dates without time-of-day or daylight-saving offsets.
-function calendarDateValue(date: Date): number {
-  return Date.UTC(date.getFullYear(), date.getMonth(), date.getDate());
+  startMinutes: number | null;
 }
 
 /** A view-local index: one initial scan, then only changed daily notes are parsed. */
@@ -31,6 +27,7 @@ export class RemainingTasks extends Component {
   private renderTimer: number | null = null;
   private completingRows = new Map<HTMLElement, number | null>();
   private sectionResizeAnimation: Animation | null = null;
+  private timeLabels = new Map<HTMLElement, RemainingTask>();
 
   constructor(private app: App, container: HTMLElement, private plugin: WrotPlugin) {
     super();
@@ -48,7 +45,9 @@ export class RemainingTasks extends Component {
     this.closed = false;
     let today = calendarDateValue(new Date());
     this.registerInterval(this.section.win.setInterval(() => {
-      const day = calendarDateValue(new Date());
+      const now = new Date();
+      const day = calendarDateValue(now);
+      this.updateTimeLabels(now);
       if (day === today) return;
       today = day;
       this.render();
@@ -81,6 +80,7 @@ export class RemainingTasks extends Component {
     this.sectionResizeAnimation?.cancel();
     this.sectionResizeAnimation = null;
     this.tasks.clear();
+    this.timeLabels.clear();
     this.revisions.clear();
     this.section.remove();
   }
@@ -109,7 +109,7 @@ export class RemainingTasks extends Component {
       ...task,
       filePath: file.path,
       noteDate: calendarDateValue(date.toDate()),
-      startMinutes: dailyNoteTaskStartMinutes(task.text) ?? 24 * 60,
+      startMinutes: dailyNoteTaskStartMinutes(task.text),
     }));
     if (entries.length > 0) this.tasks.set(file.path, entries);
     else this.tasks.delete(file.path);
@@ -151,15 +151,17 @@ export class RemainingTasks extends Component {
   private render(): void {
     // Metadata updates must not replace rows while their completion feedback is visible.
     if (this.closed || this.completingRows.size > 0) return;
-    const today = calendarDateValue(new Date());
+    const now = new Date();
+    const today = calendarDateValue(now);
     const tasks = [...this.tasks.values()].flat().sort((a, b) =>
       Math.abs(a.noteDate - today) - Math.abs(b.noteDate - today)
-      || b.noteDate - a.noteDate || a.startMinutes - b.startMinutes
+      || b.noteDate - a.noteDate || (a.startMinutes ?? 24 * 60) - (b.startMinutes ?? 24 * 60)
       || a.filePath.localeCompare(b.filePath) || a.line - b.line
     );
     const scrollTop = this.list.scrollTop;
     this.count.setText(String(tasks.length));
     this.list.empty();
+    this.timeLabels.clear();
     if (this.loading || this.failed.size > 0 || tasks.length === 0) {
       this.list.createDiv({
         cls: "wr-remaining-tasks-status",
@@ -221,14 +223,11 @@ export class RemainingTasks extends Component {
         text: task.filePath.replace(/\.md$/i, ""),
         attr: { href: task.filePath, "aria-label": `${task.filePath}:${task.line + 1}` },
       });
-      const days = (task.noteDate - today) / 86_400_000;
-      meta.createSpan({
+      const timeLabel = meta.createSpan({
         cls: "wr-remaining-task-days",
-        text: days === 0 ? t("view.dateNav.today") : t(
-          days > 0 ? "view.tasks.daysRemaining" : "view.tasks.daysElapsed",
-          { days: Math.abs(days) },
-        ),
+        text: remainingTaskTimeLabel(task.noteDate, task.startMinutes, now),
       });
+      this.timeLabels.set(timeLabel, task);
       link.addEventListener("click", (event) => {
         event.preventDefault();
         void this.openTask(task, event.ctrlKey || event.metaKey).catch((error: unknown) => {
@@ -238,6 +237,12 @@ export class RemainingTasks extends Component {
       });
     }
     this.list.scrollTop = scrollTop;
+  }
+
+  private updateTimeLabels(now: Date): void {
+    for (const [label, task] of this.timeLabels) {
+      label.setText(remainingTaskTimeLabel(task.noteDate, task.startMinutes, now));
+    }
   }
 
   private finishCompletion(row: HTMLElement, completed: boolean): void {
