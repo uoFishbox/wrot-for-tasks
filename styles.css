@@ -11,21 +11,38 @@
    Injected sheets sit at the end of <head> so ties resolve in their favor.
    Priority-flag opponents (some themes / mobile app) win by design. */
 
-.wr-container {
-  padding: 12px 12px 0;
+.workspace-leaf-content[data-type="wrot-view"] .view-content.wr-container {
+  --wr-content-gutter: var(--size-4-3);
   display: flex;
   flex-direction: column;
   height: 100%;
+  min-height: 0;
+  padding: var(--wr-view-padding-top, var(--size-4-3)) 0 var(--wr-view-padding-bottom, 0px);
   overflow: hidden;
   /* Positioning context for the absolutely placed calendar popover */
   position: relative;
 }
 
-/* Cap width and center when placed in the main area (tab). Only margin-inline
-   is set: vertical margins stay with the parent flex, or mobile main-area
-   content drifts upward. */
+/* Keep scrollports full-width even in a main-area tab. Only their contents
+   are capped, so the scrollbar stays against the pane edge. */
 .workspace-split.mod-root .workspace-leaf-content[data-type="wrot-view"] .wr-container {
-  max-width: 760px;
+  --wr-content-max-width: calc(760px - 2 * var(--wr-content-gutter));
+}
+
+.wr-container > .wr-date-nav,
+.wr-container > .wr-input-area,
+.wr-remaining-tasks-header {
+  width: calc(100% - 2 * var(--wr-content-gutter));
+  max-width: var(--wr-content-max-width, none);
+  margin-inline: auto;
+}
+
+.wr-list > *,
+.wr-pinned-fixed > *,
+.wr-remaining-tasks-list > * {
+  width: 100%;
+  min-width: 0;
+  max-width: var(--wr-content-max-width, none);
   margin-inline: auto;
 }
 
@@ -1087,6 +1104,7 @@ body .wr-submit-btn.wr-submit-active {
   /* Caps the box so tall pins cannot squeeze the timeline below to nothing. */
   flex: 0 0 auto;
   max-height: 50%;
+  padding-inline: var(--wr-content-gutter);
   overflow-y: auto;
 }
 
@@ -1097,6 +1115,7 @@ body .wr-submit-btn.wr-submit-active {
   flex: 1;
   overflow-y: auto;
   min-height: 0;
+  padding-inline: var(--wr-content-gutter);
   /* The floor is empty space the schedule picker adds under the last card when it
      needs somewhere to open into. Zero at rest; its height is measured, so only the
      value comes from script. */
@@ -1116,7 +1135,6 @@ body .wr-submit-btn.wr-submit-active {
   flex: 0 1 auto;
   min-height: 70px;
   max-height: 32%;
-  margin-top: 8px;
   border-top: 1px solid var(--background-modifier-border);
 }
 
@@ -1148,6 +1166,7 @@ body .wr-submit-btn.wr-submit-active {
 .wr-remaining-tasks-list {
   overflow-y: auto;
   min-height: 0;
+  padding-inline: var(--wr-content-gutter);
   overscroll-behavior: contain;
 }
 
@@ -2704,30 +2723,31 @@ body .wr-lp-media.wr-has-link {
 
 /* Mobile adjustments */
 .is-mobile .wr-container {
-  padding: 6px 12px;
+  --wr-view-padding-top: 6px;
+  --wr-view-padding-bottom: 6px;
 }
 
 /* Fixed phone navigation overlays custom views; reserve its space outside both
    scroll areas so even a short task list stays fully above the navigation. */
 .is-phone .wr-container {
-  padding-bottom: calc(6px + max(0px, var(--view-bottom-spacing, 0px)));
+  --wr-view-padding-bottom: calc(6px + max(0px, var(--view-bottom-spacing, 0px)));
 }
 
 /* The floating bar keeps a minimum bottom offset even without a safe-area inset. */
 .is-phone.is-floating-nav .wr-container {
-  padding-bottom: calc(6px + max(0px,
+  --wr-view-padding-bottom: calc(6px + max(0px,
     var(--navbar-height, 0px) + var(--navbar-bottom-offset, 0px) - var(--keyboard-height, 0px)));
 }
 
 /* Side drawers sit outside the phone navigation overlay. */
 .is-mobile .workspace-drawer .wr-container {
-  padding-bottom: 0;
+  --wr-view-padding-bottom: 0px;
 }
 
 .is-mobile .workspace-drawer.mod-right .wr-container,
 .is-mobile .workspace-drawer.mod-left .wr-container
 {
-  padding-bottom: 24px;
+  --wr-view-padding-bottom: 24px;
 }
 
 .is-mobile .wr-date-nav {
