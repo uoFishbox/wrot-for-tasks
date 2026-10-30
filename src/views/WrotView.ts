@@ -630,6 +630,7 @@ export class WrotView extends ItemView {
     prevBtn.addEventListener("click", () => {
       this.currentDate = this.currentDate.clone().subtract(1, "day");
       this.anchoredToToday = false;
+      this.focusInput();
       // eslint-disable-next-line @typescript-eslint/no-floating-promises -- fire-and-forget; failure is non-critical
       this.refresh();
     });
@@ -649,6 +650,7 @@ export class WrotView extends ItemView {
     nextBtn.addEventListener("click", () => {
       this.currentDate = this.currentDate.clone().add(1, "day");
       this.anchoredToToday = false;
+      this.focusInput();
       // eslint-disable-next-line @typescript-eslint/no-floating-promises -- fire-and-forget; failure is non-critical
       this.refresh();
     });
@@ -657,6 +659,7 @@ export class WrotView extends ItemView {
     todayBtn.addEventListener("click", () => {
       this.currentDate = moment();
       this.anchoredToToday = true;
+      this.focusInput();
       // eslint-disable-next-line @typescript-eslint/no-floating-promises -- fire-and-forget; failure is non-critical
       this.refresh();
     });
@@ -692,6 +695,7 @@ export class WrotView extends ItemView {
         onSelect: (date) => {
           this.currentDate = date;
           this.anchoredToToday = false;
+          this.focusInput();
           // eslint-disable-next-line @typescript-eslint/no-floating-promises -- fire-and-forget; failure is non-critical
           this.refresh();
         },
