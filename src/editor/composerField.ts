@@ -2,6 +2,7 @@ import { Compartment, EditorState, StateEffect, StateField } from "@codemirror/s
 import { Decoration, DecorationSet, EditorView, keymap } from "@codemirror/view";
 import { history, historyKeymap, insertNewline, standardKeymap } from "@codemirror/commands";
 import { autoPairs } from "./composerPairs";
+import { insertTaskOnSpace } from "../utils/textareaEditor";
 import { armEffectOf, armedOpener, checkStrikethrough, commitTypedLine, drawnListMarkerAt, redrawEffect, visualMode } from "./composerVisual";
 
 type Listener = (e: Event) => void;
@@ -57,6 +58,11 @@ export class ComposerField {
         extensions: [
           history(),
           autoPairs(autoPair),
+          EditorView.inputHandler.of((view, from, to, text) => {
+            if ((text !== " " && text !== "\u3000") || view.composing || view.state.readOnly) return false;
+            if (view.state.selection.ranges.length !== 1 || from !== to || from !== this.selectionStart) return false;
+            return insertTaskOnSpace(this);
+          }),
           // Plain newline first: the standard binding copies the line's indentation,
           // which a textarea never did. Lists get their marker from the view's handler.
           keymap.of([

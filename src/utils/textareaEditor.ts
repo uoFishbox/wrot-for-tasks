@@ -67,6 +67,23 @@ function currentLineBounds(val: string, pos: number): { start: number; end: numb
   return { start, end: newline === -1 ? val.length : newline };
 }
 
+/** Starts a task when a half-width or ideographic space is typed at the beginning of a plain line. */
+export function insertTaskOnSpace(ta: ComposerField): boolean {
+  const pos = ta.selectionStart;
+  if (pos !== ta.selectionEnd) return false;
+  const val = ta.value;
+  const { start, end } = currentLineBounds(val, pos);
+  if (pos !== start || parseListLine(val.slice(start, end), true)) return false;
+  const line = val.slice(0, pos).split("\n").length - 1;
+  if (findBlockRanges(val.split("\n")).some((b) => line >= b.startLine && line <= b.endLine)) return false;
+
+  const marker = "- [ ] ";
+  ta.value = val.slice(0, pos) + marker + val.slice(pos);
+  ta.setSelectionRange(pos + marker.length, pos + marker.length);
+  ta.dispatchEvent(new Event("input"));
+  return true;
+}
+
 /**
  * Toggles a line-level marker ("- ", "- [ ] ", "1. ") at the caret's line.
  * Re-applying the same marker removes it; a different one replaces it.
@@ -119,6 +136,26 @@ function splitQuoted(line: string): { quote: string; depth: number; rest: string
   const quote = QUOTE_PREFIX_RE.exec(line)?.[0] ?? "";
   const rest = line.slice(quote.length);
   return { quote, depth: (quote.match(/>/g) ?? []).length, rest, item: parseListLine(rest, true) };
+}
+
+/** Removes the entire task marker at the caret, keeping its text, quote and indent. */
+export function deleteTaskOnBackspace(ta: ComposerField): boolean {
+  const pos = ta.selectionStart;
+  if (pos !== ta.selectionEnd) return false;
+  const val = ta.value;
+  const { start, end } = currentLineBounds(val, pos);
+  const { quote, item } = splitQuoted(val.slice(start, end));
+  if (item?.kind !== "check") return false;
+  const from = start + quote.length + item.indentLength;
+  const to = from + item.markerLength;
+  if (pos < from || pos > to) return false;
+  const line = val.slice(0, start).split("\n").length - 1;
+  if (findBlockRanges(val.split("\n")).some((b) => line >= b.startLine && line <= b.endLine)) return false;
+
+  ta.value = val.slice(0, from) + val.slice(to);
+  ta.setSelectionRange(from, from);
+  ta.dispatchEvent(new Event("input"));
+  return true;
 }
 
 /**

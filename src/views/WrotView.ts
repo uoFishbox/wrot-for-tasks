@@ -23,6 +23,7 @@ import {
   continueCodeIndentOnEnter,
   continueListOnEnter,
   continueQuoteOnEnter,
+  deleteTaskOnBackspace,
   insertAtLineStart,
   insertCodeIndent,
   insertFenceBlock,
@@ -809,9 +810,15 @@ export class WrotView extends ItemView {
           continueQuoteOnEnter(this.composer)
         ) e.preventDefault();
       }
-      // Backspace on either side of a list marker steps a nested item out a level; at the top
-      // level it reveals the marker, as from after it.
-      if (e.key === "Backspace" && !e.shiftKey && !e.altKey && !e.ctrlKey && !e.metaKey) {
+      // Task markers are removed as a whole; other list markers keep their outdent/reveal behavior.
+      if (
+        e.key === "Backspace" && !e.shiftKey && !e.altKey && !e.ctrlKey && !e.metaKey &&
+        !this.composer.view.state.readOnly
+      ) {
+        if (deleteTaskOnBackspace(this.composer)) {
+          e.preventDefault();
+          return;
+        }
         const markerEnd = this.composer.listMarkerAtCaret();
         if (markerEnd !== null) {
           if (shiftListIndent(this.composer, true)) e.preventDefault();
