@@ -1,5 +1,7 @@
 # Wrot
 
+> **Wrot for Task fork**: task features built on upstream Wrot. Install via [this fork's releases](https://github.com/uoFishbox/wrot-for-task/releases) or BRAT (`uoFishbox/wrot-for-task`). See [fork versions and release procedure](docs/FORK_RELEASES.md).
+
 **English** ・ [日本語](https://github.com/villyoshioka/Wrot/blob/main/docs/ja/README.md)
 
 **Micro-journaling for Obsidian. Capture your day like you're tweeting to yourself.**

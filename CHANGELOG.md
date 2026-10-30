@@ -1,5 +1,23 @@
 # Release Notes
 
+## 3.1.0-task.1 - 2026-10-31
+
+First task-focused fork release, based on upstream Wrot 3.1.0. See [fork versioning and releases](docs/FORK_RELEASES.md).
+
+### New Features
+
+- Added a remaining daily note tasks panel with source links and completion animations.
+- Added relative start-time labels for single-time and time-range tasks, refreshed every minute.
+- Added timed task shortcuts and autocomplete with Tab to enter an end time.
+- Enlarged the calendar and added incomplete-task indicators and daily note previews.
+
+### Improvements
+
+- Improved composer focus after date navigation and sidebar scrolling.
+- Distinguished fork release versions from upstream versions using the `-task.N` suffix.
+
+---
+
 ## 3.1.0 - 2026-10-21
 
 ### Updates

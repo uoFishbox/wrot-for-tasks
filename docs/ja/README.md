@@ -1,5 +1,7 @@
 # Wrot
 
+> **Wrot for Task fork**: Wrotをベースにタスク機能を追加したforkです。[このforkのリリース](https://github.com/uoFishbox/wrot-for-task/releases)またはBRAT（`uoFishbox/wrot-for-task`）から導入してください。[バージョン命名とリリース手順](../FORK_RELEASES.md)も参照してください。
+
 [English](https://github.com/villyoshioka/Wrot/blob/main/README.md) ・ **日本語**
 
 **Obsidian で、つぶやくように日々を記録するプラグイン。**

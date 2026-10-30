@@ -31,8 +31,8 @@ jobs:
             exit 1
           fi
 
-          if ! printf '%s' "$TAG" | grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+$'; then
-            echo "::error::タグ '${TAG}' が x.y.z 形式ではありません。"
+          if ! printf '%s' "$TAG" | grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+(-task\.[1-9][0-9]*)?$'; then
+            echo "::error::タグ '${TAG}' が x.y.z または x.y.z-task.N 形式ではありません。"
             exit 1
           fi
 
@@ -73,16 +73,13 @@ jobs:
       - name: Lint
         run: npm run lint
 
-      # main.js はリポジトリ追跡の生成物をそのまま配布する運用。
-      # ビルドし直して差分が出た場合、コミット漏れ＝古い成果物の出荷を意味するので落とす。
-      - name: Verify committed build is up to date
+      - name: Test
+        run: node --test scripts/test-*.mjs
+
+      # main.js は gitignore 対象。タグのソースからビルドした成果物を配布する。
+      - name: Build release assets
         run: |
           npm run build
-          if ! git diff --exit-code -- main.js styles.css; then
-            echo "::error::ビルド成果物がコミット内容と一致しません。npm run build を実行してコミットし直してください。"
-            exit 1
-          fi
-          echo "コミット済みのビルド成果物が最新であることを確認しました。"
 
       # リポジトリの styles.css は非圧縮版。リリースアセットだけ圧縮する
       - name: Minify styles.css for release
@@ -100,7 +97,7 @@ jobs:
         uses: softprops/action-gh-release@v3
         with:
           name: ${{ github.ref_name }}
-          body: ''
+          body_path: RELEASE_NOTES.md
           draft: false
           prerelease: false
           files: |
