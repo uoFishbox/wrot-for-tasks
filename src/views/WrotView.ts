@@ -14,6 +14,8 @@ import { openLinkPopover, LinkPopoverHandle } from "../utils/linkPopover";
 import { buildDateDrum } from "../utils/dateDrum";
 import { TagSuggest, extractTagsForHistory, rebuildFocus } from "../utils/tagSuggest";
 import { ComposerField } from "../editor/composerField";
+import { completeTimedTask } from "../editor/composerTimeTask";
+import { TimeTaskSuggest } from "../editor/timeTaskSuggest";
 import { findLinkAt, isLinkableText, linkMarkdown } from "../editor/composerLink";
 import { HIGHLIGHT_EMOJI, TAG_SOURCE } from "../utils/patterns";
 import { isMathJaxReady, requestMathJax } from "../utils/mathjax";
@@ -205,6 +207,7 @@ export class WrotView extends ItemView {
   private armedSchedule: string | null = null;
   private scheduleArmBtn: HTMLButtonElement | null = null;
   private tagSuggest: TagSuggest | null = null;
+  private timeTaskSuggest: TimeTaskSuggest | null = null;
   composer!: ComposerField;
   submitLabelEl!: HTMLElement;
   submitIconEl!: HTMLElement;
@@ -378,6 +381,8 @@ export class WrotView extends ItemView {
     this.persistDraft();
     this.tagSuggest?.destroy();
     this.tagSuggest = null;
+    this.timeTaskSuggest?.destroy();
+    this.timeTaskSuggest = null;
     // Before the composer goes: closing hands focus back to it otherwise.
     this.linkPopover?.close(true);
     this.composer?.destroy();
@@ -785,12 +790,24 @@ export class WrotView extends ItemView {
       getCandidates: () => this.plugin.recentTags,
       isEnabled: () => this.plugin.settings.tagSuggestEnabled,
     });
+    this.timeTaskSuggest = new TimeTaskSuggest(this.app, this.composer, () => {
+      // eslint-disable-next-line @typescript-eslint/no-floating-promises -- same submit action as the view's Mod+Enter shortcut
+      this.submitMemo();
+    });
 
     this.composer.addEventListener("keydown", (e: KeyboardEvent) => {
       if (e.isComposing) return;
       // Suggest dropdown handles navigation keys first; Mod+Enter only closes it
       // without being consumed, so it falls through to the submit handling below.
       if (this.tagSuggest?.handleKeydown(e)) return;
+      if (
+        (e.key === "Enter" || e.key === "Tab") &&
+        !e.shiftKey && !e.altKey && !e.ctrlKey && !e.metaKey &&
+        completeTimedTask(this.composer.view)
+      ) {
+        e.preventDefault();
+        return;
+      }
       // Escape leaves edit mode from the keyboard: the cancel menu item can be out
       // of reach when the target card is scrolled away or on another date.
       if (e.key === "Escape" && this.editingMemo) {
@@ -869,7 +886,8 @@ export class WrotView extends ItemView {
 
     // The suggest dropdown can overlap the toolbar; while it is shown (and during the
     // ghost-click window right after a tap-commit) toolbar buttons must not react.
-    const toolbarSuppressed = () => this.tagSuggest?.isSuppressingUi() ?? false;
+    const toolbarSuppressed = () =>
+      (this.tagSuggest?.isSuppressingUi() ?? false) || (this.timeTaskSuggest?.isSuppressingUi() ?? false);
 
     // Buttons are born detached: applyToolbarLayout is the only thing that puts one on
     // the bar, so an action that lives in the overflow menu simply never gets appended.
@@ -1246,6 +1264,7 @@ export class WrotView extends ItemView {
         updateActive();
         // Close or reposition the tag dropdown when the caret moves off the tag.
         this.tagSuggest?.refresh();
+        this.timeTaskSuggest?.refresh();
       }
     });
     // selectionchange does not fire on focus gain, so sync explicitly.
@@ -1326,7 +1345,9 @@ export class WrotView extends ItemView {
     // Refresh on both input and compositionend so uncommitted IME text also filters candidates.
     this.composer.addEventListener("input", () => this.scheduleDraftSave());
     this.composer.addEventListener("input", () => this.tagSuggest?.refresh());
+    this.composer.addEventListener("input", () => this.timeTaskSuggest?.refresh());
     this.composer.addEventListener("compositionend", () => this.tagSuggest?.refresh());
+    this.composer.addEventListener("compositionend", () => this.timeTaskSuggest?.refresh());
     this.composer.addEventListener("blur", () => this.tagSuggest?.notifyBlur());
 
     // Wrap detection via offsetTop, which padding changes don't affect, so the

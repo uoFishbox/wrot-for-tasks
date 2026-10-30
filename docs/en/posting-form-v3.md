@@ -39,6 +39,28 @@ Whenever you type out syntax like `**bold**` manually, the markers stay visible 
 
 - When you restore a draft or edit a previous post, all formatting opens up already rendered.
 
+### Timed Task Shortcuts
+
+Type `@` to show quarter-hour suggestions from `00:00` through `23:45`. Keep typing digits to narrow the list.
+
+Single-digit hours work too: `@8` suggests `08:00`, `08:15`, `08:30`, and `08:45`. `@2` includes the quarter-hour suggestions from `02:00` through `02:45` alongside those from `20:00` through `23:45`.
+
+After a checkbox, you can omit `@`: `- [ ] 20` or `- [ ] 20:` suggests `20:00`, `20:15`, `20:30`, and `20:45`. Selecting a time reuses the checkbox, and Tab moves to end-time suggestions.
+
+Type `@20` to see `20:00`, `20:15`, `20:30`, and `20:45` in Obsidian's native suggestion popup. Choose with the arrow keys and Enter, or click a suggestion, to create a timed task such as `- [ ] 20:00 `. Typing `@2000-21` suggests `21:00`, `21:15`, `21:30`, and `21:45` as end times. Press Escape to dismiss the popup.
+
+Press **Tab** on a start-time suggestion to insert `- [ ] 20:00-` and move to end-time suggestions. Type `21` to narrow these to `21:00`, `21:15`, `21:30`, and `21:45`. Confirm the end time with **Enter or Tab**, or click it, then continue typing the task name.
+
+End-time suggestions start at the start time and stay within the same day. After `08:00-`, the list begins with `08:00`, `08:15`, and `08:30`. Typing digits never suggests an end time earlier than the start time.
+
+At the start of a line, typing `@2000` and pressing **Space or Enter** also inserts `- [ ] 20:00 `.
+
+- `@0900` → `- [ ] 09:00 `
+- `@2000-2100` → `- [ ] 20:00-21:00 `
+- `- [ ] @0900` → `- [ ] 09:00 ` (reuses the checkbox)
+
+Four digits stay unconverted until you confirm, so you can keep typing a range. Times use `0000`–`2359`, with minutes from `00` to `59`. Shortcuts inside code or math blocks, or in the middle of prose, stay literal.
+
 ### Brackets and Quotes
 
 Typing `(`, `[`, `{`, `"` or `'` adds the closing half automatically and puts the cursor between them.
