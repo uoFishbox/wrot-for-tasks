@@ -1136,6 +1136,12 @@ body .wr-submit-btn.wr-submit-active {
   min-height: 70px;
   max-height: 32%;
   border-top: 1px solid var(--background-modifier-border);
+
+}
+
+.workspace-split.mod-right-split .wr-remaining-tasks-list,
+.workspace-drawer.mod-right .wr-remaining-tasks-list {
+  padding-bottom: var(--size-4-8);
 }
 
 .wr-remaining-tasks-header {
