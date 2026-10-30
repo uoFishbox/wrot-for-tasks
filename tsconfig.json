@@ -8,7 +8,7 @@
     "isolatedModules": true,
     "strict": true,
     "esModuleInterop": true,
-    "lib": ["DOM", "ES2022"]
+    "lib": ["DOM", "DOM.Iterable", "ES2022"]
   },
   "include": ["src/**/*.ts"]
 }

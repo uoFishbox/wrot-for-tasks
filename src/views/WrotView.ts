@@ -1343,7 +1343,7 @@ export class WrotView extends ItemView {
     // Indenting an item by hand moves it to another level, so its number has to follow.
     // Held back mid-composition: rewriting the value then would drop the IME's pending text.
     this.composer.addEventListener("input", (e) => {
-      if (e.isComposing) return;
+      if ("isComposing" in e && e.isComposing) return;
       syncListFormatting(this.composer);
     });
 
