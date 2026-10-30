@@ -29,6 +29,8 @@ export class RemainingTasks extends Component {
   private loading = true;
   private failed = new Set<string>();
   private renderTimer: number | null = null;
+  private completingRows = new Map<HTMLElement, number | null>();
+  private sectionResizeAnimation: Animation | null = null;
 
   constructor(private app: App, container: HTMLElement, private plugin: WrotPlugin) {
     super();
@@ -72,6 +74,12 @@ export class RemainingTasks extends Component {
     this.closed = true;
     if (this.renderTimer !== null) this.section.win.clearTimeout(this.renderTimer);
     this.renderTimer = null;
+    for (const timer of this.completingRows.values()) {
+      if (timer !== null) this.section.win.clearTimeout(timer);
+    }
+    this.completingRows.clear();
+    this.sectionResizeAnimation?.cancel();
+    this.sectionResizeAnimation = null;
     this.tasks.clear();
     this.revisions.clear();
     this.section.remove();
@@ -141,6 +149,8 @@ export class RemainingTasks extends Component {
   }
 
   private render(): void {
+    // Metadata updates must not replace rows while their completion feedback is visible.
+    if (this.closed || this.completingRows.size > 0) return;
     const today = calendarDateValue(new Date());
     const tasks = [...this.tasks.values()].flat().sort((a, b) =>
       Math.abs(a.noteDate - today) - Math.abs(b.noteDate - today)
@@ -168,9 +178,21 @@ export class RemainingTasks extends Component {
         onCheckToggle: (_lineIndex, checked) => {
           const checkbox = contentEl.querySelector<HTMLInputElement>('input[type="checkbox"]');
           if (checkbox) checkbox.disabled = true;
-          void this.toggleTask(task, checked).catch((error: unknown) => {
+          if (checked) this.completingRows.set(row, null);
+          void this.toggleTask(task, checked).then(() => {
+            if (this.closed || !checked) return;
+            row.addClass("wr-remaining-task-completing");
+            const timer = this.section.win.setTimeout(() => this.finishCompletion(row, true), 450);
+            this.completingRows.set(row, timer);
+          }).catch((error: unknown) => {
             new Notice(t("view.notice.saveFailed", { error: String(error) }));
-            if (!this.closed) this.render();
+            if (this.closed) return;
+            if (checkbox) {
+              checkbox.checked = !checked;
+              checkbox.disabled = false;
+            }
+            contentEl.querySelector(".wr-check-done")?.classList.remove("wr-check-done");
+            this.finishCompletion(row, false);
           });
         },
         onInternalLinkClick: (linkName) => {
@@ -216,6 +238,32 @@ export class RemainingTasks extends Component {
       });
     }
     this.list.scrollTop = scrollTop;
+  }
+
+  private finishCompletion(row: HTMLElement, completed: boolean): void {
+    this.completingRows.delete(row);
+    if (this.closed) return;
+    const previousHeight = completed
+      ? parseFloat(this.section.win.getComputedStyle(this.section).height)
+      : 0;
+    if (completed) {
+      // Start from the visible height if another completion is still resizing the section.
+      this.sectionResizeAnimation?.cancel();
+      this.sectionResizeAnimation = null;
+      row.remove();
+      this.count.setText(String(this.list.querySelectorAll(":scope > .wr-remaining-task").length));
+    }
+    this.render();
+    if (!completed || this.section.win.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    const height = parseFloat(this.section.win.getComputedStyle(this.section).height);
+    if (!Number.isFinite(previousHeight) || !Number.isFinite(height) || height >= previousHeight) return;
+    this.sectionResizeAnimation = this.section.animate(
+      { height: [`${previousHeight}px`, `${height}px`] },
+      { duration: 200, easing: "ease-out" },
+    );
+    this.sectionResizeAnimation.onfinish = () => {
+      this.sectionResizeAnimation = null;
+    };
   }
 
   private async toggleTask(task: RemainingTask, checked: boolean): Promise<void> {

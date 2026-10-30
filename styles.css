@@ -1172,6 +1172,8 @@ body .wr-submit-btn.wr-submit-active {
 .wr-remaining-tasks-list {
   overflow-y: auto;
   min-height: 0;
+  /* Keep rows anchored while the section's upper edge shrinks toward them. */
+  margin-top: auto;
   padding-inline: var(--wr-content-gutter);
   overscroll-behavior: contain;
 }
@@ -1190,6 +1192,28 @@ body .wr-submit-btn.wr-submit-active {
 
 .wr-remaining-task:hover {
   background: var(--wr-bg-hover, var(--background-modifier-hover));
+}
+
+.wr-remaining-task-completing {
+  animation: wr-remaining-task-complete 450ms ease-out forwards;
+}
+
+@keyframes wr-remaining-task-complete {
+  0%, 55% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-2px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .wr-remaining-task-completing {
+    animation: none;
+    opacity: 0.65;
+  }
 }
 
 .wr-remaining-task .wr-content {
