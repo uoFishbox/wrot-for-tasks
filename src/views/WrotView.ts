@@ -647,6 +647,15 @@ export class WrotView extends ItemView {
     });
 
     this.dateLabel = nav.createSpan({ cls: "wr-date-label" });
+    this.dateLabel.addEventListener("wheel", (event) => {
+      if (event.ctrlKey || event.deltaY === 0 || Math.abs(event.deltaX) > Math.abs(event.deltaY)) return;
+      event.preventDefault();
+      event.stopPropagation();
+      this.currentDate = this.currentDate.clone().add(Math.sign(event.deltaY), "day");
+      this.anchoredToToday = false;
+      // eslint-disable-next-line @typescript-eslint/no-floating-promises -- fire-and-forget; failure is non-critical
+      this.refresh();
+    }, { passive: false });
     // eslint-disable-next-line @typescript-eslint/no-misused-promises -- async handler intentionally used as a callback
     this.dateLabel.addEventListener("click", async () => {
       this.dateLabel.classList.add("wr-date-label-active");
