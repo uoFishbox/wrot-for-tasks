@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { Buffer, File } from "node:buffer";
-import { test } from "node:test";
+import { beforeEach, test } from "node:test";
 import { build } from "esbuild";
 import moment from "moment";
 
@@ -45,6 +45,11 @@ const { WrotView, dateShiftCommand, dateShiftSuggestions, Compartment, EditorSta
   `data:text/javascript;base64,${Buffer.from(bundle.outputFiles[0].text).toString("base64")}`
 );
 globalThis.moment = moment;
+
+beforeEach((t) => {
+  // Keep shortcut selection and the save path's today check on the same clock.
+  t.mock.method(moment, "now", () => new Date(2026, 9, 31, 12).getTime());
+});
 
 test("the @ button appears in fresh and previously saved toolbar layouts", () => {
   assert.equal(DEFAULT_TOOLBAR_LAYOUT.find(slot => slot.id === "at")?.state, "bar");
@@ -111,7 +116,7 @@ function harness(text, { failWrite = false, holdWrite = false } = {}) {
   const command = dateShiftCommand(
     () => view.currentDate,
     (date, today, post) => view.shiftComposerDate(date, today, post),
-    () => moment("2026-10-31"),
+    () => moment(),
     () => !view.editingMemo && !view.submittingMemo
   );
   return { view, editor, command, writes, files, attachments, setFailWrite(value) { failWrite = value; }, release: () => release?.(), settled: () => submitted };

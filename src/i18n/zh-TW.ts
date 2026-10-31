@@ -205,6 +205,7 @@ const zhTW = {
 
   "view.empty.noMemos": "沒有可顯示的貼文",
   "view.tasks.title": "未完成任務",
+  "view.tasks.pastTitle": "過去未完成的任務",
   "view.tasks.daysRemaining": "還剩 {days} 天",
   "view.tasks.daysElapsed": "已過 {days} 天",
   "view.tasks.now": "現在",

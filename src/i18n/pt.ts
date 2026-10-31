@@ -202,6 +202,7 @@ const pt = {
 
   "view.empty.noMemos": "Nenhuma postagem encontrada",
   "view.tasks.title": "Tarefas pendentes",
+  "view.tasks.pastTitle": "Tarefas passadas não concluídas",
   "view.tasks.daysRemaining": "Em {days} d",
   "view.tasks.daysElapsed": "Há {days} d",
   "view.tasks.now": "Agora",

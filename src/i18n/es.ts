@@ -206,6 +206,7 @@ const es = {
 
   "view.empty.noMemos": "No hay publicaciones para mostrar",
   "view.tasks.title": "Tareas pendientes",
+  "view.tasks.pastTitle": "Tareas pendientes pasadas",
   "view.tasks.daysRemaining": "Dentro de {days} d",
   "view.tasks.daysElapsed": "Hace {days} d",
   "view.tasks.now": "Ahora",

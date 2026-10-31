@@ -1,4 +1,8 @@
-import { blendColor, visibleHighlight, type CodeLightness } from "../utils/color";
+import {
+  blendColor,
+  visibleHighlight,
+  type CodeLightness,
+} from "../utils/color";
 
 /** Colors resolved from the settings for the active theme mode. */
 interface WrPalette {
@@ -14,7 +18,10 @@ interface WrPalette {
 }
 
 /** Highlight colour variables (--wr-hl-red …) kept visible on the given background. */
-export function highlightVars(theme: Record<string, string>, bg: string): string {
+export function highlightVars(
+  theme: Record<string, string>,
+  bg: string,
+): string {
   return Object.entries(theme)
     .map(([name, color]) => `--wr-hl-${name}: ${visibleHighlight(color, bg)};`)
     .join("\n        ");
@@ -25,7 +32,16 @@ export function highlightVars(theme: Record<string, string>, bg: string): string
  * user's chosen palette. Sits at boost level 2 in the specificity ladder.
  */
 export function buildPaletteCss(palette: WrPalette): string {
-  const { bgColor, hoverColor, textColor, mutedColor, faintColor, unresolvedLinkColor, codeLightness, highlightTheme } = palette;
+  const {
+    bgColor,
+    hoverColor,
+    textColor,
+    mutedColor,
+    faintColor,
+    unresolvedLinkColor,
+    codeLightness,
+    highlightTheme,
+  } = palette;
   // As far toward the background as faintColor (blendColor 0.6) takes the text.
   const quoteLink = `color-mix(in srgb, var(--text-accent) 40%, ${bgColor})`;
   return `/* @css */

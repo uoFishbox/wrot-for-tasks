@@ -205,6 +205,7 @@ const en = {
 
   "view.empty.noMemos": "No posts to show",
   "view.tasks.title": "Remaining tasks",
+  "view.tasks.pastTitle": "Past incomplete tasks",
   "view.tasks.daysRemaining": "{days}d left",
   "view.tasks.daysElapsed": "{days}d ago",
   "view.tasks.now": "Now",

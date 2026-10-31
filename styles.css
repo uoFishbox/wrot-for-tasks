@@ -1152,8 +1152,7 @@ body .wr-submit-btn.wr-submit-active {
   padding: 10px 4px 6px;
 }
 
-.wr-remaining-tasks-header h3 {
-  margin: 0;
+.wr-remaining-tasks-header  {
   font-size: var(--wr-font-ui-small);
 }
 
@@ -1182,12 +1181,19 @@ body .wr-submit-btn.wr-submit-active {
   padding: 8px 4px;
 }
 
+.wr-remaining-tasks-past {
+  margin-top: 10px;
+  padding-top: 8px;
+  border-top: 1px solid var(--background-modifier-border);
+}
+
 .wr-remaining-task {
   display: flex;
   flex-direction: column;
   gap: 3px;
   padding: 7px 4px;
   border-radius: 4px;
+  cursor: pointer;
 }
 
 .wr-remaining-task:hover {
@@ -1221,7 +1227,7 @@ body .wr-submit-btn.wr-submit-active {
   overflow-wrap: anywhere;
 }
 
-.wr-remaining-task-source:focus-visible {
+.wr-remaining-task:focus-visible {
   outline: 2px solid var(--interactive-accent);
   outline-offset: 2px;
 }
@@ -1244,8 +1250,6 @@ body .wr-submit-btn.wr-submit-active {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  text-decoration: none;
-  cursor: pointer;
 }
 
 .wr-empty {
@@ -1470,9 +1474,7 @@ body ol.wr-reading-list:not(#x)>li::before {
   margin-inline-end: 6px;
 }
 
-/* The sub-list selector outranks the timeline's first-line anchoring for nested items. */
-body .wr-reading-list:not(#x) .wr-check-item input[type="checkbox"],
-body .wr-reading-list:not(#x) .wr-check-item.wr-has-sublist>input[type="checkbox"] {
+body .wr-reading-list:not(#x) .wr-check-item input[type="checkbox"] {
   position: relative;
   top: auto;
   left: auto;
@@ -1513,9 +1515,11 @@ li>.wr-reading-list {
   --checkbox-size: 1em;
   position: absolute;
   left: calc(max(22px, calc(1em + 8px)) - 6px - var(--checkbox-size));
-  top: 50%;
-  transform: translateY(-50%);
+  /* Keep the box on the first line, including wrapped text and nested lists. */
+  top: calc(0.5lh - var(--checkbox-size) / 2);
+  transform: none;
   font-size: inherit;
+  line-height: inherit;
   width: var(--checkbox-size);
   height: var(--checkbox-size);
   margin: 0;
@@ -1539,14 +1543,6 @@ body .wr-textarea .wr-cv-check:not(#x):checked::after {
   height: auto;
   mask-size: calc((var(--checkbox-size) + 2px) * 0.65) auto;
   mask-position: center calc(50% - 0.35px);
-}
-
-/* An item holding a nested list is as tall as its whole subtree, so the centered box would
-   sink to the middle of the group. Anchor it to the first line instead. */
-.wr-bullet-list .wr-check-item.wr-has-sublist>input[type="checkbox"]:not(#x),
-.wr-reading-list .wr-check-item.wr-has-sublist>input[type="checkbox"]:not(#x) {
-  top: calc(0.5lh - var(--checkbox-size) / 2);
-  transform: none;
 }
 
 /* Live Preview: list/checklist highlights */

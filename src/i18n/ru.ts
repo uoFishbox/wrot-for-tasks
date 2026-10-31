@@ -201,6 +201,7 @@ const ru = {
 
   "view.empty.noMemos": "Нет записей",
   "view.tasks.title": "Незавершённые задачи",
+  "view.tasks.pastTitle": "Прошедшие незавершённые задачи",
   "view.tasks.daysRemaining": "Через {days} дн.",
   "view.tasks.daysElapsed": "{days} дн. назад",
   "view.tasks.now": "Сейчас",

@@ -207,6 +207,7 @@ const ja = {
 
   "view.empty.noMemos": "表示できる投稿がありません",
   "view.tasks.title": "未完了タスク",
+  "view.tasks.pastTitle": "過去の未完了タスク",
   "view.tasks.daysRemaining": "あと{days}日",
   "view.tasks.daysElapsed": "{days}日経過",
   "view.tasks.now": "ちょうど今",

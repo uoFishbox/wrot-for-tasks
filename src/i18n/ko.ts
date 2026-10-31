@@ -201,6 +201,7 @@ const ko = {
 
   "view.empty.noMemos": "표시할 게시물이 없습니다",
   "view.tasks.title": "미완료 작업",
+  "view.tasks.pastTitle": "지난 미완료 작업",
   "view.tasks.daysRemaining": "{days}일 남음",
   "view.tasks.daysElapsed": "{days}일 경과",
   "view.tasks.now": "지금",

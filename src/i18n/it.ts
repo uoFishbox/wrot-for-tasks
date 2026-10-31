@@ -209,6 +209,7 @@ const it = {
 
   "view.empty.noMemos": "Nessun post da mostrare",
   "view.tasks.title": "Attività in sospeso",
+  "view.tasks.pastTitle": "Attività passate non completate",
   "view.tasks.daysRemaining": "Tra {days} g",
   "view.tasks.daysElapsed": "{days} g fa",
   "view.tasks.now": "Ora",

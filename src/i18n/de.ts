@@ -200,6 +200,7 @@ const de = {
 
   "view.empty.noMemos": "Keine Einträge vorhanden",
   "view.tasks.title": "Offene Aufgaben",
+  "view.tasks.pastTitle": "Überfällige unerledigte Aufgaben",
   "view.tasks.daysRemaining": "Noch {days} T.",
   "view.tasks.daysElapsed": "Vor {days} T.",
   "view.tasks.now": "Jetzt",

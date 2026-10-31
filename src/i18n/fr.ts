@@ -206,6 +206,7 @@ const fr = {
 
   "view.empty.noMemos": "Aucune publication à afficher",
   "view.tasks.title": "Tâches en attente",
+  "view.tasks.pastTitle": "Tâches passées non terminées",
   "view.tasks.daysRemaining": "Dans {days} j",
   "view.tasks.daysElapsed": "Il y a {days} j",
   "view.tasks.now": "Maintenant",

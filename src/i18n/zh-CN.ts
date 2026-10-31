@@ -205,6 +205,7 @@ const zhCN = {
 
   "view.empty.noMemos": "暂无记录",
   "view.tasks.title": "未完成任务",
+  "view.tasks.pastTitle": "过去未完成的任务",
   "view.tasks.daysRemaining": "还剩 {days} 天",
   "view.tasks.daysElapsed": "已过 {days} 天",
   "view.tasks.now": "现在",
