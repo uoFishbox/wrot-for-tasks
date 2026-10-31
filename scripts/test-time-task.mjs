@@ -20,7 +20,7 @@ const { EditorState, EditorSelection, EditorView, completeTimedTask, timedTaskOn
 );
 
 // Exercise real CodeMirror transactions without a browser or Obsidian runtime.
-function editor(doc, { caret = doc.length, selection, readOnly = false, composing = false } = {}) {
+function editor(doc, { caret = doc.length, selection, readOnly = false, composing = false, compositionStarted = composing } = {}) {
   return {
     state: EditorState.create({
       doc,
@@ -28,6 +28,7 @@ function editor(doc, { caret = doc.length, selection, readOnly = false, composin
       extensions: [timedTaskOnSpace, EditorState.readOnly.of(readOnly), EditorState.allowMultipleSelections.of(true)],
     }),
     composing,
+    compositionStarted,
     transactions: [],
     dispatch(spec) {
       const transaction = this.state.update(spec);
@@ -136,6 +137,7 @@ test("does not rewrite selections, multiple carets, read-only text or IME compos
     { selection: EditorSelection.create([EditorSelection.cursor(0), EditorSelection.cursor(5)], 1) },
     { readOnly: true },
     { composing: true },
+    { compositionStarted: true },
   ]) {
     const view = editor(doc, options);
     assert.equal(completeTimedTask(view), false);
@@ -285,6 +287,21 @@ test("invalid contexts and stale suggestions do not change the document", () => 
   type(view, "30");
   assert.equal(selectTimedTask(view, suggestion), false);
   assert.equal(view.state.doc.toString(), "@2030");
-  assert.deepEqual(timeTaskSuggestions(editor("@20", { composing: true })), []);
   assert.deepEqual(timeTaskSuggestions(editor("@20", { readOnly: true })), []);
+});
+
+test("IME text filters suggestions without allowing completion to rewrite the composition", () => {
+  for (const doc of ["@20", "@2000-21", "- [ ] 20:"]) {
+    const view = editor(doc, { composing: true });
+    const suggestions = timeTaskSuggestions(view);
+    assert.deepEqual(suggestions, timeTaskSuggestions(editor(doc)));
+    assert.equal(selectTimedTask(view, suggestions[0]), false);
+    assert.equal(selectTimedTask(view, suggestions[0], true), false);
+    assert.equal(view.transactions.length, 0);
+    view.composing = false;
+    // compositionstart can precede the first document change.
+    assert.equal(selectTimedTask(view, suggestions[0]), false);
+    view.compositionStarted = false;
+    assert.equal(selectTimedTask(view, suggestions[0]), true);
+  }
 });

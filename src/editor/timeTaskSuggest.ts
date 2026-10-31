@@ -1,9 +1,16 @@
-import { AbstractInputSuggest, type App } from "obsidian";
+import { AbstractInputSuggest, Scope, type App } from "obsidian";
 import type { ComposerField } from "./composerField";
 import { selectTimedTask, timeTaskSuggestions, type TimeTaskSuggestion } from "./composerTimeTask";
+import { rebuildFocus } from "../utils/tagSuggest";
 
 interface PendingSuggestions {
   resolve: (items: TimeTaskSuggestion[]) => void;
+}
+
+interface PendingSelection {
+  context: string;
+  value: TimeTaskSuggestion;
+  continueRange: boolean;
 }
 
 /** Obsidian owns the popup, keyboard navigation and pointer selection. */
@@ -17,7 +24,20 @@ export class TimeTaskSuggest extends AbstractInputSuggest<TimeTaskSuggestion> {
   private refreshQueued = false;
   private revision = 0;
   private publishedContext = "";
-  private onCompositionStart = (): void => this.close();
+  private composing = false;
+  private pendingSelection: PendingSelection | null = null;
+  private commitTimer: number | null = null;
+  private onCompositionStart = (): void => {
+    this.cancelSelection();
+    this.composing = true;
+  };
+  private onCompositionEnd = (): void => {
+    this.composing = false;
+    // ComposerField listeners run before CodeMirror's compositionend handler. Let
+    // it clear its composition state and read the committed DOM before inserting.
+    if (this.pendingSelection) this.scheduleSelection(0);
+    queueMicrotask(() => this.refresh());
+  };
   private resizeObserver: ResizeObserver | null = null;
   private positionKey = {};
   private onGeometryChange = (): void => {
@@ -39,7 +59,15 @@ export class TimeTaskSuggest extends AbstractInputSuggest<TimeTaskSuggestion> {
   constructor(app: App, private field: ComposerField, onSubmit: () => void) {
     super(app, field.view.contentDOM as HTMLDivElement);
     this.limit = 96;
+    // Native popup bindings only inspect event.isComposing, which may lag behind
+    // the editor's IME state. A child scope bypasses those bindings without
+    // preventing the key's normal input/IME action.
+    this.scope = new Scope(this.scope);
+    this.scope.register(null, null, (evt) => {
+      if (evt.isComposing || this.isComposing()) return true;
+    });
     field.addEventListener("compositionstart", this.onCompositionStart);
+    field.addEventListener("compositionend", this.onCompositionEnd);
     const win = field.view.dom.ownerDocument.defaultView;
     win?.addEventListener("resize", this.onGeometryChange);
     win?.visualViewport?.addEventListener("resize", this.onGeometryChange);
@@ -48,7 +76,7 @@ export class TimeTaskSuggest extends AbstractInputSuggest<TimeTaskSuggestion> {
       this.resizeObserver.observe(field.view.contentDOM);
     }
     this.scope.register([], "Tab", (evt) => {
-      if (evt.isComposing || this.field.view.composing) return;
+      if (evt.isComposing || this.isComposing()) return;
       evt.preventDefault();
       const win = this.field.view.dom.ownerDocument.defaultView;
       if (!win || !this.canSuggest() || this.publishedContext !== this.contextKey()) {
@@ -69,7 +97,7 @@ export class TimeTaskSuggest extends AbstractInputSuggest<TimeTaskSuggestion> {
     });
     // The popup's scope inherits the app scope, so explicitly retain the form's submit shortcut.
     this.scope.register(["Mod"], "Enter", (evt) => {
-      if (evt.isComposing || this.field.view.composing) return;
+      if (evt.isComposing || this.isComposing()) return;
       evt.preventDefault();
       this.close();
       onSubmit();
@@ -115,10 +143,22 @@ export class TimeTaskSuggest extends AbstractInputSuggest<TimeTaskSuggestion> {
     el.setText(value.label);
   }
 
-  selectSuggestion(value: TimeTaskSuggestion): void {
-    const current = this.publishedContext === this.contextKey();
+  selectSuggestion(value: TimeTaskSuggestion, evt?: MouseEvent | KeyboardEvent): void {
+    // Enter used to commit IME text must never also select a time.
+    if (evt && "key" in evt && (evt.isComposing || this.isComposing())) return;
+    const context = this.contextKey();
+    const current = this.publishedContext === context;
     this.close();
-    if (current && !this.destroyed && selectTimedTask(this.field.view, value, this.tabConfirming)) this.refresh();
+    if (!current || this.destroyed || this.pendingSelection) return;
+    if (this.isComposing()) {
+      // Blur force-commits iOS's marked text. Keep the original context so a late
+      // completion cannot overwrite a different edit or a moved caret.
+      this.pendingSelection = { context, value, continueRange: this.tabConfirming };
+      this.scheduleSelection(150);
+      this.field.blur();
+      return;
+    }
+    if (selectTimedTask(this.field.view, value, this.tabConfirming)) this.refresh();
   }
 
   open(): void {
@@ -169,7 +209,9 @@ export class TimeTaskSuggest extends AbstractInputSuggest<TimeTaskSuggestion> {
 
   destroy(): void {
     this.destroyed = true;
+    this.cancelSelection();
     this.field.removeEventListener("compositionstart", this.onCompositionStart);
+    this.field.removeEventListener("compositionend", this.onCompositionEnd);
     this.resizeObserver?.disconnect();
     const win = this.field.view.dom.ownerDocument.defaultView;
     win?.removeEventListener("resize", this.onGeometryChange);
@@ -182,13 +224,44 @@ export class TimeTaskSuggest extends AbstractInputSuggest<TimeTaskSuggestion> {
     this.pending = null;
   }
 
+  private isComposing(): boolean {
+    return this.composing || this.field.view.compositionStarted || this.field.view.composing;
+  }
+
+  private cancelSelection(): void {
+    const win = this.field.view.dom.ownerDocument.defaultView;
+    if (this.commitTimer !== null) win?.clearTimeout(this.commitTimer);
+    this.commitTimer = null;
+    this.pendingSelection = null;
+  }
+
+  private scheduleSelection(delay: number): void {
+    const win = this.field.view.dom.ownerDocument.defaultView;
+    if (!win) {
+      this.cancelSelection();
+      return;
+    }
+    if (this.commitTimer !== null) win.clearTimeout(this.commitTimer);
+    this.commitTimer = win.setTimeout(() => {
+      const selection = this.pendingSelection;
+      this.cancelSelection();
+      if (!selection || this.destroyed || !this.field.view.dom.isConnected || this.isComposing() ||
+          selection.context !== this.contextKey()) return;
+      if (!selectTimedTask(this.field.view, selection.value, selection.continueRange)) return;
+      if (!this.field.hasFocus) {
+        rebuildFocus(this.field, this.field.view.dom.parentElement ?? this.field.view.dom);
+      }
+      this.refresh();
+    }, delay);
+  }
+
   private contextKey(): string {
     return `${this.field.selectionStart}:${this.field.selectionEnd}:${this.field.value}`;
   }
 
   private canSuggest(): boolean {
-    return !this.destroyed && this.field.hasFocus && this.field.view.dom.isConnected &&
-      !this.field.view.composing && !this.field.view.state.readOnly;
+    return !this.destroyed && !this.pendingSelection && this.field.hasFocus &&
+      this.field.view.dom.isConnected && !this.field.view.state.readOnly;
   }
 
   private hasVisibleAnchor(): boolean {

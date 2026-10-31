@@ -16,7 +16,7 @@ function clockTime(digits: string): string | null {
 function timeTaskContext(view: EditorView) {
   const { state } = view;
   const { main, ranges } = state.selection;
-  if (state.readOnly || view.composing || ranges.length !== 1 || !main.empty) return null;
+  if (state.readOnly || ranges.length !== 1 || !main.empty) return null;
   const line = state.doc.lineAt(main.head);
   const before = state.sliceDoc(line.from, main.head);
   const match = SHORTCUT_RE.exec(before) ?? TASK_TIME_RE.exec(before);
@@ -56,6 +56,7 @@ function insertTimeTask(view: EditorView, context: NonNullable<ReturnType<typeof
 
 /** Completes @HHmm or @HHmm-HHmm, keeping the caret ready for the task name. */
 export const completeTimedTask: Command = (view) => {
+  if (view.compositionStarted || view.composing) return false;
   const context = timeTaskContext(view);
   return context ? insertTimeTask(view, context) : false;
 };
@@ -92,6 +93,7 @@ export function timeTaskSuggestions(view: EditorView): TimeTaskSuggestion[] {
 }
 
 export function selectTimedTask(view: EditorView, suggestion: TimeTaskSuggestion, continueRange = false): boolean {
+  if (view.compositionStarted || view.composing) return false;
   if (!timeTaskSuggestions(view).some((item) => item.digits === suggestion.digits)) return false;
   const context = timeTaskContext(view);
   if (!context) return false;
