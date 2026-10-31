@@ -144,6 +144,8 @@ _Note: If link previews are enabled, Wrot for Tasks sends a standard web request
 
 [MIT License](https://github.com/villyoshioka/Wrot/blob/main/LICENSE)
 
+Thinking of forking Wrot? See [About Forks](https://github.com/villyoshioka/Wrot/blob/main/FORKING.md).
+
 ---
 
 ## Credits
