@@ -141,6 +141,7 @@ const it = {
   "settings.item.resetToolbar.confirm": "Premi di nuovo per confermare",
 
   "view.toolbarAction.image": "Immagine",
+  "view.toolbarAction.at": "Inserisci @",
   "view.toolbarAction.bold": "Grassetto",
   "view.toolbarAction.italic": "Corsivo",
   "view.toolbarAction.list": "Elenco puntato",
@@ -185,6 +186,24 @@ const it = {
   // Shown on the same row after the first press, in place of the label above.
   "view.postMenu.deleteConfirm": "Premi di nuovo per eliminare",
 
+  "view.dateNav.shift.d": "Avanza di {count} giorno/i",
+  "view.dateNav.shift.today": "Vai a oggi",
+  "view.dateNav.post.d": "Pubblica {count} giorno/i dopo",
+  "view.dateNav.post.w": "Pubblica {count} settimana/e dopo",
+  "view.dateNav.post.m": "Pubblica {count} mese/i dopo",
+  "view.dateNav.post.y": "Pubblica {count} anno/i dopo",
+  "view.dateNav.post.today": "Pubblica oggi",
+  "view.dateNav.postBack.d": "Pubblica {count} giorno/i prima",
+  "view.dateNav.postBack.w": "Pubblica {count} settimana/e prima",
+  "view.dateNav.postBack.m": "Pubblica {count} mese/i prima",
+  "view.dateNav.postBack.y": "Pubblica {count} anno/i prima",
+  "view.dateNav.back.d": "Indietro di {count} giorno/i",
+  "view.dateNav.back.w": "Indietro di {count} settimana/e",
+  "view.dateNav.back.m": "Indietro di {count} mese/i",
+  "view.dateNav.back.y": "Indietro di {count} anno/i",
+  "view.dateNav.shift.w": "Avanza di {count} settimana/e",
+  "view.dateNav.shift.m": "Avanza di {count} mese/i",
+  "view.dateNav.shift.y": "Avanza di {count} anno/i",
   "view.dateNav.today": "Oggi",
   "view.dateNav.todaySuffix": " (Oggi)",
 

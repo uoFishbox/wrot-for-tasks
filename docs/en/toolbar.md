@@ -5,6 +5,8 @@ With Wrot for Tasks, you have full control over your setup—choose which button
 
 Moving a button to the menu won't affect how it works. Only disabled buttons are hidden from both the toolbar and the menu.
 
+The **@ button** inserts `@` at the cursor. If text immediately precedes the cursor, it adds a space to produce `Text @`. Existing whitespace or a line break is kept without adding another space. You can then type a time or date shortcut.
+
 ---
 
 ## Entering Edit Mode
@@ -57,7 +59,7 @@ Action buttons will appear at the end of the toolbar while you're editing.
 
 Buttons you move off the toolbar will live inside the ⋯ menu. Items in this menu follow a fixed order and won't change even if you rearrange your toolbar:
 
-> Image → Bulleted list → Checklist → Numbered list → Code → Math → Quote → Bold → Italic → Link → Strikethrough → Highlight → Pin later
+> Image → Insert @ → Bulleted list → Checklist → Numbered list → Code → Math → Quote → Bold → Italic → Link → Strikethrough → Highlight → Pin later
 
 ### Behavior Changes in the Menu
 

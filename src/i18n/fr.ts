@@ -138,6 +138,7 @@ const fr = {
   "settings.item.resetToolbar.confirm": "Appuyez à nouveau pour confirmer",
 
   "view.toolbarAction.image": "Image",
+  "view.toolbarAction.at": "Insérer @",
   "view.toolbarAction.bold": "Gras",
   "view.toolbarAction.italic": "Italique",
   "view.toolbarAction.list": "Liste à puces",
@@ -182,6 +183,24 @@ const fr = {
   // Shown on the same row after the first press, in place of the label above.
   "view.postMenu.deleteConfirm": "Appuyez à nouveau pour supprimer",
 
+  "view.dateNav.shift.d": "Avancer de {count} jour(s)",
+  "view.dateNav.shift.today": "Aller à aujourd'hui",
+  "view.dateNav.post.d": "Publier {count} jour(s) plus tard",
+  "view.dateNav.post.w": "Publier {count} semaine(s) plus tard",
+  "view.dateNav.post.m": "Publier {count} mois plus tard",
+  "view.dateNav.post.y": "Publier {count} an(s) plus tard",
+  "view.dateNav.post.today": "Publier aujourd'hui",
+  "view.dateNav.postBack.d": "Publier {count} jour(s) plus tôt",
+  "view.dateNav.postBack.w": "Publier {count} semaine(s) plus tôt",
+  "view.dateNav.postBack.m": "Publier {count} mois plus tôt",
+  "view.dateNav.postBack.y": "Publier {count} an(s) plus tôt",
+  "view.dateNav.back.d": "Reculer de {count} jour(s)",
+  "view.dateNav.back.w": "Reculer de {count} semaine(s)",
+  "view.dateNav.back.m": "Reculer de {count} mois",
+  "view.dateNav.back.y": "Reculer de {count} an(s)",
+  "view.dateNav.shift.w": "Avancer de {count} semaine(s)",
+  "view.dateNav.shift.m": "Avancer de {count} mois",
+  "view.dateNav.shift.y": "Avancer de {count} an(s)",
   "view.dateNav.today": "Aujourd'hui",
   "view.dateNav.todaySuffix": " (Aujourd'hui)",
 

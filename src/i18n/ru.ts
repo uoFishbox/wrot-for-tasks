@@ -133,6 +133,7 @@ const ru = {
   "settings.item.resetToolbar.confirm": "Нажмите ещё раз для подтверждения",
 
   "view.toolbarAction.image": "Изображение",
+  "view.toolbarAction.at": "Вставить @",
   "view.toolbarAction.bold": "Жирный",
   "view.toolbarAction.italic": "Курсив",
   "view.toolbarAction.list": "Маркированный список",
@@ -177,6 +178,24 @@ const ru = {
   // Shown on the same row after the first press, in place of the label above.
   "view.postMenu.deleteConfirm": "Нажмите ещё раз для удаления",
 
+  "view.dateNav.shift.d": "Вперёд на {count} дн.",
+  "view.dateNav.shift.today": "Перейти к сегодняшнему дню",
+  "view.dateNav.post.d": "Опубликовать на {count} дн. позже",
+  "view.dateNav.post.w": "Опубликовать на {count} нед. позже",
+  "view.dateNav.post.m": "Опубликовать на {count} мес. позже",
+  "view.dateNav.post.y": "Опубликовать на {count} г. позже",
+  "view.dateNav.post.today": "Опубликовать сегодня",
+  "view.dateNav.postBack.d": "Опубликовать на {count} дн. раньше",
+  "view.dateNav.postBack.w": "Опубликовать на {count} нед. раньше",
+  "view.dateNav.postBack.m": "Опубликовать на {count} мес. раньше",
+  "view.dateNav.postBack.y": "Опубликовать на {count} г. раньше",
+  "view.dateNav.back.d": "Назад на {count} дн.",
+  "view.dateNav.back.w": "Назад на {count} нед.",
+  "view.dateNav.back.m": "Назад на {count} мес.",
+  "view.dateNav.back.y": "Назад на {count} г.",
+  "view.dateNav.shift.w": "Вперёд на {count} нед.",
+  "view.dateNav.shift.m": "Вперёд на {count} мес.",
+  "view.dateNav.shift.y": "Вперёд на {count} г.",
   "view.dateNav.today": "Сегодня",
   "view.dateNav.todaySuffix": " (сегодня)",
 

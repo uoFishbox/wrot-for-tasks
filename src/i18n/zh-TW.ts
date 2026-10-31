@@ -137,6 +137,7 @@ const zhTW = {
   "settings.item.resetToolbar.confirm": "再按一次以確認重設",
 
   "view.toolbarAction.image": "圖片",
+  "view.toolbarAction.at": "插入 @",
   "view.toolbarAction.bold": "粗體",
   "view.toolbarAction.italic": "斜體",
   "view.toolbarAction.list": "無序清單",
@@ -181,6 +182,24 @@ const zhTW = {
   // Shown on the same row after the first press, in place of the label above.
   "view.postMenu.deleteConfirm": "再按一次以確認刪除",
 
+  "view.dateNav.shift.d": "跳轉到{count}天後",
+  "view.dateNav.shift.today": "跳轉到今天",
+  "view.dateNav.post.d": "{count}天後發佈",
+  "view.dateNav.post.w": "{count}週後發佈",
+  "view.dateNav.post.m": "{count}個月後發佈",
+  "view.dateNav.post.y": "{count}年後發佈",
+  "view.dateNav.post.today": "今天發佈",
+  "view.dateNav.postBack.d": "{count}天前發佈",
+  "view.dateNav.postBack.w": "{count}週前發佈",
+  "view.dateNav.postBack.m": "{count}個月前發佈",
+  "view.dateNav.postBack.y": "{count}年前發佈",
+  "view.dateNav.back.d": "返回{count}天前",
+  "view.dateNav.back.w": "返回{count}週前",
+  "view.dateNav.back.m": "返回{count}個月前",
+  "view.dateNav.back.y": "返回{count}年前",
+  "view.dateNav.shift.w": "跳轉到{count}週後",
+  "view.dateNav.shift.m": "跳轉到{count}個月後",
+  "view.dateNav.shift.y": "跳轉到{count}年後",
   "view.dateNav.today": "今天",
   "view.dateNav.todaySuffix": "（今天）",
 

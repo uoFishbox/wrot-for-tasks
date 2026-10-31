@@ -137,6 +137,7 @@ const en = {
   "settings.item.resetToolbar.confirm": "Press again to confirm",
 
   "view.toolbarAction.image": "Image",
+  "view.toolbarAction.at": "Insert @",
   "view.toolbarAction.bold": "Bold",
   "view.toolbarAction.italic": "Italic",
   "view.toolbarAction.list": "Bulleted list",
@@ -181,6 +182,24 @@ const en = {
   // Shown on the same row after the first press, in place of the label above.
   "view.postMenu.deleteConfirm": "Press again to confirm",
 
+  "view.dateNav.shift.d": "Move forward {count} day(s)",
+  "view.dateNav.shift.today": "Move to today",
+  "view.dateNav.post.d": "Post {count} day(s) later",
+  "view.dateNav.post.w": "Post {count} week(s) later",
+  "view.dateNav.post.m": "Post {count} month(s) later",
+  "view.dateNav.post.y": "Post {count} year(s) later",
+  "view.dateNav.post.today": "Post today",
+  "view.dateNav.postBack.d": "Post {count} day(s) earlier",
+  "view.dateNav.postBack.w": "Post {count} week(s) earlier",
+  "view.dateNav.postBack.m": "Post {count} month(s) earlier",
+  "view.dateNav.postBack.y": "Post {count} year(s) earlier",
+  "view.dateNav.back.d": "Go back {count} day(s)",
+  "view.dateNav.back.w": "Go back {count} week(s)",
+  "view.dateNav.back.m": "Go back {count} month(s)",
+  "view.dateNav.back.y": "Go back {count} year(s)",
+  "view.dateNav.shift.w": "Move forward {count} week(s)",
+  "view.dateNav.shift.m": "Move forward {count} month(s)",
+  "view.dateNav.shift.y": "Move forward {count} year(s)",
   "view.dateNav.today": "Today",
   "view.dateNav.todaySuffix": " (Today)",
 

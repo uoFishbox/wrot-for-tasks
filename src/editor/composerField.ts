@@ -1,4 +1,4 @@
-import { Compartment, EditorState, StateEffect, StateField } from "@codemirror/state";
+import { Compartment, EditorState, StateEffect, StateField, type Extension } from "@codemirror/state";
 import { Decoration, DecorationSet, EditorView, keymap } from "@codemirror/view";
 import { history, historyKeymap, insertNewline, standardKeymap } from "@codemirror/commands";
 import { autoPairs } from "./composerPairs";
@@ -52,12 +52,13 @@ export class ComposerField {
   private strikeConf = new Compartment();
   private holder: object | null = null;
 
-  constructor(parent: HTMLElement, placeholderText: string, strikeDone: boolean, autoPair: () => boolean) {
+  constructor(parent: HTMLElement, placeholderText: string, strikeDone: boolean, autoPair: () => boolean, extensions: Extension[] = []) {
     this.view = new EditorView({
       parent,
       state: EditorState.create({
         extensions: [
           history(),
+          ...extensions,
           autoPairs(autoPair),
           timedTaskOnSpace,
           EditorView.inputHandler.of((view, from, to, text) => {

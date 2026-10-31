@@ -138,6 +138,7 @@ const es = {
   "settings.item.resetToolbar.confirm": "Pulsa de nuevo para restablecer",
 
   "view.toolbarAction.image": "Imagen",
+  "view.toolbarAction.at": "Insertar @",
   "view.toolbarAction.bold": "Negrita",
   "view.toolbarAction.italic": "Cursiva",
   "view.toolbarAction.list": "Lista con viñetas",
@@ -182,6 +183,24 @@ const es = {
   // Shown on the same row after the first press, in place of the label above.
   "view.postMenu.deleteConfirm": "Pulsa de nuevo para eliminar",
 
+  "view.dateNav.shift.d": "Avanzar {count} día(s)",
+  "view.dateNav.shift.today": "Ir a hoy",
+  "view.dateNav.post.d": "Publicar {count} día(s) después",
+  "view.dateNav.post.w": "Publicar {count} semana(s) después",
+  "view.dateNav.post.m": "Publicar {count} mes(es) después",
+  "view.dateNav.post.y": "Publicar {count} año(s) después",
+  "view.dateNav.post.today": "Publicar hoy",
+  "view.dateNav.postBack.d": "Publicar {count} día(s) antes",
+  "view.dateNav.postBack.w": "Publicar {count} semana(s) antes",
+  "view.dateNav.postBack.m": "Publicar {count} mes(es) antes",
+  "view.dateNav.postBack.y": "Publicar {count} año(s) antes",
+  "view.dateNav.back.d": "Retroceder {count} día(s)",
+  "view.dateNav.back.w": "Retroceder {count} semana(s)",
+  "view.dateNav.back.m": "Retroceder {count} mes(es)",
+  "view.dateNav.back.y": "Retroceder {count} año(s)",
+  "view.dateNav.shift.w": "Avanzar {count} semana(s)",
+  "view.dateNav.shift.m": "Avanzar {count} mes(es)",
+  "view.dateNav.shift.y": "Avanzar {count} año(s)",
   "view.dateNav.today": "Hoy",
   "view.dateNav.todaySuffix": " (Hoy)",
 

@@ -18,6 +18,16 @@ function commit(ta: ComposerField): void {
   ta.dispatchEvent(new Event("input"));
 }
 
+/** Inserts a shortcut opener, separated from preceding text by a space. */
+export function insertAtSign(ta: ComposerField): void {
+  const view = ta.view;
+  if (view.state.readOnly || view.composing || view.compositionStarted || view.state.selection.ranges.length !== 1) return;
+  const { from, to } = view.state.selection.main;
+  const insert = spaceBefore(view.state.sliceDoc(Math.max(0, from - 1), from)) + "@";
+  view.dispatch({ changes: { from, to, insert }, selection: { anchor: from + insert.length } });
+  commit(ta);
+}
+
 /**
  * Types an indent at the caret when it sits inside a code block (an unclosed one runs to the
  * end). Returns false elsewhere, leaving Tab to its usual job.

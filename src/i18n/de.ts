@@ -132,6 +132,7 @@ const de = {
   "settings.item.resetToolbar.confirm": "Zum Bestätigen nochmals drücken",
 
   "view.toolbarAction.image": "Bild",
+  "view.toolbarAction.at": "@ einfügen",
   "view.toolbarAction.bold": "Fett",
   "view.toolbarAction.italic": "Kursiv",
   "view.toolbarAction.list": "Aufzählung",
@@ -176,6 +177,24 @@ const de = {
   // Shown on the same row after the first press, in place of the label above.
   "view.postMenu.deleteConfirm": "Zum Bestätigen nochmals drücken",
 
+  "view.dateNav.shift.d": "{count} Tag(e) weiter",
+  "view.dateNav.shift.today": "Zu heute wechseln",
+  "view.dateNav.post.d": "{count} Tag(e) später posten",
+  "view.dateNav.post.w": "{count} Woche(n) später posten",
+  "view.dateNav.post.m": "{count} Monat(e) später posten",
+  "view.dateNav.post.y": "{count} Jahr(e) später posten",
+  "view.dateNav.post.today": "Heute posten",
+  "view.dateNav.postBack.d": "{count} Tag(e) früher posten",
+  "view.dateNav.postBack.w": "{count} Woche(n) früher posten",
+  "view.dateNav.postBack.m": "{count} Monat(e) früher posten",
+  "view.dateNav.postBack.y": "{count} Jahr(e) früher posten",
+  "view.dateNav.back.d": "{count} Tag(e) zurück",
+  "view.dateNav.back.w": "{count} Woche(n) zurück",
+  "view.dateNav.back.m": "{count} Monat(e) zurück",
+  "view.dateNav.back.y": "{count} Jahr(e) zurück",
+  "view.dateNav.shift.w": "{count} Woche(n) weiter",
+  "view.dateNav.shift.m": "{count} Monat(e) weiter",
+  "view.dateNav.shift.y": "{count} Jahr(e) weiter",
   "view.dateNav.today": "Heute",
   "view.dateNav.todaySuffix": " (Heute)",
 

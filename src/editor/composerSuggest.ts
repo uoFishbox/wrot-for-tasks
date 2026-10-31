@@ -1,20 +1,31 @@
 import { AbstractInputSuggest, Scope, type App } from "obsidian";
 import type { ComposerField } from "./composerField";
+import type { Moment } from "moment";
 import { selectTimedTask, timeTaskSuggestions, type TimeTaskSuggestion } from "./composerTimeTask";
+import { dateShiftSuggestions, type DateShiftCommand, type DateShiftSuggestion } from "./composerDateShift";
 import { rebuildFocus } from "../utils/tagSuggest";
+import { t } from "../i18n";
+
+type ComposerSuggestion = TimeTaskSuggestion | DateShiftSuggestion;
+
+interface DateNavigation {
+  getDate: () => Moment;
+  shiftDate: DateShiftCommand;
+  canPost: () => boolean;
+}
 
 interface PendingSuggestions {
-  resolve: (items: TimeTaskSuggestion[]) => void;
+  resolve: (items: ComposerSuggestion[]) => void;
 }
 
 interface PendingSelection {
   context: string;
-  value: TimeTaskSuggestion;
+  value: ComposerSuggestion;
   continueRange: boolean;
 }
 
 /** Obsidian owns the popup, keyboard navigation and pointer selection. */
-export class TimeTaskSuggest extends AbstractInputSuggest<TimeTaskSuggestion> {
+export class ComposerSuggest extends AbstractInputSuggest<ComposerSuggestion> {
   private opened = false;
   private destroyed = false;
   private lastContext = "";
@@ -56,7 +67,7 @@ export class TimeTaskSuggest extends AbstractInputSuggest<TimeTaskSuggestion> {
     });
   };
 
-  constructor(app: App, private field: ComposerField, onSubmit: () => void) {
+  constructor(app: App, private field: ComposerField, onSubmit: () => void, private dateNavigation: DateNavigation) {
     super(app, field.view.contentDOM as HTMLDivElement);
     this.limit = 96;
     // Native popup bindings only inspect event.isComposing, which may lag behind
@@ -109,7 +120,7 @@ export class TimeTaskSuggest extends AbstractInputSuggest<TimeTaskSuggestion> {
     return this.field.value;
   }
 
-  protected getSuggestions(): Promise<TimeTaskSuggestion[]> {
+  protected getSuggestions(): Promise<ComposerSuggestion[]> {
     this.cancelPending();
     if (this.destroyed) return Promise.resolve([]);
     // Native input arrives before CodeMirror has read the changed DOM. Never publish
@@ -122,7 +133,7 @@ export class TimeTaskSuggest extends AbstractInputSuggest<TimeTaskSuggestion> {
           key: this,
           read: () => {
             if (this.pending !== pending || !this.canSuggest() || !this.hasVisibleAnchor()) return null;
-            return { context: this.contextKey(), items: timeTaskSuggestions(this.field.view) };
+            return { context: this.contextKey(), items: this.getComposerCandidates() };
           },
           write: (result) => {
             if (this.pending !== pending) return;
@@ -139,12 +150,23 @@ export class TimeTaskSuggest extends AbstractInputSuggest<TimeTaskSuggestion> {
     });
   }
 
-  renderSuggestion(value: TimeTaskSuggestion, el: HTMLElement): void {
-    el.setText(value.label);
+  renderSuggestion(value: ComposerSuggestion, el: HTMLElement): void {
+    if (!("shortcut" in value)) {
+      el.setText(value.label);
+      return;
+    }
+    if (value.kind === "today") {
+      el.setText(t(value.post ? "view.dateNav.post.today" : "view.dateNav.shift.today"));
+      return;
+    }
+    const action = value.post
+      ? value.direction === "backward" ? "postBack" : "post"
+      : value.direction === "backward" ? "back" : "shift";
+    el.setText(t(`view.dateNav.${action}.${value.unit}`, { count: value.amount }));
   }
 
-  selectSuggestion(value: TimeTaskSuggestion, evt?: MouseEvent | KeyboardEvent): void {
-    // Enter used to commit IME text must never also select a time.
+  selectSuggestion(value: ComposerSuggestion, evt?: MouseEvent | KeyboardEvent): void {
+    // Enter used to commit IME text must never also select a suggestion.
     if (evt && "key" in evt && (evt.isComposing || this.isComposing())) return;
     const context = this.contextKey();
     const current = this.publishedContext === context;
@@ -158,7 +180,7 @@ export class TimeTaskSuggest extends AbstractInputSuggest<TimeTaskSuggestion> {
       this.field.blur();
       return;
     }
-    if (selectTimedTask(this.field.view, value, this.tabConfirming)) this.refresh();
+    if (this.select(value, this.tabConfirming)) this.refresh();
   }
 
   open(): void {
@@ -189,7 +211,7 @@ export class TimeTaskSuggest extends AbstractInputSuggest<TimeTaskSuggestion> {
   /** Coalesce state notifications; a real input event's pending query already covers them. */
   refresh(): void {
     if (this.destroyed) return;
-    if (!this.canSuggest() || timeTaskSuggestions(this.field.view).length === 0) {
+    if (!this.canSuggest() || this.getComposerCandidates().length === 0) {
       this.close();
       return;
     }
@@ -247,7 +269,7 @@ export class TimeTaskSuggest extends AbstractInputSuggest<TimeTaskSuggestion> {
       this.cancelSelection();
       if (!selection || this.destroyed || !this.field.view.dom.isConnected || this.isComposing() ||
           selection.context !== this.contextKey()) return;
-      if (!selectTimedTask(this.field.view, selection.value, selection.continueRange)) return;
+      if (!this.select(selection.value, selection.continueRange)) return;
       if (!this.field.hasFocus) {
         rebuildFocus(this.field, this.field.view.dom.parentElement ?? this.field.view.dom);
       }
@@ -256,7 +278,19 @@ export class TimeTaskSuggest extends AbstractInputSuggest<TimeTaskSuggestion> {
   }
 
   private contextKey(): string {
-    return `${this.field.selectionStart}:${this.field.selectionEnd}:${this.field.value}`;
+    return `${this.dateNavigation.getDate().format("YYYY-MM-DD")}:${this.field.selectionStart}:${this.field.selectionEnd}:${this.field.value}`;
+  }
+
+  private getComposerCandidates(): ComposerSuggestion[] {
+    const dates = dateShiftSuggestions(this.field.view, this.dateNavigation.getDate(), this.dateNavigation.canPost());
+    return dates.length ? dates : timeTaskSuggestions(this.field.view);
+  }
+
+  private select(value: ComposerSuggestion, continueRange: boolean): boolean {
+    if ("shortcut" in value) {
+      return this.dateNavigation.shiftDate(this.field.view, value);
+    }
+    return selectTimedTask(this.field.view, value, continueRange);
   }
 
   private canSuggest(): boolean {

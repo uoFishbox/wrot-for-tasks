@@ -133,6 +133,7 @@ const ko = {
   "settings.item.resetToolbar.confirm": "한 번 더 누르면 초기화",
 
   "view.toolbarAction.image": "이미지",
+  "view.toolbarAction.at": "@ 삽입",
   "view.toolbarAction.bold": "굵게",
   "view.toolbarAction.italic": "기울임꼴",
   "view.toolbarAction.list": "글머리 기호 목록",
@@ -177,6 +178,24 @@ const ko = {
   // Shown on the same row after the first press, in place of the label above.
   "view.postMenu.deleteConfirm": "한 번 더 누르면 삭제",
 
+  "view.dateNav.shift.d": "{count}일 후로 이동",
+  "view.dateNav.shift.today": "오늘로 이동",
+  "view.dateNav.post.d": "{count}일 후에 게시",
+  "view.dateNav.post.w": "{count}주 후에 게시",
+  "view.dateNav.post.m": "{count}개월 후에 게시",
+  "view.dateNav.post.y": "{count}년 후에 게시",
+  "view.dateNav.post.today": "오늘 게시",
+  "view.dateNav.postBack.d": "{count}일 전에 게시",
+  "view.dateNav.postBack.w": "{count}주 전에 게시",
+  "view.dateNav.postBack.m": "{count}개월 전에 게시",
+  "view.dateNav.postBack.y": "{count}년 전에 게시",
+  "view.dateNav.back.d": "{count}일 전으로 돌아가기",
+  "view.dateNav.back.w": "{count}주 전으로 돌아가기",
+  "view.dateNav.back.m": "{count}개월 전으로 돌아가기",
+  "view.dateNav.back.y": "{count}년 전으로 돌아가기",
+  "view.dateNav.shift.w": "{count}주 후로 이동",
+  "view.dateNav.shift.m": "{count}개월 후로 이동",
+  "view.dateNav.shift.y": "{count}년 후로 이동",
   "view.dateNav.today": "오늘",
   "view.dateNav.todaySuffix": " (오늘)",
 

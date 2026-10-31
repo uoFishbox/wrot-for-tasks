@@ -134,6 +134,7 @@ const pt = {
   "settings.item.resetToolbar.confirm": "Pressione novamente para confirmar",
 
   "view.toolbarAction.image": "Imagem",
+  "view.toolbarAction.at": "Inserir @",
   "view.toolbarAction.bold": "Negrito",
   "view.toolbarAction.italic": "Itálico",
   "view.toolbarAction.list": "Lista com marcadores",
@@ -178,6 +179,24 @@ const pt = {
   // Shown on the same row after the first press, in place of the label above.
   "view.postMenu.deleteConfirm": "Pressione novamente para confirmar",
 
+  "view.dateNav.shift.d": "Avançar {count} dia(s)",
+  "view.dateNav.shift.today": "Ir para hoje",
+  "view.dateNav.post.d": "Publicar {count} dia(s) depois",
+  "view.dateNav.post.w": "Publicar {count} semana(s) depois",
+  "view.dateNav.post.m": "Publicar {count} mês/meses depois",
+  "view.dateNav.post.y": "Publicar {count} ano(s) depois",
+  "view.dateNav.post.today": "Publicar hoje",
+  "view.dateNav.postBack.d": "Publicar {count} dia(s) antes",
+  "view.dateNav.postBack.w": "Publicar {count} semana(s) antes",
+  "view.dateNav.postBack.m": "Publicar {count} mês/meses antes",
+  "view.dateNav.postBack.y": "Publicar {count} ano(s) antes",
+  "view.dateNav.back.d": "Voltar {count} dia(s)",
+  "view.dateNav.back.w": "Voltar {count} semana(s)",
+  "view.dateNav.back.m": "Voltar {count} mês(es)",
+  "view.dateNav.back.y": "Voltar {count} ano(s)",
+  "view.dateNav.shift.w": "Avançar {count} semana(s)",
+  "view.dateNav.shift.m": "Avançar {count} mês(es)",
+  "view.dateNav.shift.y": "Avançar {count} ano(s)",
   "view.dateNav.today": "Hoje",
   "view.dateNav.todaySuffix": " (Hoje)",
 

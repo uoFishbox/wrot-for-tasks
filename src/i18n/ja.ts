@@ -138,6 +138,7 @@ const ja = {
   "settings.item.resetToolbar.confirm": "もう一度押すと初期化",
 
   "view.toolbarAction.image": "画像",
+  "view.toolbarAction.at": "@ を挿入",
   "view.toolbarAction.bold": "太字",
   "view.toolbarAction.italic": "斜体",
   "view.toolbarAction.list": "リスト",
@@ -182,6 +183,24 @@ const ja = {
   // Shown on the same row after the first press, in place of the label above.
   "view.postMenu.deleteConfirm": "もう一度押すと削除",
 
+  "view.dateNav.back.d": "{count}日前に戻る",
+  "view.dateNav.back.w": "{count}週間前に戻る",
+  "view.dateNav.back.m": "{count}か月前に戻る",
+  "view.dateNav.back.y": "{count}年前に戻る",
+  "view.dateNav.shift.d": "{count}日後に移動する",
+  "view.dateNav.shift.today": "今日に移動",
+  "view.dateNav.post.d": "{count}日後にポストする",
+  "view.dateNav.post.w": "{count}週間後にポストする",
+  "view.dateNav.post.m": "{count}か月後にポストする",
+  "view.dateNav.post.y": "{count}年後にポストする",
+  "view.dateNav.post.today": "今日ポストする",
+  "view.dateNav.postBack.d": "{count}日前にポストする",
+  "view.dateNav.postBack.w": "{count}週間前にポストする",
+  "view.dateNav.postBack.m": "{count}か月前にポストする",
+  "view.dateNav.postBack.y": "{count}年前にポストする",
+  "view.dateNav.shift.w": "{count}週間後に移動する",
+  "view.dateNav.shift.m": "{count}か月後に移動する",
+  "view.dateNav.shift.y": "{count}年後に移動する",
   "view.dateNav.today": "今日",
   // Suffix appended to the date label; keyed so each locale can restyle it, brackets included.
   "view.dateNav.todaySuffix": "（今日）",

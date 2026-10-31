@@ -137,6 +137,7 @@ const zhCN = {
   "settings.item.resetToolbar.confirm": "再次点击以确认重置",
 
   "view.toolbarAction.image": "图片",
+  "view.toolbarAction.at": "插入 @",
   "view.toolbarAction.bold": "加粗",
   "view.toolbarAction.italic": "斜体",
   "view.toolbarAction.list": "无序列表",
@@ -181,6 +182,24 @@ const zhCN = {
   // Shown on the same row after the first press, in place of the label above.
   "view.postMenu.deleteConfirm": "再次点击以确认删除",
 
+  "view.dateNav.shift.d": "跳转到{count}天后",
+  "view.dateNav.shift.today": "跳转到今天",
+  "view.dateNav.post.d": "{count}天后发布",
+  "view.dateNav.post.w": "{count}周后发布",
+  "view.dateNav.post.m": "{count}个月后发布",
+  "view.dateNav.post.y": "{count}年后发布",
+  "view.dateNav.post.today": "今天发布",
+  "view.dateNav.postBack.d": "{count}天前发布",
+  "view.dateNav.postBack.w": "{count}周前发布",
+  "view.dateNav.postBack.m": "{count}个月前发布",
+  "view.dateNav.postBack.y": "{count}年前发布",
+  "view.dateNav.back.d": "返回{count}天前",
+  "view.dateNav.back.w": "返回{count}周前",
+  "view.dateNav.back.m": "返回{count}个月前",
+  "view.dateNav.back.y": "返回{count}年前",
+  "view.dateNav.shift.w": "跳转到{count}周后",
+  "view.dateNav.shift.m": "跳转到{count}个月后",
+  "view.dateNav.shift.y": "跳转到{count}年后",
   "view.dateNav.today": "今天",
   "view.dateNav.todaySuffix": "（今天）",
 

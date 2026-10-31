@@ -61,6 +61,23 @@ At the start of a line, typing `@2000` and pressing **Space or Enter** also inse
 
 Four digits stay unconverted until you confirm, so you can keep typing a range. Times use `0000`–`2359`, with minutes from `00` to `59`. Shortcuts inside code or math blocks, or in the middle of prose, stay literal.
 
+### Date Navigation Shortcuts
+
+Type a shortcut on its own line in the composer and press **Space, Enter, or Tab** to move forward from the currently displayed date:
+
+Typing `@1d` shows “Move forward 1 day(s)” and “Go back 1 day(s)”. Choose with the arrow keys and confirm with **Enter, Tab**, or a click. Add a trailing hyphen (`@1d-`) to show only the backward action. The same applies to weeks, months, and years: `@2w-`, `@1m-`, and `@1y-`. Confirming with Space moves forward without a hyphen and backward with one.
+
+Use `@today` to return to today. The “Move to today” suggestion appears as soon as you type `@to`; confirm with **Enter, Tab**, or a click. This resumes following today's date, just like the Today button.
+
+You can also put a shortcut after your text, separated by a space at the end of a line. With other text present, suggestions say “Post 1 day(s) later” or “Post 1 day(s) earlier”. This also applies when the body is on another line. Confirming `Some post @1d` posts `Some post` to the destination date and removes the shortcut. `Some post @1d-` posts one day earlier; weeks, months, years, and `@today` work the same way. The entire draft, including other lines, images, and quotes, is posted together. A failed save keeps the body in the composer on the selected date for retrying. Posting shortcuts are disabled while editing an existing post.
+
+- `@1d`: one day (`d` = days)
+- `@1w`: one week (`w` = weeks)
+- `@1m`: one month (`m` = months)
+- `@1y`: one year (`y` = years)
+
+Use other counts such as `@3d` or `@2w`. Month and year changes clamp to the destination month's last day when needed: January 31 plus `@1m` becomes February 28 or 29. When there is no other text, the suggestions only navigate and confirming only changes the date. Shortcuts inside code or math blocks stay literal.
+
 ### Brackets and Quotes
 
 Typing `(`, `[`, `{`, `"` or `'` adds the closing half automatically and puts the cursor between them.

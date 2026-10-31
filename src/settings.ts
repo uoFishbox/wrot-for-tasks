@@ -79,6 +79,7 @@ export interface ToolbarSlot {
  */
 export const DEFAULT_TOOLBAR_LAYOUT: ReadonlyArray<ToolbarSlot> = [
   { id: "image", state: "bar" },
+  { id: "at", state: "bar" },
   { id: "bold", state: "bar" },
   { id: "italic", state: "bar" },
   { id: "list", state: "bar" },
@@ -101,8 +102,7 @@ function readSlotState(slot: { state?: unknown; shown?: unknown }): ToolbarSlotS
 
 /**
  * Fills in a saved layout: unknown and duplicate ids are dropped, and any action the
- * save predates is appended hidden. A button added by a later version therefore lands
- * in the overflow menu rather than shifting positions the hand has already learned.
+ * save predates is appended in its shipped state, leaving existing buttons in place.
  * An empty save means "never customised" and yields the shipped layout.
  */
 export function resolveToolbarLayout(saved: ToolbarSlot[] | undefined): ToolbarSlot[] {
@@ -118,7 +118,7 @@ export function resolveToolbarLayout(saved: ToolbarSlot[] | undefined): ToolbarS
     resolved.push({ id: slot.id, state: readSlotState(slot) });
   }
   for (const slot of shipped) {
-    if (!seen.has(slot.id)) resolved.push({ id: slot.id, state: "menu" });
+    if (!seen.has(slot.id)) resolved.push({ ...slot });
   }
   return resolved;
 }

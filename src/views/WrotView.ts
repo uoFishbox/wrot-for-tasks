@@ -15,7 +15,8 @@ import { buildDateDrum } from "../utils/dateDrum";
 import { TagSuggest, extractTagsForHistory, rebuildFocus } from "../utils/tagSuggest";
 import { ComposerField } from "../editor/composerField";
 import { completeTimedTask } from "../editor/composerTimeTask";
-import { TimeTaskSuggest } from "../editor/timeTaskSuggest";
+import { dateShiftCommand, dateShiftOnSpace } from "../editor/composerDateShift";
+import { ComposerSuggest } from "../editor/composerSuggest";
 import { RemainingTasks } from "./RemainingTasks";
 import { findLinkAt, isLinkableText, linkMarkdown } from "../editor/composerLink";
 import { HIGHLIGHT_EMOJI, TAG_SOURCE } from "../utils/patterns";
@@ -28,6 +29,7 @@ import {
   continueQuoteOnEnter,
   deleteTaskOnBackspace,
   insertAtLineStart,
+  insertAtSign,
   insertCodeIndent,
   insertFenceBlock,
   insideDecoration,
@@ -66,6 +68,7 @@ const TOOLBAR_ACTION_SPECS: ReadonlyArray<{
   pendingMode?: boolean;
 }> = [
   { id: "image", icon: "image-plus", labelKey: "view.toolbarAction.image" },
+  { id: "at", icon: "at-sign", labelKey: "view.toolbarAction.at" },
   { id: "list", icon: "list", labelKey: "view.toolbarAction.list" },
   { id: "check", icon: "list-checks", labelKey: "view.toolbarAction.check" },
   { id: "ol", icon: "list-ordered", labelKey: "view.toolbarAction.ol" },
@@ -209,7 +212,8 @@ export class WrotView extends ItemView {
   private armedSchedule: string | null = null;
   private scheduleArmBtn: HTMLButtonElement | null = null;
   private tagSuggest: TagSuggest | null = null;
-  private timeTaskSuggest: TimeTaskSuggest | null = null;
+  private composerSuggest: ComposerSuggest | null = null;
+  private submittingMemo = false;
   composer!: ComposerField;
   submitLabelEl!: HTMLElement;
   submitIconEl!: HTMLElement;
@@ -386,8 +390,8 @@ export class WrotView extends ItemView {
     this.persistDraft();
     this.tagSuggest?.destroy();
     this.tagSuggest = null;
-    this.timeTaskSuggest?.destroy();
-    this.timeTaskSuggest = null;
+    this.composerSuggest?.destroy();
+    this.composerSuggest = null;
     // Before the composer goes: closing hands focus back to it otherwise.
     this.linkPopover?.close(true);
     this.composer?.destroy();
@@ -790,11 +794,19 @@ export class WrotView extends ItemView {
     // eslint-disable-next-line @typescript-eslint/no-misused-promises -- async handler intentionally used as a callback
     submitBtn.addEventListener("click", () => this.submitMemo());
 
+    const canPost = () => !this.editingMemo && !this.toolbarEditing && !this.submittingMemo;
+    const shiftDate = dateShiftCommand(
+      () => this.currentDate,
+      (date, followToday, post) => this.shiftComposerDate(date, followToday, post),
+      () => moment(),
+      canPost
+    );
     this.composer = new ComposerField(
       inputArea,
       this.plugin.settings.inputPlaceholder,
       this.plugin.settings.checkStrikethrough,
-      () => this.obsidianConfig("autoPairBrackets") !== false
+      () => this.obsidianConfig("autoPairBrackets") !== false,
+      [dateShiftOnSpace(shiftDate)]
     );
 
     // Enablement is read per call, so the settings toggle takes effect immediately.
@@ -804,10 +816,10 @@ export class WrotView extends ItemView {
       getCandidates: () => this.plugin.recentTags,
       isEnabled: () => this.plugin.settings.tagSuggestEnabled,
     });
-    this.timeTaskSuggest = new TimeTaskSuggest(this.app, this.composer, () => {
+    this.composerSuggest = new ComposerSuggest(this.app, this.composer, () => {
       // eslint-disable-next-line @typescript-eslint/no-floating-promises -- same submit action as the view's Mod+Enter shortcut
       this.submitMemo();
-    });
+    }, { getDate: () => this.currentDate, shiftDate, canPost });
 
     this.composer.addEventListener("keydown", (e: KeyboardEvent) => {
       if (e.isComposing) return;
@@ -817,7 +829,7 @@ export class WrotView extends ItemView {
       if (
         (e.key === "Enter" || e.key === "Tab") &&
         !e.shiftKey && !e.altKey && !e.ctrlKey && !e.metaKey &&
-        completeTimedTask(this.composer.view)
+        (shiftDate(this.composer.view) || completeTimedTask(this.composer.view))
       ) {
         e.preventDefault();
         return;
@@ -874,7 +886,7 @@ export class WrotView extends ItemView {
       const file = files[0];
       if (!isImageFile(file)) return;
       e.preventDefault();
-      if (this.toolbarEditing) return;
+      if (this.toolbarEditing || this.submittingMemo) return;
       this.setPendingImage(file);
     });
 
@@ -890,7 +902,7 @@ export class WrotView extends ItemView {
       const file = files[0];
       if (!isImageFile(file)) return;
       e.preventDefault();
-      if (this.toolbarEditing) return;
+      if (this.toolbarEditing || this.submittingMemo) return;
       this.setPendingImage(file);
     });
 
@@ -901,7 +913,7 @@ export class WrotView extends ItemView {
     // The suggest dropdown can overlap the toolbar; while it is shown (and during the
     // ghost-click window right after a tap-commit) toolbar buttons must not react.
     const toolbarSuppressed = () =>
-      (this.tagSuggest?.isSuppressingUi() ?? false) || (this.timeTaskSuggest?.isSuppressingUi() ?? false);
+      this.submittingMemo || (this.tagSuggest?.isSuppressingUi() ?? false) || (this.composerSuggest?.isSuppressingUi() ?? false);
 
     // Buttons are born detached: applyToolbarLayout is the only thing that puts one on
     // the bar, so an action that lives in the overflow menu simply never gets appended.
@@ -1149,6 +1161,7 @@ export class WrotView extends ItemView {
     // Keyed by id: an action listed here gets its click handler from this table, and the
     // rest already carry handlers of their own from further up.
     const menuBornRuns: Record<string, () => void> = {
+      at: () => insertAtSign(this.composer),
       code: runCode,
       math: runMath,
       quote: () => toggleBlockPrefix(this.composer, "> "),
@@ -1278,7 +1291,7 @@ export class WrotView extends ItemView {
         updateActive();
         // Close or reposition the tag dropdown when the caret moves off the tag.
         this.tagSuggest?.refresh();
-        this.timeTaskSuggest?.refresh();
+        this.composerSuggest?.refresh();
       }
     });
     // selectionchange does not fire on focus gain, so sync explicitly.
@@ -1359,9 +1372,9 @@ export class WrotView extends ItemView {
     // Refresh on both input and compositionend so uncommitted IME text also filters candidates.
     this.composer.addEventListener("input", () => this.scheduleDraftSave());
     this.composer.addEventListener("input", () => this.tagSuggest?.refresh());
-    this.composer.addEventListener("input", () => this.timeTaskSuggest?.refresh());
+    this.composer.addEventListener("input", () => this.composerSuggest?.refresh());
     this.composer.addEventListener("compositionend", () => this.tagSuggest?.refresh());
-    this.composer.addEventListener("compositionend", () => this.timeTaskSuggest?.refresh());
+    this.composer.addEventListener("compositionend", () => this.composerSuggest?.refresh());
     this.composer.addEventListener("blur", () => this.tagSuggest?.notifyBlur());
 
     // Wrap detection via offsetTop, which padding changes don't affect, so the
@@ -1579,6 +1592,7 @@ export class WrotView extends ItemView {
   }
 
   private enterEditMode(memo: Memo, filePath: string): void {
+    if (this.submittingMemo) return;
     // Stash the draft before clearing the pending image: clearPendingImage only
     // revokes the object URL, the File reference stays valid for the restore.
     this.savedDraft = {
@@ -1734,8 +1748,31 @@ export class WrotView extends ItemView {
     }
   }
 
+  private shiftComposerDate(date: ReturnType<typeof moment>, followToday: boolean, post: boolean): void {
+    this.currentDate = date;
+    this.anchoredToToday = followToday;
+    this.closeCalendarPopover();
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises -- same refresh as date navigation
+    this.refresh();
+    if (post) {
+      // eslint-disable-next-line @typescript-eslint/no-floating-promises -- same save action as the submit button
+      this.submitMemo();
+    }
+  }
+
   async submitMemo(): Promise<void> {
-    if (this.toolbarEditing) return;
+    if (this.toolbarEditing || this.submittingMemo) return;
+    this.submittingMemo = true;
+    this.composer.readOnly = true;
+    try {
+      await this.saveComposerMemo();
+    } finally {
+      this.submittingMemo = false;
+      this.composer.readOnly = this.toolbarEditing;
+    }
+  }
+
+  private async saveComposerMemo(): Promise<void> {
     const typed = this.hasTypedText();
     if (!typed && !this.pendingImage && !this.pendingQuote) return;
     // The form never showed the pending opener, so the decoration it was drawing is closed
@@ -1754,6 +1791,7 @@ export class WrotView extends ItemView {
     if (this.anchoredToToday && !this.currentDate.isSame(moment(), "day")) {
       this.currentDate = moment();
     }
+    const postDate = this.currentDate.clone();
 
     try {
       const settings = this.plugin.settings;
@@ -1764,10 +1802,10 @@ export class WrotView extends ItemView {
         new Notice(t("view.notice.postHeadingNoTemplate"));
       }
 
-      const existed = getDailyNoteFile(this.app, this.currentDate) !== null;
+      const existed = getDailyNoteFile(this.app, postDate) !== null;
       const file = await getOrCreateDailyNote(
         this.app,
-        this.currentDate,
+        postDate,
         templateGone
       );
       if (!existed) await waitForTemplater(this.app, file);
@@ -1786,7 +1824,7 @@ export class WrotView extends ItemView {
       }
 
       this.markOwnWrite();
-      const locate = headingLocator(settings.postHeading, this.currentDate);
+      const locate = headingLocator(settings.postHeading, postDate);
       let headingFound = true;
       const postedTime = await appendMemo(this.app, file, bodyText, locate ? (lines) => {
         const at = locate(lines);
@@ -1820,7 +1858,7 @@ export class WrotView extends ItemView {
       }
 
       this.composer.value = "";
-        this.activeFormatMode = null;
+      this.activeFormatMode = null;
       this.clearPendingImage();
       this.setPendingQuote(null);
       this.composer.dispatchEvent(new Event("input"));
@@ -2796,6 +2834,7 @@ export class WrotView extends ItemView {
   }
 
   private setToolbarEditing(on: boolean): void {
+    if (this.submittingMemo) return;
     if (on && (this.editingMemo || !this.plugin.settings.toolbarEditEnabled)) return;
     if (this.toolbarEditing === on) return;
     this.toolbarEditing = on;
