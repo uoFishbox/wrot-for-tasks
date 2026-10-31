@@ -11,6 +11,7 @@ import { t } from "../i18n";
 interface RemainingTask extends DailyNoteTask {
   filePath: string;
   noteDate: number;
+  noteDateLabel: string;
   startMinutes: number | null;
 }
 
@@ -109,6 +110,7 @@ export class RemainingTasks extends Component {
       ...task,
       filePath: file.path,
       noteDate: calendarDateValue(date.toDate()),
+      noteDateLabel: date.format("YYYY-MM-DD"),
       startMinutes: dailyNoteTaskStartMinutes(task.text),
     }));
     if (entries.length > 0) this.tasks.set(file.path, entries);
@@ -220,7 +222,7 @@ export class RemainingTasks extends Component {
       const meta = row.createDiv({ cls: "wr-remaining-task-meta" });
       const link = meta.createEl("a", {
         cls: "wr-remaining-task-source",
-        text: task.filePath.replace(/\.md$/i, ""),
+        text: task.noteDateLabel,
         attr: { href: task.filePath, "aria-label": `${task.filePath}:${task.line + 1}` },
       });
       const timeLabel = meta.createSpan({
