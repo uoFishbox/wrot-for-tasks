@@ -140,6 +140,8 @@ _※ URL プレビュー機能を有効にしている場合のみ、OGP 情報�
 
 [MIT License](https://github.com/villyoshioka/Wrot/blob/main/LICENSE)
 
+フォークを公開される方は [フォークについて](https://github.com/villyoshioka/Wrot/blob/main/docs/ja/FORKING.md) もご覧ください。
+
 ---
 
 ## 謝辞
