@@ -7,12 +7,12 @@ const de = {
   "settings.section.tagrules": "Tag-Regeln",
 
   "settings.item.viewPlacement.name": "Position",
-  "settings.item.viewPlacement.desc": "Legt fest, wo Wrot angezeigt wird.",
+  "settings.item.viewPlacement.desc": "Legt fest, wo Wrot for Tasks angezeigt wird.",
   "settings.option.viewPlacement.left": "Linke Seitenleiste",
   "settings.option.viewPlacement.right": "Rechte Seitenleiste",
   "settings.option.viewPlacement.main": "Hauptbereich",
   "settings.item.openOnStartup.name": "Beim Start öffnen",
-  "settings.item.openOnStartup.desc": "Öffnet Wrot beim Start von Obsidian automatisch im Vordergrund.",
+  "settings.item.openOnStartup.desc": "Öffnet Wrot for Tasks beim Start von Obsidian automatisch im Vordergrund.",
 
   "settings.item.followFontSize.name": "Obsidian-Schriftgröße verwenden",
   "settings.item.followFontSize.desc": "Übernimmt die Schriftgröße aus den Darstellungseinstellungen von Obsidian.",
@@ -80,7 +80,7 @@ const de = {
   "settings.item.showPostDelete.desc": "Fügt dem Beitragsmenü die Option „Löschen“ hinzu.\nGelöschte Beiträge können nicht wiederhergestellt werden (Medienanhänge bleiben erhalten).",
 
   "settings.item.useCustomAttachmentFolder.name": "Eigenen Medienordner verwenden",
-  "settings.item.useCustomAttachmentFolder.desc": "Gilt ausschließlich für über Wrot eingefügte Bilder.",
+  "settings.item.useCustomAttachmentFolder.desc": "Gilt ausschließlich für über Wrot for Tasks eingefügte Bilder.",
 
   "settings.item.attachmentFolder.name": "Speicherort",
   "settings.item.attachmentFolder.desc": "Existiert der Ordner nicht, gelten die Einstellungen von Obsidian.",
@@ -115,9 +115,9 @@ const de = {
   "settings.tagRule.scope.ogp.name": "Sekundärfarbe für Link-Vorschaukarten",
   "settings.tagRule.scope.ogp.desc": "Wenn deaktiviert, wird die berechnete Standardfarbe verwendet.",
   "settings.item.graphTags.name": "Globale Tag-Integration",
-  "settings.item.graphTags.desc": "Tags werden in der Graph-Ansicht und Obsidian-Suche (tag:) erfasst.\nWenn deaktiviert, bleiben sie rein intern in Wrot.",
+  "settings.item.graphTags.desc": "Tags werden in der Graph-Ansicht und Obsidian-Suche (tag:) erfasst.\nWenn deaktiviert, bleiben sie rein intern in Wrot for Tasks.",
   "settings.tagRule.noIntegration.name": "Von Tag-Integration ausschließen",
-  "settings.tagRule.noIntegration.desc": "Behandelt dieses Tag ausschließlich intern in Wrot.",
+  "settings.tagRule.noIntegration.desc": "Behandelt dieses Tag ausschließlich intern in Wrot for Tasks.",
   "settings.tagRule.hideTimeline.name": "In der Timeline ausblenden",
   "settings.tagRule.hideTimeline.desc": "Einträge mit diesem Tag erscheinen nicht in der Timeline, bleiben aber in der Tagesnotiz erhalten.",
   "settings.tagRule.protectDelete.name": "Löschschutz aktivieren",

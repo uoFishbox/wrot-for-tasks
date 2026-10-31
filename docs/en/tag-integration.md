@@ -1,8 +1,8 @@
 # How Tag Integration Works
 
-Since Obsidian treats Wrot memos as code blocks, any tags you write inside them won't show up in core features like the graph view or tag search.
+Since Obsidian treats Wrot for Tasks memos as code blocks, any tags you write inside them won't show up in core features like the graph view or tag search.
 
-**Tag Integration** fixes this. It makes tags inside your Wrot memos act just like normal tags in your notes, so they show up in the graph view and turn up in tag searches without a hitch.
+**Tag Integration** fixes this. It makes tags inside your Wrot for Tasks memos act just like normal tags in your notes, so they show up in the graph view and turn up in tag searches without a hitch.
 
 Here is a quick overview of what this feature does, how it works, and how to exclude certain tags if you want to keep things clean.
 
@@ -27,7 +27,7 @@ Searching for `tag:#tag-name` brings up any notes that contain memos with that t
 
 ### 3. See tags in the Tag List and Search Autocomplete
 
-Tags you use in Wrot get added right to your vault-wide tag list.
+Tags you use in Wrot for Tasks get added right to your vault-wide tag list.
 
 - They sit right alongside your everyday tags in the sidebar's Tags pane.
 - They pop up as suggestions when you type `tag:` in the search bar.
@@ -47,7 +47,7 @@ Hashtags (`#`) inside URLs, links, inline code (` `), or formatted text aren't t
 
 You can toggle this on or off under **Tag integration** in the "Advanced" section. It is turned on by default.
 
-- **When toggled off:** Tags go back to working strictly inside Wrot. They won't show up in the graph view or tag searches, and clicking a tag will just run a basic text search instead.
+- **When toggled off:** Tags go back to working strictly inside Wrot for Tasks. They won't show up in the graph view or tag searches, and clicking a tag will just run a basic text search instead.
 
 ### Excluding specific tags
 
@@ -56,7 +56,7 @@ If you have quick scratchpad tags that you'd rather not clutter your main graph 
 1. Go to **Tag Rules** and toggle on **Use tag rules**.
 2. Add a rule for the tag you want to leave out, then turn on **Exclude from tag integration**.
 
-Excluding a tag only hides the copies written inside Wrot from your graph and search results. Tags with the same name in your regular notes or properties won't be touched at all.
+Excluding a tag only hides the copies written inside Wrot for Tasks from your graph and search results. Tags with the same name in your regular notes or properties won't be touched at all.
 
 Unlike color rules, tag order doesn't matter here. Any tag set to be excluded will be left out individually across the board.
 
@@ -64,7 +64,7 @@ Unlike color rules, tag order doesn't matter here. Any tag set to be excluded wi
 
 ## First-Time Startup
 
-When you run this feature for the first time, Wrot generates a small helper file called `integration.json` to handle your tags. Because of this, it might take a moment for things to populate in the graph or search results on your very first run. Everything will update instantly from the second time onward.
+When you run this feature for the first time, Wrot for Tasks generates a small helper file called `integration.json` to handle your tags. Because of this, it might take a moment for things to populate in the graph or search results on your very first run. Everything will update instantly from the second time onward.
 
 ---
 
@@ -73,7 +73,7 @@ When you run this feature for the first time, Wrot generates a small helper file
 ### Tags aren't showing up in the Graph View
 
 - **Check your graph settings:** Make sure the Tags filter is toggled on in your graph view settings. Obsidian leaves this off by default.
-- **Check plugin settings:** Make sure Tag integration is turned on in Wrot's settings.
+- **Check plugin settings:** Make sure Tag integration is turned on in Wrot for Tasks's settings.
 - **Check exclusion rules:** Double-check whether that tag has been set to Exclude from tag integration.
 - **Just started up?** If you just launched Obsidian or enabled the plugin, give it a moment to finish setting things up.
 

@@ -1,29 +1,29 @@
-# Wrot
+# Wrot for Tasks
 
-> **Wrot for Task fork**: task features built on upstream Wrot. Install via [this fork's releases](https://github.com/uoFishbox/wrot-for-task/releases) or BRAT (`uoFishbox/wrot-for-task`). See [fork versions and release procedure](docs/FORK_RELEASES.md).
+> **Wrot for Tasks**: a task-focused fork of [Wrot](https://github.com/villyoshioka/Wrot). Install via [this fork's releases](https://github.com/uoFishbox/wrot-for-tasks/releases) or BRAT (`uoFishbox/wrot-for-tasks`). See [fork versions and release procedure](docs/FORK_RELEASES.md).
 
-**English** ・ [日本語](https://github.com/villyoshioka/Wrot/blob/main/docs/ja/README.md)
+**English** ・ [日本語](https://github.com/uoFishbox/wrot-for-tasks/blob/main/docs/ja/README.md)
 
 **Micro-journaling for Obsidian. Capture your day like you're tweeting to yourself.**
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow)](https://opensource.org/licenses/MIT)
-[![release](https://img.shields.io/github/v/release/villyoshioka/Wrot)](https://github.com/villyoshioka/Wrot/releases/latest)
+[![release](https://img.shields.io/github/v/release/uoFishbox/wrot-for-tasks)](https://github.com/uoFishbox/wrot-for-tasks/releases/latest)
 
-![Wrot timeline in the main editor area](https://raw.githubusercontent.com/villyoshioka/Wrot/main/docs/images/timeline-desktop-en.png)
+![Wrot for Tasks timeline in the main editor area](https://raw.githubusercontent.com/uoFishbox/wrot-for-tasks/main/docs/images/timeline-desktop-en.png)
 
 ---
 
-## What is Wrot?
+## What is Wrot for Tasks?
 
-Write + Jot = **Wrot**. It brings effortless micro-journaling to Obsidian, combining the depth of writing with the speed of quick note-taking.
+**Wrot for Tasks** adds a remaining-tasks panel, timed task input, and calendar task indicators to [Wrot](https://github.com/villyoshioka/Wrot), the micro-journaling plugin by Vill Yoshioka.
 
 Think of it as your own private social feed. You get the quick, low-friction feel of posting online, but with zero algorithm, zero audience, and zero pressure. Dump random thoughts, quick updates, or fleeting ideas as they happen.
 
-Because every post drops straight into your daily notes, Wrot works hand-in-hand with Obsidian’s native search, backlinks, and review workflows without breaking a sweat.
+Because every post drops straight into your daily notes, Wrot for Tasks works hand-in-hand with Obsidian’s native search, backlinks, and review workflows without breaking a sweat.
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/villyoshioka/Wrot/main/docs/images/posting-mobile.gif" alt="Posting from the Wrot timeline on iPhone" width="280">
-  <img src="https://raw.githubusercontent.com/villyoshioka/Wrot/main/docs/images/timeline-mobile.png" alt="Wrot timeline on iPhone" width="280">
+  <img src="https://raw.githubusercontent.com/uoFishbox/wrot-for-tasks/main/docs/images/posting-mobile.gif" alt="Posting from the Wrot for Tasks timeline on iPhone" width="280">
+  <img src="https://raw.githubusercontent.com/uoFishbox/wrot-for-tasks/main/docs/images/timeline-mobile.png" alt="Wrot for Tasks timeline on iPhone" width="280">
 </p>
 
 ---
@@ -31,19 +31,19 @@ Because every post drops straight into your daily notes, Wrot works hand-in-hand
 ## What you can do
 
 - **A social-style timeline paired with a rich editor**  
-  Browse your entries in a clean, chronological feed. The editor hides Markdown syntax so bold text and lists look finished as you write ([learn more](https://github.com/villyoshioka/Wrot/blob/main/docs/en/posting-form-v3.md)). A customizable toolbar puts formatting, lists, quotes, and links within easy reach ([learn more](https://github.com/villyoshioka/Wrot/blob/main/docs/en/toolbar.md)).
+  Browse your entries in a clean, chronological feed. The editor hides Markdown syntax so bold text and lists look finished as you write ([learn more](https://github.com/uoFishbox/wrot-for-tasks/blob/main/docs/en/posting-form-v3.md)). A customizable toolbar puts formatting, lists, quotes, and links within easy reach ([learn more](https://github.com/uoFishbox/wrot-for-tasks/blob/main/docs/en/toolbar.md)).
 - **Keep important notes pinned**  
-  Keep key notes or active tasks stuck to the top of your feed. You can even schedule a note to pin itself automatically on a future date ([learn more](https://github.com/villyoshioka/Wrot/blob/main/docs/en/pinning.md)).
+  Keep key notes or active tasks stuck to the top of your feed. You can even schedule a note to pin itself automatically on a future date ([learn more](https://github.com/uoFishbox/wrot-for-tasks/blob/main/docs/en/pinning.md)).
 - **Built right into Obsidian's tag system**  
-  Tags in your posts act just like standard tags across your vault. They pop up in Graph View, show up in search, and open in Obsidian's global search with a click ([learn more](https://github.com/villyoshioka/Wrot/blob/main/docs/en/tag-integration.md)).
+  Tags in your posts act just like standard tags across your vault. They pop up in Graph View, show up in search, and open in Obsidian's global search with a click ([learn more](https://github.com/uoFishbox/wrot-for-tasks/blob/main/docs/en/tag-integration.md)).
 - **Tag autocomplete**  
-  Type `#` in the input box to instantly see your most-used tags, making tagging fast and painless ([learn more](https://github.com/villyoshioka/Wrot/blob/main/docs/en/tag-autocomplete.md)).
+  Type `#` in the input box to instantly see your most-used tags, making tagging fast and painless ([learn more](https://github.com/uoFishbox/wrot-for-tasks/blob/main/docs/en/tag-autocomplete.md)).
 - **Tag rules with auto color-coding**  
-  Set custom background and text colors for specific tags to visually group your feed by project, mood, or urgency ([learn more](https://github.com/villyoshioka/Wrot/blob/main/docs/en/tag-rules.md)).
+  Set custom background and text colors for specific tags to visually group your feed by project, mood, or urgency ([learn more](https://github.com/uoFishbox/wrot-for-tasks/blob/main/docs/en/tag-rules.md)).
 - **Internal links and rich link previews**  
-  Link to notes in your Vault or to web pages with the Link button, and paste URLs to generate rich OGP link cards, keeping your context clear at a glance ([learn more](https://github.com/villyoshioka/Wrot/blob/main/docs/en/links-and-embeds.md)).
+  Link to notes in your Vault or to web pages with the Link button, and paste URLs to generate rich OGP link cards, keeping your context clear at a glance ([learn more](https://github.com/uoFishbox/wrot-for-tasks/blob/main/docs/en/links-and-embeds.md)).
 - **Post under your template headings**  
-  Pick a heading from your daily note template and your posts land right under it instead of at the end of the note. Templater-powered templates work too ([learn more](https://github.com/villyoshioka/Wrot/blob/main/docs/en/template-heading-selection.md)).
+  Pick a heading from your daily note template and your posts land right under it instead of at the end of the note. Templater-powered templates work too ([learn more](https://github.com/uoFishbox/wrot-for-tasks/blob/main/docs/en/template-heading-selection.md)).
 - **Hassle-free image attachments**  
   Paste images straight from your clipboard, drop them onto the screen, or pick files using the attachment button. Check thumbnail previews before hitting post.
 - **Customizable look and feel**  
@@ -53,13 +53,13 @@ Because every post drops straight into your daily notes, Wrot works hand-in-hand
 
 ## How it works
 
-Wrot saves your entries as ` ```wr ` code blocks inside the file designated by Obsidian's Daily Notes plugin. No custom databases, no external servers, no vendor lock-in. Everything stays inside plain text files in your vault.
+Wrot for Tasks saves your entries as ` ```wr ` code blocks inside the file designated by Obsidian's Daily Notes plugin. No custom databases, no external servers, no vendor lock-in. Everything stays inside plain text files in your vault.
 
 You can post, edit, and clean up entries directly from the timeline, or open the raw Markdown file whenever you prefer.
 
-If you format your daily notes by week (like `GGGG年WW週`) or month (like `YYYY年MM月`), Wrot seamlessly adapts into a weekly or monthly log instead.
+If you format your daily notes by week (like `GGGG年WW週`) or month (like `YYYY年MM月`), Wrot for Tasks seamlessly adapts into a weekly or monthly log instead.
 
-> **Note**: Wrot relies on Obsidian's core Daily Notes plugin, so make sure it is turned on.
+> **Note**: Wrot for Tasks relies on Obsidian's core Daily Notes plugin, so make sure it is turned on.
 
 ---
 
@@ -77,7 +77,7 @@ If you format your daily notes by week (like `GGGG年WW週`) or month (like `YYY
 
 ## Languages
 
-Wrot supports **11 languages across 12 locales**. It automatically follows your Obsidian interface language and falls back to English if your language isn't supported yet.
+Wrot for Tasks supports **11 languages across 12 locales**. It automatically follows your Obsidian interface language and falls back to English if your language isn't supported yet.
 
 | Language     | Locale  | Language            | Locale  |
 | :----------- | :------ | :------------------ | :------ |
@@ -92,23 +92,25 @@ Wrot supports **11 languages across 12 locales**. It automatically follows your 
 
 ## Quick Start
 
-1. **Install Wrot** through the Community Plugins tab or manually.
+1. **Install Wrot for Tasks** through BRAT or manually.
 2. **Open your timeline** by clicking the ribbon icon or triggering the "Open" command from the Command Palette.
 3. **Start logging** by typing a note and pressing the post button or hitting `Ctrl / Cmd + Enter`.
 
 ### Installation
 
-**Via Obsidian Community Plugins**
+**Via BRAT**
 
-1. Go to Settings > Community plugins > Browse.
-2. Search for `Wrot` and hit Install.
-3. Once downloaded, click Enable.
+1. Install and enable BRAT in Obsidian.
+2. Use BRAT's "Add a beta plugin" command and enter `uoFishbox/wrot-for-tasks`.
+3. Enable **Wrot for Tasks** in Settings > Community plugins.
 
 **Manual Install**
 
-1. Grab `main.js`, `manifest.json`, and `styles.css` from the latest [Release](https://github.com/villyoshioka/Wrot/releases).
-2. Move all three files into `.obsidian/plugins/wrot/` inside your vault (create the `wrot` folder if needed).
-3. Open Settings > Community plugins in Obsidian, hit Reload, and enable Wrot.
+1. Grab `main.js`, `manifest.json`, and `styles.css` from the latest [Release](https://github.com/uoFishbox/wrot-for-tasks/releases).
+2. Move all three files into `.obsidian/plugins/wrot-for-tasks/` inside your vault (create the `wrot-for-tasks` folder if needed).
+3. Open Settings > Community plugins in Obsidian, hit Reload, and enable Wrot for Tasks.
+
+> The plugin ID is `wrot-for-tasks`. Earlier fork releases used `wrot`; settings and workspace views are not automatically migrated. Disable the previous Wrot installation before enabling this fork so both plugins do not process the same notes.
 
 > **Tip**: The `.obsidian` folder is hidden by default. Press `Cmd + Shift + .` on macOS or turn on "Hidden items" under the View tab in Windows File Explorer to reveal it.
 
@@ -116,7 +118,7 @@ Wrot supports **11 languages across 12 locales**. It automatically follows your 
 
 ## Customization
 
-Wrot gives you fine-grained control over how your feed looks and behaves.
+Wrot for Tasks gives you fine-grained control over how your feed looks and behaves.
 
 - **Panel location**: Dock your timeline in the left sidebar, right sidebar, or main editor area.
 - **Color themes**: Customize light and dark mode colors independently.
@@ -126,15 +128,15 @@ Wrot gives you fine-grained control over how your feed looks and behaves.
 - **Timestamp format**: Adjust how dates and times display (e.g., `YYYY/MM/DD HH:mm:ss`).
 - **Link previews**: Turn OGP link preview cards on or off.
 
-![Wrot timeline docked in the right sidebar](https://raw.githubusercontent.com/villyoshioka/Wrot/main/docs/images/sidebar-desktop-en.png)
+![Wrot for Tasks timeline docked in the right sidebar](https://raw.githubusercontent.com/uoFishbox/wrot-for-tasks/main/docs/images/sidebar-desktop-en.png)
 
 ---
 
 ## Privacy
 
-Wrot does not track you or collect any data. Everything runs 100% locally on your device.
+Wrot for Tasks does not track you or collect any data. Everything runs 100% locally on your device.
 
-_Note: If link previews are enabled, Wrot sends a standard web request to the destination URL to retrieve preview metadata._
+_Note: If link previews are enabled, Wrot for Tasks sends a standard web request to the destination URL to retrieve preview metadata._
 
 ---
 
@@ -146,7 +148,7 @@ _Note: If link previews are enabled, Wrot sends a standard web request to the de
 
 ## Credits
 
-Wrot was built standing on the shoulders of these incredible projects. Huge thanks to the creators:
+Wrot for Tasks is maintained by [uoFishbox](https://github.com/uoFishbox) and is based on [Wrot](https://github.com/villyoshioka/Wrot) by Vill Yoshioka. Upstream Wrot was inspired by these projects:
 
 - [Obsidian Memos](https://github.com/Quorafind/Obsidian-Memos) (now [Thino](https://github.com/Quorafind/Obsidian-Thino)) by [Quorafind](https://github.com/Quorafind)
 - [Mobile First Daily Interface (MFDI)](https://github.com/tadashi-aikawa/mobile-first-daily-interface) by [tadashi-aikawa](https://github.com/tadashi-aikawa)
@@ -155,8 +157,8 @@ Translations are powered by [Nani](https://nani.now/ja). Special thanks to [catn
 
 ---
 
-## Behind the Scenes
+## Upstream Development
 
 The project author handles all design, architecture, and quality control, leveraging Anthropic's Claude as a development assistant. For more details, see our [AI Use Policy](https://github.com/villyoshioka/Wrot/blob/main/AI_POLICY.md).
 
-**Author**: Vill Yoshioka ([@villyoshioka](https://github.com/villyoshioka))
+**Upstream author**: Vill Yoshioka ([@villyoshioka](https://github.com/villyoshioka))

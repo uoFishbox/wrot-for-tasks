@@ -82,7 +82,7 @@ export default class WrotPlugin extends Plugin {
       (leaf) => new WrotView(leaf, this)
     );
 
-    this.addRibbonIcon("feather", "Wrot", () => {
+    this.addRibbonIcon("feather", this.manifest.name, () => {
       // eslint-disable-next-line @typescript-eslint/no-floating-promises -- fire-and-forget; failure is non-critical
       this.activateView();
     });

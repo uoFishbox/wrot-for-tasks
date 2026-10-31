@@ -275,7 +275,7 @@ export function openCalendarPopover(
         if (closed || taskCells.get(path) !== entry || entry.revision !== revision) return;
         showTasks(entry, incompleteDailyNoteTasks(content, app.metadataCache.getFileCache(file)));
       }).catch((error: unknown) => {
-        console.warn("Wrot: could not read calendar tasks", path, error);
+        console.warn("Wrot for Tasks: could not read calendar tasks", path, error);
       });
     }
   };

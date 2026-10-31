@@ -1,6 +1,6 @@
 # How to Use Tag Rules
 
-Wrot lets you automatically change the color of your notes based on their tags.
+Wrot for Tasks lets you automatically change the color of your notes based on their tags.
 By giving each tag a distinct look—like a muted tone for `#journal` or a vibrant shade for `#work`—you can organize and scan your timeline at a glance.
 
 You can also use tags to keep specific notes off your timeline altogether.
@@ -37,7 +37,7 @@ Since these form the foundation of your rule, both are required.
 ## 3. Fine-Tune Colors Further (Optional)
 
 The two base colors get the job done, but if you want to tweak the design, two extra color options are available.
-If you leave these blank, Wrot automatically calculates balanced shades based on your background and text choices.
+If you leave these blank, Wrot for Tasks automatically calculates balanced shades based on your background and text choices.
 
 ### Accent Color
 
@@ -64,10 +64,10 @@ This styles secondary elements around your text, such as timestamps, list marker
 
 ## 4. Hide Notes from the Timeline
 
-Toggle on **"Hide from timeline"** within a rule to keep matching notes off your main Wrot timeline.
+Toggle on **"Hide from timeline"** within a rule to keep matching notes off your main Wrot for Tasks timeline.
 
 - **Your data stays intact**: The underlying daily note files are untouched, so you can still read them anytime by opening the file directly.
-- **Live Preview and Reading View**: Notes display normally when opened. They are only hidden from the Wrot timeline view.
+- **Live Preview and Reading View**: Notes display normally when opened. They are only hidden from the Wrot for Tasks timeline view.
 - **Pinned notes stay put**: Pinned notes are an exception and will remain anchored to the top of your timeline even if they have a hidden tag.
 - **How multiple tags work**: Colors follow the first tag in the note text, but **the hide rule checks every tag**. If a note includes even one hidden tag, it stays off your timeline.
 
@@ -94,7 +94,7 @@ Click "Add rule" or hit the `+` icon in the header to create extra rules.
 
 When a note has multiple tags matching different rules, **the tag that appears first in the note text takes priority**.
 
-- Example: If a note contains `#work #important` in that order and both have rules, Wrot applies the `#work` rule.
+- Example: If a note contains `#work #important` in that order and both have rules, Wrot for Tasks applies the `#work` rule.
 - Only one color scheme applies per note, so subsequent tags are ignored for styling.
 
 ---
@@ -103,7 +103,7 @@ When a note has multiple tags matching different rules, **the tag that appears f
 
 Your tag rules apply across all note views in Obsidian:
 
-- **Timeline** (The Wrot list view)
+- **Timeline** (The Wrot for Tasks list view)
 - **Live Preview** (Edit mode)
 - **Reading View** (Read mode)
 

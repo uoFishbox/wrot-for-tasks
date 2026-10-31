@@ -7,12 +7,12 @@ const es = {
   "settings.section.tagrules": "Reglas por etiqueta",
 
   "settings.item.viewPlacement.name": "Ubicación de la vista",
-  "settings.item.viewPlacement.desc": "Lugar donde se muestra Wrot.",
+  "settings.item.viewPlacement.desc": "Lugar donde se muestra Wrot for Tasks.",
   "settings.option.viewPlacement.left": "Barra lateral izquierda",
   "settings.option.viewPlacement.right": "Barra lateral derecha",
   "settings.option.viewPlacement.main": "Área principal",
   "settings.item.openOnStartup.name": "Abrir al inicio",
-  "settings.item.openOnStartup.desc": "Si se activa, Wrot pasa al primer plano al iniciar Obsidian.",
+  "settings.item.openOnStartup.desc": "Si se activa, Wrot for Tasks pasa al primer plano al iniciar Obsidian.",
 
   "settings.item.followFontSize.name": "Usar tamaño de fuente de Obsidian",
   "settings.item.followFontSize.desc": "Si se activa, sigue el tamaño de fuente configurado en la apariencia de Obsidian.",
@@ -80,7 +80,7 @@ const es = {
   "settings.item.showPostDelete.desc": "Si se activa, se añade una opción para eliminar en el menú de la publicación. \nLas publicaciones eliminadas no se pueden recuperar. Las imágenes adjuntas no se borrarán.",
 
   "settings.item.useCustomAttachmentFolder.name": "Personalizar carpeta de imágenes",
-  "settings.item.useCustomAttachmentFolder.desc": "Solo afecta a las imágenes añadidas desde Wrot.",
+  "settings.item.useCustomAttachmentFolder.desc": "Solo afecta a las imágenes añadidas desde Wrot for Tasks.",
 
   "settings.item.attachmentFolder.name": "Carpeta de destino",
   "settings.item.attachmentFolder.desc": "Si la carpeta no existe, se usará la configuración de Obsidian.",
@@ -121,9 +121,9 @@ const es = {
   "settings.tagRule.scope.ogp.desc":
     "Si se desactiva, se usará el color calculado automáticamente.",
   "settings.item.graphTags.name": "Integración de etiquetas",
-  "settings.item.graphTags.desc": "Las etiquetas se incluirán en la vista de gráfico y en las búsquedas tag:. \nSi se desactiva, solo funcionarán dentro de Wrot.",
+  "settings.item.graphTags.desc": "Las etiquetas se incluirán en la vista de gráfico y en las búsquedas tag:. \nSi se desactiva, solo funcionarán dentro de Wrot for Tasks.",
   "settings.tagRule.noIntegration.name": "Excluir de la integración de etiquetas",
-  "settings.tagRule.noIntegration.desc": "Si se activa, esta etiqueta solo funcionará dentro de Wrot.",
+  "settings.tagRule.noIntegration.desc": "Si se activa, esta etiqueta solo funcionará dentro de Wrot for Tasks.",
   "settings.tagRule.hideTimeline.name": "Ocultar en la cronología",
   "settings.tagRule.hideTimeline.desc": "Si se activa, las publicaciones con esta etiqueta no aparecerán en la cronología. \nSeguirán estando en la nota diaria.",
   "settings.tagRule.protectDelete.name": "Desactivar botón de eliminar",

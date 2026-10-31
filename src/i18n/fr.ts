@@ -7,12 +7,12 @@ const fr = {
   "settings.section.tagrules": "Règles par tag",
 
   "settings.item.viewPlacement.name": "Emplacement de la vue",
-  "settings.item.viewPlacement.desc": "Endroit où Wrot s'affiche.",
+  "settings.item.viewPlacement.desc": "Endroit où Wrot for Tasks s'affiche.",
   "settings.option.viewPlacement.left": "Barre latérale gauche",
   "settings.option.viewPlacement.right": "Barre latérale droite",
   "settings.option.viewPlacement.main": "Panneau principal",
   "settings.item.openOnStartup.name": "Ouvrir au démarrage",
-  "settings.item.openOnStartup.desc": "Si activé, Wrot s'affiche au premier plan au démarrage d'Obsidian.",
+  "settings.item.openOnStartup.desc": "Si activé, Wrot for Tasks s'affiche au premier plan au démarrage d'Obsidian.",
 
   "settings.item.followFontSize.name":
     "Adapter à la taille de police d'Obsidian",
@@ -81,7 +81,7 @@ const fr = {
   "settings.item.showPostDelete.desc": "Si activé, une option de suppression est ajoutée au menu de chaque publication. \nUne publication supprimée est irrécupérable. Les images jointes ne sont pas supprimées.",
 
   "settings.item.useCustomAttachmentFolder.name": "Dossier des pièces jointes dédié",
-  "settings.item.useCustomAttachmentFolder.desc": "Ne concerne que les images insérées depuis Wrot.",
+  "settings.item.useCustomAttachmentFolder.desc": "Ne concerne que les images insérées depuis Wrot for Tasks.",
 
   "settings.item.attachmentFolder.name": "Dossier de destination",
   "settings.item.attachmentFolder.desc": "Si le dossier n'existe pas, l'emplacement par défaut d'Obsidian sera utilisé.",
@@ -121,11 +121,11 @@ const fr = {
   "settings.tagRule.scope.ogp.desc":
     "Si désactivé, la couleur calculée automatiquement est utilisée.",
   "settings.item.graphTags.name": "Intégration globale des tags",
-  "settings.item.graphTags.desc": "Les tags apparaîtront dans la vue graphique et la recherche tag:. \nSi désactivé, ils restent réservés à Wrot.",
+  "settings.item.graphTags.desc": "Les tags apparaîtront dans la vue graphique et la recherche tag:. \nSi désactivé, ils restent réservés à Wrot for Tasks.",
   "settings.tagRule.noIntegration.name": "Exclure de l'intégration des tags",
-  "settings.tagRule.noIntegration.desc": "Si activé, ce tag ne sera visible que dans Wrot.",
+  "settings.tagRule.noIntegration.desc": "Si activé, ce tag ne sera visible que dans Wrot for Tasks.",
   "settings.tagRule.hideTimeline.name": "Masquer du fil d'actualité",
-  "settings.tagRule.hideTimeline.desc": "Si activé, les publications avec ce tag n'apparaîtront pas dans le fil Wrot. \nElles restent visibles dans la note quotidienne.",
+  "settings.tagRule.hideTimeline.desc": "Si activé, les publications avec ce tag n'apparaîtront pas dans le fil Wrot for Tasks. \nElles restent visibles dans la note quotidienne.",
   "settings.tagRule.protectDelete.name": "Empêcher la suppression",
   "settings.tagRule.protectDelete.desc": "Si activé, les publications portant ce tag ne pourront pas être supprimées.",
   "settings.tagRule.button.add": "Ajouter une règle",

@@ -1,6 +1,6 @@
 # How Tag Autocomplete Works
 
-When you type `#` followed by a few letters in Wrot's post box, a list of tags you’ve used before pops up automatically.
+When you type `#` followed by a few letters in Wrot for Tasks's post box, a list of tags you’ve used before pops up automatically.
 It’s a handy way to avoid typos or inconsistent tag names and quickly drop in your go-to tags.
 
 Here’s a quick walkthrough on how to use it, how it works behind the scenes, and how to tweak the settings.
@@ -29,17 +29,17 @@ Here’s a quick walkthrough on how to use it, how it works behind the scenes, a
 
 ---
 
-## How Wrot Remembers Your Tags
+## How Wrot for Tasks Remembers Your Tags
 
-- **What gets saved**: Only tags from notes you've posted through the Wrot timeline.
+- **What gets saved**: Only tags from notes you've posted through the Wrot for Tasks timeline.
 - **When it updates**: Every time you share a post, any tags in it are automatically saved to your history (duplicates are skipped).
-- **History limit**: Wrot keeps up to 200 of your most recently used tags. Once you cross that limit, older ones make way for the new ones.
+- **History limit**: Wrot for Tasks keeps up to 200 of your most recently used tags. Once you cross that limit, older ones make way for the new ones.
 - **Where it’s stored**: Saved safely in a file called `tags.json` inside your plugin folder, totally separate from your settings.
 
 ### What Doesn't Show Up
 
 - **Symbols in formatting or code**: Hashes in URLs, internal links, inline code (` `), or formatting symbols aren't treated as tags.
-- **Tags elsewhere in your Vault**: Wrot doesn't index your whole Vault. It only tracks tags you've actually posted with Wrot.
+- **Tags elsewhere in your Vault**: Wrot for Tasks doesn't index your whole Vault. It only tracks tags you've actually posted with Wrot for Tasks.
 - **Unused rule tags**: Tags in your "Tag Rules" settings won't pop up until you've posted them at least once.
 
 ---
@@ -59,7 +59,7 @@ If you want to turn this off, head over to "Advanced" and toggle **Tag autocompl
 ### Suggestions aren't popping up
 
 - Double-check that "Tag autocomplete" is turned ON under "Advanced".
-- Keep in mind that Wrot only suggests tags you've posted in the past. New tags won't show up until you've used them once.
+- Keep in mind that Wrot for Tasks only suggests tags you've posted in the past. New tags won't show up until you've used them once.
 - Suggestions don't appear while you're typing inside a code block (between `~~~` fences).
 
 ### A tag I used isn't showing up
@@ -69,4 +69,4 @@ If you want to turn this off, head over to "Advanced" and toggle **Tag autocompl
 
 ### Want to reset your list and start fresh?
 
-- Since you can't delete tags one by one, simply toggle "Tag autocomplete" OFF and then back ON in settings. This wipes the slate clean so Wrot can start recording your tags from scratch.
+- Since you can't delete tags one by one, simply toggle "Tag autocomplete" OFF and then back ON in settings. This wipes the slate clean so Wrot for Tasks can start recording your tags from scratch.

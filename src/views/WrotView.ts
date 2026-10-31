@@ -293,7 +293,7 @@ export class WrotView extends ItemView {
   }
 
   getDisplayText(): string {
-    return "Wrot";
+    return this.plugin.manifest.name;
   }
 
   getIcon(): string {
@@ -1230,7 +1230,7 @@ export class WrotView extends ItemView {
             const settingApi = (this.app as { setting?: { open?: () => void; openTabById?: (id: string) => void } }).setting;
             if (settingApi?.open && settingApi?.openTabById) {
               settingApi.open();
-              settingApi.openTabById("wrot");
+              settingApi.openTabById(this.plugin.manifest.id);
             }
           });
         });

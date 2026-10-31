@@ -7,12 +7,12 @@ const it = {
   "settings.section.tagrules": "Regole per i tag",
 
   "settings.item.viewPlacement.name": "Posizione della vista",
-  "settings.item.viewPlacement.desc": "Scegli dove mostrare Wrot.",
+  "settings.item.viewPlacement.desc": "Scegli dove mostrare Wrot for Tasks.",
   "settings.option.viewPlacement.left": "Barra laterale sinistra",
   "settings.option.viewPlacement.right": "Barra laterale destra",
   "settings.option.viewPlacement.main": "Area principale",
   "settings.item.openOnStartup.name": "Apri all'avvio",
-  "settings.item.openOnStartup.desc": "Se attivato, Wrot viene portato in primo piano all'avvio di Obsidian.",
+  "settings.item.openOnStartup.desc": "Se attivato, Wrot for Tasks viene portato in primo piano all'avvio di Obsidian.",
 
   "settings.item.followFontSize.name":
     "Adatta alle dimensioni dei caratteri di Obsidian",
@@ -81,7 +81,7 @@ const it = {
   "settings.item.showPostDelete.desc": "Se attivato, aggiunge l'opzione per eliminare un post dal rispettivo menu. \nI post eliminati non possono essere recuperati (le immagini allegate non verranno cancellate).",
 
   "settings.item.useCustomAttachmentFolder.name": "Cartella personalizzata per gli allegati",
-  "settings.item.useCustomAttachmentFolder.desc": "Si applica solo alle immagini aggiunte tramite Wrot.",
+  "settings.item.useCustomAttachmentFolder.desc": "Si applica solo alle immagini aggiunte tramite Wrot for Tasks.",
 
   "settings.item.attachmentFolder.name": "Cartella di destinazione",
   "settings.item.attachmentFolder.desc": "Se la cartella specificata non esiste, verrà usata l'impostazione predefinita di Obsidian.",
@@ -124,9 +124,9 @@ const it = {
   "settings.tagRule.scope.ogp.desc":
     "Se disattivato, verrà utilizzato il colore calcolato in automatico.",
   "settings.item.graphTags.name": "Integrazione dei tag",
-  "settings.item.graphTags.desc": "Include i tag nella vista grafico e nelle ricerche native «tag:». \nSe disattivato, i tag saranno visibili solo all'interno di Wrot.",
+  "settings.item.graphTags.desc": "Include i tag nella vista grafico e nelle ricerche native «tag:». \nSe disattivato, i tag saranno visibili solo all'interno di Wrot for Tasks.",
   "settings.tagRule.noIntegration.name": "Escludi dall'integrazione dei tag",
-  "settings.tagRule.noIntegration.desc": "Se attivato, questo tag rimane limitato a Wrot.",
+  "settings.tagRule.noIntegration.desc": "Se attivato, questo tag rimane limitato a Wrot for Tasks.",
   "settings.tagRule.hideTimeline.name": "Nascondi nella timeline",
   "settings.tagRule.hideTimeline.desc": "Se attivato, i post con questo tag non verranno mostrati nella timeline (resteranno comunque nella nota giornaliera).",
   "settings.tagRule.protectDelete.name": "Proteggi dall'eliminazione",

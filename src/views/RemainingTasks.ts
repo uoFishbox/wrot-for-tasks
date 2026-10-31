@@ -126,7 +126,7 @@ export class RemainingTasks extends Component {
     } catch (error) {
       if (this.closed || this.revisions.get(path) !== revision) return;
       this.failed.add(path);
-      console.warn("Wrot: could not read remaining tasks", path, error);
+      console.warn("Wrot for Tasks: could not read remaining tasks", path, error);
     }
   }
 
@@ -232,7 +232,7 @@ export class RemainingTasks extends Component {
         event.preventDefault();
         void this.openTask(task, event.ctrlKey || event.metaKey).catch((error: unknown) => {
           new Notice(t("view.tasks.openFailed"));
-          console.warn("Wrot: could not open remaining task", error);
+          console.warn("Wrot for Tasks: could not open remaining task", error);
         });
       });
     }

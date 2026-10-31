@@ -1,7 +1,7 @@
 # Using the Toolbar
 
 The toolbar on the post form comes packed with your most frequently used buttons right out of the box.
-With Wrot, you have full control over your setup—choose which buttons stay on the toolbar, tuck less-used ones into the "More" menu (⋯), or disable the ones you don't need entirely. You can also reorder them anytime just by dragging and dropping.
+With Wrot for Tasks, you have full control over your setup—choose which buttons stay on the toolbar, tuck less-used ones into the "More" menu (⋯), or disable the ones you don't need entirely. You can also reorder them anytime just by dragging and dropping.
 
 Moving a button to the menu won't affect how it works. Only disabled buttons are hidden from both the toolbar and the menu.
 

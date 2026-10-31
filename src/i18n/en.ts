@@ -7,12 +7,12 @@ const en = {
   "settings.section.tagrules": "Tag Rules",
 
   "settings.item.viewPlacement.name": "Position",
-  "settings.item.viewPlacement.desc": "Choose where Wrot is displayed.",
+  "settings.item.viewPlacement.desc": "Choose where Wrot for Tasks is displayed.",
   "settings.option.viewPlacement.left": "Left sidebar",
   "settings.option.viewPlacement.right": "Right sidebar",
   "settings.option.viewPlacement.main": "Main area",
   "settings.item.openOnStartup.name": "Open on startup",
-  "settings.item.openOnStartup.desc": "Automatically open Wrot when Obsidian launches.",
+  "settings.item.openOnStartup.desc": "Automatically open Wrot for Tasks when Obsidian launches.",
 
   "settings.item.followFontSize.name": "Match Obsidian font size",
   "settings.item.followFontSize.desc": "Inherit the font size configured in Obsidian's Appearance settings.",
@@ -80,7 +80,7 @@ const en = {
   "settings.item.showPostDelete.desc": "Add a delete option to the post menu. \nDeleted posts cannot be recovered. Attached images are preserved.",
 
   "settings.item.useCustomAttachmentFolder.name": "Custom attachment folder",
-  "settings.item.useCustomAttachmentFolder.desc": "Applies only to images added through Wrot.",
+  "settings.item.useCustomAttachmentFolder.desc": "Applies only to images added through Wrot for Tasks.",
 
   "settings.item.attachmentFolder.name": "Attachment folder",
   "settings.item.attachmentFolder.desc": "If the folder doesn't exist, Obsidian's default setting is used.",
@@ -120,9 +120,9 @@ const en = {
   "settings.tagRule.scope.ogp.desc":
     "When disabled, automatically calculated colors will be used.",
   "settings.item.graphTags.name": "Tag integration",
-  "settings.item.graphTags.desc": "Make tags discoverable in graph view and tag: searches. \nWhen disabled, tags remain internal to Wrot.",
+  "settings.item.graphTags.desc": "Make tags discoverable in graph view and tag: searches. \nWhen disabled, tags remain internal to Wrot for Tasks.",
   "settings.tagRule.noIntegration.name": "Exclude from tag integration",
-  "settings.tagRule.noIntegration.desc": "Keep this tag internal to Wrot.",
+  "settings.tagRule.noIntegration.desc": "Keep this tag internal to Wrot for Tasks.",
   "settings.tagRule.hideTimeline.name": "Hide from timeline",
   "settings.tagRule.hideTimeline.desc": "Posts with this tag won't appear in the timeline. \nThey will still be saved to your daily note.",
   "settings.tagRule.protectDelete.name": "Disable delete button",

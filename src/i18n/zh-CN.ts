@@ -7,12 +7,12 @@ const zhCN = {
   "settings.section.tagrules": "标签规则",
 
   "settings.item.viewPlacement.name": "显示位置",
-  "settings.item.viewPlacement.desc": "指定 Wrot 的显示面板位置。",
+  "settings.item.viewPlacement.desc": "指定 Wrot for Tasks 的显示面板位置。",
   "settings.option.viewPlacement.left": "左侧边栏",
   "settings.option.viewPlacement.right": "右侧边栏",
   "settings.option.viewPlacement.main": "主工作区",
   "settings.item.openOnStartup.name": "启动时打开",
-  "settings.item.openOnStartup.desc": "开启后，启动 Obsidian 时将 Wrot 默认显示在最前。",
+  "settings.item.openOnStartup.desc": "开启后，启动 Obsidian 时将 Wrot for Tasks 默认显示在最前。",
 
   "settings.item.followFontSize.name": "跟随 Obsidian 字体大小",
   "settings.item.followFontSize.desc": "开启后，将遵循 Obsidian 外观设置中的字体大小。",
@@ -80,7 +80,7 @@ const zhCN = {
   "settings.item.showPostDelete.desc": "开启后，记录菜单中将显示删除按钮。\n删除后无法恢复，但已添加的图片附件不会被删除。",
 
   "settings.item.useCustomAttachmentFolder.name": "自定义图片保存路径",
-  "settings.item.useCustomAttachmentFolder.desc": "仅适用于从 Wrot 插入的图片。",
+  "settings.item.useCustomAttachmentFolder.desc": "仅适用于从 Wrot for Tasks 插入的图片。",
 
   "settings.item.attachmentFolder.name": "图片保存目录",
   "settings.item.attachmentFolder.desc": "若文件夹不存在，将遵循 Obsidian 的附件默认设置。",
@@ -120,9 +120,9 @@ const zhCN = {
   "settings.tagRule.scope.ogp.desc":
     "关闭后将使用系统自动计算的配色。",
   "settings.item.graphTags.name": "标签系统集成",
-  "settings.item.graphTags.desc": "使标签能够被 Obsidian 关系图谱及标签搜索（tag:）检索。\n关闭后标签将仅在 Wrot 插件内部生效。",
+  "settings.item.graphTags.desc": "使标签能够被 Obsidian 关系图谱及标签搜索（tag:）检索。\n关闭后标签将仅在 Wrot for Tasks 插件内部生效。",
   "settings.tagRule.noIntegration.name": "从 Obsidian 标签系统中排除",
-  "settings.tagRule.noIntegration.desc": "开启后，该标签将仅在 Wrot 内部生效。",
+  "settings.tagRule.noIntegration.desc": "开启后，该标签将仅在 Wrot for Tasks 内部生效。",
   "settings.tagRule.hideTimeline.name": "在时间线中隐藏",
   "settings.tagRule.hideTimeline.desc": "开启后，含有此标签的记录不会显示在时间线中。\n日记文档中的原文仍会保留。",
   "settings.tagRule.protectDelete.name": "禁用删除功能",

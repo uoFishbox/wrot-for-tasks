@@ -7,12 +7,12 @@ const ru = {
   "settings.section.tagrules": "Правила для тегов",
 
   "settings.item.viewPlacement.name": "Расположение панели",
-  "settings.item.viewPlacement.desc": "Где отображать Wrot.",
+  "settings.item.viewPlacement.desc": "Где отображать Wrot for Tasks.",
   "settings.option.viewPlacement.left": "Левая боковая панель",
   "settings.option.viewPlacement.right": "Правая боковая панель",
   "settings.option.viewPlacement.main": "Основная область",
   "settings.item.openOnStartup.name": "Открывать при запуске",
-  "settings.item.openOnStartup.desc": "Открывать Wrot на переднем плане при запуске Obsidian.",
+  "settings.item.openOnStartup.desc": "Открывать Wrot for Tasks на переднем плане при запуске Obsidian.",
 
   "settings.item.followFontSize.name": "Использовать размер шрифта Obsidian",
   "settings.item.followFontSize.desc": "Использовать размер шрифта из настроек оформления Obsidian.",
@@ -80,7 +80,7 @@ const ru = {
   "settings.item.showPostDelete.desc": "Показывать пункт удаления в меню записи. \nУдалённую запись нельзя восстановить (вложения не удаляются).",
 
   "settings.item.useCustomAttachmentFolder.name": "Своя папка для изображений",
-  "settings.item.useCustomAttachmentFolder.desc": "Применяется только к изображениям, добавленным через Wrot.",
+  "settings.item.useCustomAttachmentFolder.desc": "Применяется только к изображениям, добавленным через Wrot for Tasks.",
 
   "settings.item.attachmentFolder.name": "Папка для сохранения",
   "settings.item.attachmentFolder.desc": "Если папка не существует, используется стандартная настройка вложений Obsidian.",
@@ -116,7 +116,7 @@ const ru = {
   "settings.tagRule.scope.ogp.name": "Второстепенный цвет для карточек OGP",
   "settings.tagRule.scope.ogp.desc": "Применять к рамкам и фону предпросмотра ссылок.",
   "settings.item.graphTags.name": "Сквозная интеграция тегов",
-  "settings.item.graphTags.desc": "Учитывать теги в графе связей и общем поиске tag:. \nЕсли выключено, теги работают только внутри Wrot.",
+  "settings.item.graphTags.desc": "Учитывать теги в графе связей и общем поиске tag:. \nЕсли выключено, теги работают только внутри Wrot for Tasks.",
   "settings.tagRule.noIntegration.name": "Исключить из сквозной интеграции",
   "settings.tagRule.noIntegration.desc": "Не передавать этот тег в глобальный поиск и граф Obsidian.",
   "settings.tagRule.hideTimeline.name": "Скрыть из ленты",

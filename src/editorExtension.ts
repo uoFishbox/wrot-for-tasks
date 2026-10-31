@@ -816,7 +816,7 @@ function buildDecorations(
       // Quote marker + cursor in block: no previews at all; editing shows only raw markers.
     }
   } catch (e) {
-    console.debug("Wrot: decoration skipped", e);
+    console.debug("Wrot for Tasks: decoration skipped", e);
   }
 
   return { decorations: builder.finish(), hiddenRanges };

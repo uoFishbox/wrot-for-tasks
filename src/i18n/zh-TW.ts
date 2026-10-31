@@ -7,12 +7,12 @@ const zhTW = {
   "settings.section.tagrules": "標籤規則設定",
 
   "settings.item.viewPlacement.name": "顯示位置",
-  "settings.item.viewPlacement.desc": "指定 Wrot 的顯示位置。",
+  "settings.item.viewPlacement.desc": "指定 Wrot for Tasks 的顯示位置。",
   "settings.option.viewPlacement.left": "左側側邊欄",
   "settings.option.viewPlacement.right": "右側側邊欄",
   "settings.option.viewPlacement.main": "主要區域",
   "settings.item.openOnStartup.name": "啟動時開啟",
-  "settings.item.openOnStartup.desc": "開啟後，啟動 Obsidian 時將 Wrot 顯示在最上層。",
+  "settings.item.openOnStartup.desc": "開啟後，啟動 Obsidian 時將 Wrot for Tasks 顯示在最上層。",
 
   "settings.item.followFontSize.name": "依照 Obsidian 字體大小",
   "settings.item.followFontSize.desc": "開啟後，跟隨 Obsidian 外觀設定的字體大小。",
@@ -80,7 +80,7 @@ const zhTW = {
   "settings.item.showPostDelete.desc": "開啟後，貼文選單中將新增刪除按鈕。 \n刪除後無法還原。附加的圖片不會被刪除。",
 
   "settings.item.useCustomAttachmentFolder.name": "指定圖片儲存位置",
-  "settings.item.useCustomAttachmentFolder.desc": "僅適用於透過 Wrot 新增的圖片。",
+  "settings.item.useCustomAttachmentFolder.desc": "僅適用於透過 Wrot for Tasks 新增的圖片。",
 
   "settings.item.attachmentFolder.name": "儲存資料夾",
   "settings.item.attachmentFolder.desc": "若資料夾不存在，將依循 Obsidian 的預設設定。",
@@ -120,9 +120,9 @@ const zhTW = {
   "settings.tagRule.scope.ogp.desc":
     "關閉時將使用系統自動設定的顏色。",
   "settings.item.graphTags.name": "標籤整合",
-  "settings.item.graphTags.desc": "將標籤納入關聯圖檢視與標籤搜尋（tag:）。 \n關閉時僅在 Wrot 內生效。",
+  "settings.item.graphTags.desc": "將標籤納入關聯圖檢視與標籤搜尋（tag:）。 \n關閉時僅在 Wrot for Tasks 內生效。",
   "settings.tagRule.noIntegration.name": "排除於標籤整合之外",
-  "settings.tagRule.noIntegration.desc": "開啟後，此標籤僅在 Wrot 內生效。",
+  "settings.tagRule.noIntegration.desc": "開啟後，此標籤僅在 Wrot for Tasks 內生效。",
   "settings.tagRule.hideTimeline.name": "從動態時報中隱藏",
   "settings.tagRule.hideTimeline.desc": "開啟後，包含此標籤的貼文將不再顯示於動態時報。 \n每日筆記中仍會保留內容。",
   "settings.tagRule.protectDelete.name": "停用刪除按鈕",

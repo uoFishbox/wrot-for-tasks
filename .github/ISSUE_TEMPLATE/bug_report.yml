@@ -1,14 +1,14 @@
 name: Bug report / バグ報告
-description: Report a problem with Wrot / Wrot の不具合を報告する
+description: Report a problem with Wrot for Tasks / Wrot for Tasks の不具合を報告する
 labels: [bug]
 body:
   - type: markdown
     attributes:
       value: |
-        Thanks for taking the time to report this. Wrot is developed by one person, so it may take a while before I can look into it.
+        Thanks for taking the time to report this. Wrot for Tasks is developed by one person, so it may take a while before I can look into it.
         You can write in English or Japanese.
 
-        報告ありがとうございます。Wrot は個人で開発しているため、確認までにお時間をいただくことがあります。
+        報告ありがとうございます。Wrot for Tasks は個人で開発しているため、確認までにお時間をいただくことがあります。
         英語・日本語のどちらでも構いません。
 
   - type: textarea
@@ -46,8 +46,8 @@ body:
   - type: input
     id: versions
     attributes:
-      label: Obsidian and Wrot versions / Obsidian と Wrot のバージョン
-      placeholder: "Obsidian 1.x.x / Wrot 2.x.x"
+      label: Obsidian and Wrot for Tasks versions / Obsidian と Wrot for Tasks のバージョン
+      placeholder: "Obsidian 1.x.x / Wrot for Tasks 3.1.0-task.2"
     validations:
       required: true
 

@@ -11,7 +11,7 @@
    Injected sheets sit at the end of <head> so ties resolve in their favor.
    Priority-flag opponents (some themes / mobile app) win by design. */
 
-.workspace-leaf-content[data-type="wrot-view"] .view-content.wr-container {
+.workspace-leaf-content[data-type="wrot-for-tasks-view"] .view-content.wr-container {
   --wr-content-gutter: var(--size-4-3);
   display: flex;
   flex-direction: column;
@@ -25,7 +25,7 @@
 
 /* Keep scrollports full-width even in a main-area tab. Only their contents
    are capped, so the scrollbar stays against the pane edge. */
-.workspace-split.mod-root .workspace-leaf-content[data-type="wrot-view"] .wr-container {
+.workspace-split.mod-root .workspace-leaf-content[data-type="wrot-for-tasks-view"] .wr-container {
   --wr-content-max-width: calc(760px - 2 * var(--wr-content-gutter));
 }
 
@@ -53,7 +53,7 @@
   margin-bottom: 12px;
 }
 
-.workspace-leaf-content[data-type="wrot-view"] .wr-nav-btn {
+.workspace-leaf-content[data-type="wrot-for-tasks-view"] .wr-nav-btn {
   background: none;
   border: none;
   box-shadow: none;
@@ -81,16 +81,16 @@ body.wr-font-follow .wr-nav-btn .svg-icon {
 
 /* Suppress Obsidian's button:focus-visible background lingering after a click.
    Placed before :hover so the later hover rule still wins while hovering. */
-.workspace-leaf-content[data-type="wrot-view"] .wr-nav-btn:focus,
-.workspace-leaf-content[data-type="wrot-view"] .wr-nav-btn:focus-visible {
+.workspace-leaf-content[data-type="wrot-for-tasks-view"] .wr-nav-btn:focus,
+.workspace-leaf-content[data-type="wrot-for-tasks-view"] .wr-nav-btn:focus-visible {
   background: none;
 }
 
-.workspace-leaf-content[data-type="wrot-view"] .wr-nav-btn:hover {
+.workspace-leaf-content[data-type="wrot-for-tasks-view"] .wr-nav-btn:hover {
   background: rgba(var(--mono-rgb-100), 0.05);
 }
 
-.workspace-leaf-content[data-type="wrot-view"] .wr-nav-btn:active {
+.workspace-leaf-content[data-type="wrot-for-tasks-view"] .wr-nav-btn:active {
   background: rgba(var(--mono-rgb-100), 0.08);
   color: var(--text-accent);
 }
@@ -117,7 +117,7 @@ body.wr-font-follow .wr-nav-btn .svg-icon {
   opacity: 0.7;
 }
 
-.workspace-leaf-content[data-type="wrot-view"] .wr-today-btn {
+.workspace-leaf-content[data-type="wrot-for-tasks-view"] .wr-today-btn {
   background: none;
   border: none;
   box-shadow: none;
@@ -132,35 +132,35 @@ body.wr-font-follow .wr-nav-btn .svg-icon {
 }
 
 /* Suppress Obsidian's default button:focus-visible background lingering after a click */
-.workspace-leaf-content[data-type="wrot-view"] .wr-today-btn:focus,
-.workspace-leaf-content[data-type="wrot-view"] .wr-today-btn:focus-visible {
+.workspace-leaf-content[data-type="wrot-for-tasks-view"] .wr-today-btn:focus,
+.workspace-leaf-content[data-type="wrot-for-tasks-view"] .wr-today-btn:focus-visible {
   background: none;
 }
 
-.workspace-leaf-content[data-type="wrot-view"] .wr-today-btn:hover {
+.workspace-leaf-content[data-type="wrot-for-tasks-view"] .wr-today-btn:hover {
   background: rgba(var(--mono-rgb-100), 0.05);
 }
 
-.workspace-leaf-content[data-type="wrot-view"] .wr-today-btn:active {
+.workspace-leaf-content[data-type="wrot-for-tasks-view"] .wr-today-btn:active {
   background: rgba(var(--mono-rgb-100), 0.08);
   color: var(--text-accent);
 }
 
-.workspace-leaf-content[data-type="wrot-view"] .wr-calendar-btn {
+.workspace-leaf-content[data-type="wrot-for-tasks-view"] .wr-calendar-btn {
   margin-left: 2px;
   position: relative;
 }
 
 /* While the calendar is open, pin the light hover tint so the darker :active
    color (0.08) cannot cut in on arrow taps and flicker. */
-.workspace-leaf-content[data-type="wrot-view"] .wr-calendar-btn.wr-toolbar-active,
-.workspace-leaf-content[data-type="wrot-view"] .wr-calendar-btn.wr-toolbar-active:hover,
-.workspace-leaf-content[data-type="wrot-view"] .wr-calendar-btn.wr-toolbar-active:active {
+.workspace-leaf-content[data-type="wrot-for-tasks-view"] .wr-calendar-btn.wr-toolbar-active,
+.workspace-leaf-content[data-type="wrot-for-tasks-view"] .wr-calendar-btn.wr-toolbar-active:hover,
+.workspace-leaf-content[data-type="wrot-for-tasks-view"] .wr-calendar-btn.wr-toolbar-active:active {
   background: rgba(var(--mono-rgb-100), 0.05);
 }
 
 /* Custom calendar popover. Positioned by JS inside wr-container so it never overflows the sidebar edge; custom-drawn for cross-platform consistency, colors follow the configured bg/text. */
-.workspace-leaf-content[data-type="wrot-view"] .wr-calendar-popover {
+.workspace-leaf-content[data-type="wrot-for-tasks-view"] .wr-calendar-popover {
   position: absolute;
   z-index: 50;
   width: max-content;
@@ -172,7 +172,7 @@ body.wr-font-follow .wr-nav-btn .svg-icon {
   user-select: none;
 }
 
-.workspace-leaf-content[data-type="wrot-view"] .wr-calendar-header {
+.workspace-leaf-content[data-type="wrot-for-tasks-view"] .wr-calendar-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -180,7 +180,7 @@ body.wr-font-follow .wr-nav-btn .svg-icon {
   margin-bottom: 8px;
 }
 
-.workspace-leaf-content[data-type="wrot-view"] .wr-calendar-month-label {
+.workspace-leaf-content[data-type="wrot-for-tasks-view"] .wr-calendar-month-label {
   font-size: calc(var(--wr-font-ui-small) + 2px);
   font-weight: 600;
   color: var(--text-normal);
@@ -198,17 +198,17 @@ body.wr-font-follow .wr-nav-btn .svg-icon {
 }
 
 /* Match .wr-date-label: no hover box, only lower opacity while pressed */
-.workspace-leaf-content[data-type="wrot-view"] .wr-calendar-month-label:hover,
-.workspace-leaf-content[data-type="wrot-view"] .wr-calendar-month-label:focus,
-.workspace-leaf-content[data-type="wrot-view"] .wr-calendar-month-label:focus-visible {
+.workspace-leaf-content[data-type="wrot-for-tasks-view"] .wr-calendar-month-label:hover,
+.workspace-leaf-content[data-type="wrot-for-tasks-view"] .wr-calendar-month-label:focus,
+.workspace-leaf-content[data-type="wrot-for-tasks-view"] .wr-calendar-month-label:focus-visible {
   background: none;
 }
 
-.workspace-leaf-content[data-type="wrot-view"] .wr-calendar-month-label:active {
+.workspace-leaf-content[data-type="wrot-for-tasks-view"] .wr-calendar-month-label:active {
   opacity: 0.7;
 }
 
-.workspace-leaf-content[data-type="wrot-view"] .wr-calendar-nav-btn {
+.workspace-leaf-content[data-type="wrot-for-tasks-view"] .wr-calendar-nav-btn {
   background: none;
   border: none;
   box-shadow: none;
@@ -225,27 +225,27 @@ body.wr-font-follow .wr-nav-btn .svg-icon {
 
 /* Suppress the lingering focus background after a click; placed before :hover
    so the later hover rule still wins while hovering. */
-.workspace-leaf-content[data-type="wrot-view"] .wr-calendar-nav-btn:focus,
-.workspace-leaf-content[data-type="wrot-view"] .wr-calendar-nav-btn:focus-visible {
+.workspace-leaf-content[data-type="wrot-for-tasks-view"] .wr-calendar-nav-btn:focus,
+.workspace-leaf-content[data-type="wrot-for-tasks-view"] .wr-calendar-nav-btn:focus-visible {
   background: none;
 }
 
 /* Same hover/pressed convention as the main prev/next day buttons */
-.workspace-leaf-content[data-type="wrot-view"] .wr-calendar-nav-btn:hover {
+.workspace-leaf-content[data-type="wrot-for-tasks-view"] .wr-calendar-nav-btn:hover {
   background: rgba(var(--mono-rgb-100), 0.05);
 }
 
-.workspace-leaf-content[data-type="wrot-view"] .wr-calendar-nav-btn:active {
+.workspace-leaf-content[data-type="wrot-for-tasks-view"] .wr-calendar-nav-btn:active {
   background: rgba(var(--mono-rgb-100), 0.08);
   color: var(--text-accent);
 }
 
 /* No earlier page holds a selectable day: the arrow goes away, its slot stays so the label does not shift */
-.workspace-leaf-content[data-type="wrot-view"] .wr-calendar-nav-btn:disabled {
+.workspace-leaf-content[data-type="wrot-for-tasks-view"] .wr-calendar-nav-btn:disabled {
   visibility: hidden;
 }
 
-.workspace-leaf-content[data-type="wrot-view"] .wr-calendar-nav-btn .svg-icon {
+.workspace-leaf-content[data-type="wrot-for-tasks-view"] .wr-calendar-nav-btn .svg-icon {
   width: 16px;
   height: 16px;
 }
@@ -256,33 +256,33 @@ body.wr-font-follow .wr-calendar-nav-btn .svg-icon {
   height: max(16px, calc(var(--wr-font-text) * 1.143));
 }
 
-.workspace-leaf-content[data-type="wrot-view"] .wr-calendar-weekdays {
+.workspace-leaf-content[data-type="wrot-for-tasks-view"] .wr-calendar-weekdays {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
   margin-bottom: 4px;
 }
 
-.workspace-leaf-content[data-type="wrot-view"] .wr-calendar-weekday {
+.workspace-leaf-content[data-type="wrot-for-tasks-view"] .wr-calendar-weekday {
   text-align: center;
   font-size: calc(var(--wr-font-ui-smaller) + 2px);
   color: var(--text-muted);
   padding: 2px 0;
 }
 
-.workspace-leaf-content[data-type="wrot-view"] .wr-calendar-grid {
+.workspace-leaf-content[data-type="wrot-for-tasks-view"] .wr-calendar-grid {
   display: grid;
   /* minmax(0, …): the cells have a definite em width, so plain 1fr could not shrink below it in narrow panes */
   grid-template-columns: repeat(7, minmax(0, 1fr));
   gap: 1px;
 }
 
-.workspace-leaf-content[data-type="wrot-view"] .wr-calendar-grid.wr-calendar-grid-years {
+.workspace-leaf-content[data-type="wrot-for-tasks-view"] .wr-calendar-grid.wr-calendar-grid-years {
   grid-template-columns: repeat(3, 1fr);
   gap: 4px;
   padding: 4px 0;
 }
 
-.workspace-leaf-content[data-type="wrot-view"] .wr-calendar-year {
+.workspace-leaf-content[data-type="wrot-for-tasks-view"] .wr-calendar-year {
   background: none;
   border: none;
   box-shadow: none;
@@ -298,18 +298,18 @@ body.wr-font-follow .wr-calendar-nav-btn .svg-icon {
   justify-content: center;
 }
 
-.workspace-leaf-content[data-type="wrot-view"] .wr-calendar-year:hover {
+.workspace-leaf-content[data-type="wrot-for-tasks-view"] .wr-calendar-year:hover {
   background: rgba(var(--mono-rgb-100), 0.05);
 }
 
-.workspace-leaf-content[data-type="wrot-view"] .wr-calendar-year.wr-calendar-day-selected,
-.workspace-leaf-content[data-type="wrot-view"] .wr-calendar-year.wr-calendar-day-selected.wr-calendar-day-today {
+.workspace-leaf-content[data-type="wrot-for-tasks-view"] .wr-calendar-year.wr-calendar-day-selected,
+.workspace-leaf-content[data-type="wrot-for-tasks-view"] .wr-calendar-year.wr-calendar-day-selected.wr-calendar-day-today {
   background: var(--interactive-accent);
   color: var(--text-on-accent);
   font-weight: 600;
 }
 
-.workspace-leaf-content[data-type="wrot-view"] .wr-calendar-day {
+.workspace-leaf-content[data-type="wrot-for-tasks-view"] .wr-calendar-day {
   position: relative;
   background: none;
   border: none;
@@ -336,7 +336,7 @@ body.wr-font-follow .wr-calendar-nav-btn .svg-icon {
   border-radius: var(--wr-cal-day-radius, 50%);
 }
 
-.workspace-leaf-content[data-type="wrot-view"] .wr-calendar-task-dots {
+.workspace-leaf-content[data-type="wrot-for-tasks-view"] .wr-calendar-task-dots {
   position: absolute;
   bottom: 0.2em;
   left: 0;
@@ -346,7 +346,7 @@ body.wr-font-follow .wr-calendar-nav-btn .svg-icon {
   pointer-events: none;
 }
 
-.workspace-leaf-content[data-type="wrot-view"] .wr-calendar-task-dot {
+.workspace-leaf-content[data-type="wrot-for-tasks-view"] .wr-calendar-task-dot {
   display: block;
   flex-shrink: 0;
   /* Include the SVG's padding while keeping the circle itself the same size. */
@@ -354,23 +354,23 @@ body.wr-font-follow .wr-calendar-nav-btn .svg-icon {
   height: 0.375em;
 }
 
-.workspace-leaf-content[data-type="wrot-view"] .wr-calendar-day:hover {
+.workspace-leaf-content[data-type="wrot-for-tasks-view"] .wr-calendar-day:hover {
   background: rgba(var(--mono-rgb-100), 0.05);
 }
 
-.workspace-leaf-content[data-type="wrot-view"] .wr-calendar-day-outside {
+.workspace-leaf-content[data-type="wrot-for-tasks-view"] .wr-calendar-day-outside {
   color: var(--text-faint);
 }
 
-.workspace-leaf-content[data-type="wrot-view"] .wr-calendar-day-today {
+.workspace-leaf-content[data-type="wrot-for-tasks-view"] .wr-calendar-day-today {
   color: var(--text-accent);
   font-weight: 600;
 }
 
 /* Out of range for this picker: still readable, but inert. Declared after the
    today rule so a disabled today loses the accent too. */
-.workspace-leaf-content[data-type="wrot-view"] .wr-calendar-day-disabled,
-.workspace-leaf-content[data-type="wrot-view"] .wr-calendar-day-disabled:hover {
+.workspace-leaf-content[data-type="wrot-for-tasks-view"] .wr-calendar-day-disabled,
+.workspace-leaf-content[data-type="wrot-for-tasks-view"] .wr-calendar-day-disabled:hover {
   color: var(--text-faint);
   font-weight: inherit;
   background: none;
@@ -379,19 +379,19 @@ body.wr-font-follow .wr-calendar-nav-btn .svg-icon {
 }
 
 /* Selected beats the today highlight (hence the compound selector) */
-.workspace-leaf-content[data-type="wrot-view"] .wr-calendar-day-selected,
-.workspace-leaf-content[data-type="wrot-view"] .wr-calendar-day-selected.wr-calendar-day-today {
+.workspace-leaf-content[data-type="wrot-for-tasks-view"] .wr-calendar-day-selected,
+.workspace-leaf-content[data-type="wrot-for-tasks-view"] .wr-calendar-day-selected.wr-calendar-day-today {
   background: var(--interactive-accent);
   color: var(--text-on-accent);
   font-weight: 600;
 }
 
-.workspace-leaf-content[data-type="wrot-view"] .wr-calendar-day-selected:hover {
+.workspace-leaf-content[data-type="wrot-for-tasks-view"] .wr-calendar-day-selected:hover {
   background: var(--interactive-accent-hover, var(--interactive-accent));
 }
 
 /* Tag suggestion dropdown. Positioned by JS from the editor's caret coordinates. */
-.workspace-leaf-content[data-type="wrot-view"] .wr-tag-suggest {
+.workspace-leaf-content[data-type="wrot-for-tasks-view"] .wr-tag-suggest {
   position: absolute;
   z-index: 50;
   width: max-content;
@@ -405,7 +405,7 @@ body.wr-font-follow .wr-calendar-nav-btn .svg-icon {
   user-select: none;
 }
 
-.workspace-leaf-content[data-type="wrot-view"] .wr-tag-suggest-item {
+.workspace-leaf-content[data-type="wrot-for-tasks-view"] .wr-tag-suggest-item {
   padding: 5px 10px;
   border-radius: 5px;
   font-size: var(--wr-font-ui-small);
@@ -416,16 +416,16 @@ body.wr-font-follow .wr-calendar-nav-btn .svg-icon {
   text-overflow: ellipsis;
 }
 
-.workspace-leaf-content[data-type="wrot-view"] .wr-tag-suggest-item:hover {
+.workspace-leaf-content[data-type="wrot-for-tasks-view"] .wr-tag-suggest-item:hover {
   background: rgba(var(--mono-rgb-100), 0.05);
 }
 
-.workspace-leaf-content[data-type="wrot-view"] .wr-tag-suggest-item-selected,
-.workspace-leaf-content[data-type="wrot-view"] .wr-tag-suggest-item-selected:hover {
+.workspace-leaf-content[data-type="wrot-for-tasks-view"] .wr-tag-suggest-item-selected,
+.workspace-leaf-content[data-type="wrot-for-tasks-view"] .wr-tag-suggest-item-selected:hover {
   background: rgba(var(--mono-rgb-100), 0.05);
 }
 
-.is-mobile .workspace-leaf-content[data-type="wrot-view"] .wr-tag-suggest-item {
+.is-mobile .workspace-leaf-content[data-type="wrot-for-tasks-view"] .wr-tag-suggest-item {
   padding: 8px 12px;
 }
 
@@ -536,7 +536,7 @@ body .wr-link-popover-item-folder {
    forced IME commit (the caret fails to render when refocusing the textarea
    directly). Must stay editable-looking to the OS so the keyboard stays open;
    it is created, focused and removed within a single confirm() run. */
-.workspace-leaf-content[data-type="wrot-view"] .wr-focus-bounce {
+.workspace-leaf-content[data-type="wrot-for-tasks-view"] .wr-focus-bounce {
   position: fixed;
   bottom: 0;
   left: 0;
@@ -1047,7 +1047,7 @@ body .wr-submit-btn.wr-submit-active {
   }
 
   body.wr-submit-gradient .wr-submit-btn.wr-submit-active,
-  body.wr-submit-gradient .workspace-leaf-content[data-type="wrot-view"] .wr-calendar-day-selected {
+  body.wr-submit-gradient .workspace-leaf-content[data-type="wrot-for-tasks-view"] .wr-calendar-day-selected {
     --wr-grad-end: oklch(from var(--interactive-accent) calc(l + 0.05 * var(--wr-grad-sign)) calc(c * (1 - 0.1 * max(0, var(--wr-grad-sign)))) calc(h - 8));
     background: linear-gradient(
       to right,

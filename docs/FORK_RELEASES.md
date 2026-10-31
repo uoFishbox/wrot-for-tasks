@@ -8,7 +8,9 @@ This fork follows `<upstream-version>-task.<release-number>` and does not claim 
 
 The suffix distinguishes fork releases; it does not remove Git merge conflicts. When updating from upstream, keep the fork suffix in the version files and preserve fork-specific release workflow changes. Update this document's examples only when the policy changes.
 
-Publish through GitHub Releases. Users install manually or through BRAT with `uoFishbox/wrot-for-task`; Obsidian's built-in updater supports only `x.y.z` versions reliably. The plugin ID remains `wrot`, so this fork replaces the original installation.
+Publish through GitHub Releases. Users install manually or through BRAT with `uoFishbox/wrot-for-tasks`; Obsidian's built-in updater supports only `x.y.z` versions reliably.
+
+The plugin is named **Wrot for Tasks** and uses ID `wrot-for-tasks` from `3.1.0-task.2` onward. Its installation directory is `.obsidian/plugins/wrot-for-tasks/`. The initial `3.1.0-task.1` release used ID `wrot`; do not rewrite its published assets. Settings and workspace views are not automatically migrated. Disable the previous Wrot installation before enabling this fork because both process Wrot memo blocks.
 
 ## Release procedure
 

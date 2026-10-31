@@ -1,5 +1,17 @@
 # Release Notes
 
+## 3.1.0-task.2 - 2026-10-31
+
+### Changes
+
+- Renamed the plugin to **Wrot for Tasks**, with plugin ID `wrot-for-tasks`.
+- Renamed the repository to `uoFishbox/wrot-for-tasks` and updated installation instructions.
+- Updated the ribbon, view title, settings shortcut, and translated interface text for the new identity.
+
+The new plugin ID is a separate installation. Install into `.obsidian/plugins/wrot-for-tasks/` or add `uoFishbox/wrot-for-tasks` in BRAT. Previous settings and workspace views are not automatically migrated. Disable the previous Wrot installation before enabling this fork.
+
+---
+
 ## 3.1.0-task.1 - 2026-10-31
 
 First task-focused fork release, based on upstream Wrot 3.1.0. See [fork versioning and releases](docs/FORK_RELEASES.md).

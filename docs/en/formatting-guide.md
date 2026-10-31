@@ -1,6 +1,6 @@
 # Formatting Guide
 
-The Wrot post editor comes with a toolbar that makes formatting your text a breeze.
+The Wrot for Tasks post editor comes with a toolbar that makes formatting your text a breeze.
 With a single click, you can add styling like bold text, lists, and blockquotes.
 
 Here is a breakdown of the formatting tools on the toolbar and what each button does.

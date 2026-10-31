@@ -1,7 +1,7 @@
 {
-  "name": "wrot",
-  "version": "3.1.0-task.1",
-  "description": "Micro-journal your day in a timeline, one \"tweet\" at a time.",
+  "name": "wrot-for-tasks",
+  "version": "3.1.0-task.2",
+  "description": "Daily notes, timed tasks, and a remaining-tasks timeline, based on Wrot.",
   "type": "module",
   "scripts": {
     "dev": "node esbuild.config.mjs",

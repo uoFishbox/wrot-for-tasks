@@ -7,12 +7,12 @@ const ko = {
   "settings.section.tagrules": "태그별 규칙 설정",
 
   "settings.item.viewPlacement.name": "표시 위치",
-  "settings.item.viewPlacement.desc": "Wrot을 표시할 위치를 지정합니다.",
+  "settings.item.viewPlacement.desc": "Wrot for Tasks을 표시할 위치를 지정합니다.",
   "settings.option.viewPlacement.left": "왼쪽 사이드바",
   "settings.option.viewPlacement.right": "오른쪽 사이드바",
   "settings.option.viewPlacement.main": "메인 영역",
   "settings.item.openOnStartup.name": "시작 시 열기",
-  "settings.item.openOnStartup.desc": "활성화하면 Obsidian을 시작할 때 Wrot을 전면에 표시합니다.",
+  "settings.item.openOnStartup.desc": "활성화하면 Obsidian을 시작할 때 Wrot for Tasks을 전면에 표시합니다.",
 
   "settings.item.followFontSize.name": "Obsidian 글꼴 크기 동기화",
   "settings.item.followFontSize.desc": "활성화하면 Obsidian 디자인 설정의 글자 크기에 맞춥니다.",
@@ -80,7 +80,7 @@ const ko = {
   "settings.item.showPostDelete.desc": "활성화하면 게시물 메뉴에 삭제 버튼이 표시됩니다. \n삭제한 게시물은 복구할 수 없으며, 첨부된 이미지는 삭제되지 않습니다.",
 
   "settings.item.useCustomAttachmentFolder.name": "이미지 저장 위치 지정",
-  "settings.item.useCustomAttachmentFolder.desc": "Wrot에서 추가한 이미지에만 적용됩니다.",
+  "settings.item.useCustomAttachmentFolder.desc": "Wrot for Tasks에서 추가한 이미지에만 적용됩니다.",
 
   "settings.item.attachmentFolder.name": "저장 폴더",
   "settings.item.attachmentFolder.desc": "지정한 폴더가 없으면 Obsidian의 기본 설정을 따릅니다.",
@@ -116,9 +116,9 @@ const ko = {
   "settings.tagRule.scope.ogp.name": "OGP 카드에 보조 색상 적용",
   "settings.tagRule.scope.ogp.desc": "비활성화하면 자동으로 계산된 색상으로 표시됩니다.",
   "settings.item.graphTags.name": "태그 통합",
-  "settings.item.graphTags.desc": "그래프 뷰 및 태그 검색(tag:)에 포함됩니다. \n비활성화하면 Wrot 내부에서만 사용됩니다.",
+  "settings.item.graphTags.desc": "그래프 뷰 및 태그 검색(tag:)에 포함됩니다. \n비활성화하면 Wrot for Tasks 내부에서만 사용됩니다.",
   "settings.tagRule.noIntegration.name": "태그 통합 제외",
-  "settings.tagRule.noIntegration.desc": "활성화하면 이 태그는 Wrot 내부에서만 사용됩니다.",
+  "settings.tagRule.noIntegration.desc": "활성화하면 이 태그는 Wrot for Tasks 내부에서만 사용됩니다.",
   "settings.tagRule.hideTimeline.name": "타임라인에서 숨기기",
   "settings.tagRule.hideTimeline.desc": "활성화하면 이 태그가 포함된 게시물은 타임라인에 표시되지 않습니다. \n(데일리 노트에는 그대로 유지됩니다)",
   "settings.tagRule.protectDelete.name": "삭제 방지",

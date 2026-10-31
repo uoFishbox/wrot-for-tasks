@@ -5,12 +5,12 @@ const ja = {
   "settings.section.tagrules": "タグ別ルール設定",
 
   "settings.item.viewPlacement.name": "表示位置",
-  "settings.item.viewPlacement.desc": "Wrotを表示する場所を指定します。",
+  "settings.item.viewPlacement.desc": "Wrot for Tasksを表示する場所を指定します。",
   "settings.option.viewPlacement.left": "左サイドバー",
   "settings.option.viewPlacement.right": "右サイドバー",
   "settings.option.viewPlacement.main": "メインエリア",
   "settings.item.openOnStartup.name": "起動時に開く",
-  "settings.item.openOnStartup.desc": "Obsidianの起動時に、Wrotを手前に表示します。",
+  "settings.item.openOnStartup.desc": "Obsidianの起動時に、Wrot for Tasksを手前に表示します。",
 
   "settings.item.followFontSize.name": "Obsidianのフォントサイズに追従",
   "settings.item.followFontSize.desc":
@@ -83,7 +83,7 @@ const ja = {
     "オンにすると、投稿メニューに削除ボタンを追加します。\n削除した投稿は復元できません。添付画像は削除されません。",
 
   "settings.item.useCustomAttachmentFolder.name": "画像の保存先を指定",
-  "settings.item.useCustomAttachmentFolder.desc": "Wrotから追加した画像のみが対象になります。",
+  "settings.item.useCustomAttachmentFolder.desc": "Wrot for Tasksから追加した画像のみが対象になります。",
 
   "settings.item.attachmentFolder.name": "保存先フォルダ",
   "settings.item.attachmentFolder.desc": "指定したフォルダが存在しない場合は、Obsidianの標準設定に従います。",
@@ -119,9 +119,9 @@ const ja = {
   "settings.tagRule.scope.ogp.name": "OGPカードにサブカラーを適用",
   "settings.tagRule.scope.ogp.desc": "オフにすると、自動で設定された色が適用されます。",
   "settings.item.graphTags.name": "タグの本体統合",
-  "settings.item.graphTags.desc": "グラフビューやタグ検索（tag:）の対象に含めます。\nオフにすると、Wrot内でのみ有効なタグになります。",
+  "settings.item.graphTags.desc": "グラフビューやタグ検索（tag:）の対象に含めます。\nオフにすると、Wrot for Tasks内でのみ有効なタグになります。",
   "settings.tagRule.noIntegration.name": "本体統合から除外",
-  "settings.tagRule.noIntegration.desc": "オンにすると、このタグはWrot内でのみ有効になります。",
+  "settings.tagRule.noIntegration.desc": "オンにすると、このタグはWrot for Tasks内でのみ有効になります。",
   "settings.tagRule.hideTimeline.name": "タイムラインに非表示",
   "settings.tagRule.hideTimeline.desc":
     "オンにすると、このタグを含む投稿がタイムラインに表示されなくなります。\nデイリーノートには保存されます。",

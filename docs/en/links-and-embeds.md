@@ -1,6 +1,6 @@
 # Working with Images, Links, and Embeds
 
-Wrot integrates seamlessly with Obsidian’s native Markdown syntax, making it easy to display images, link to other notes, and show link previews for external websites.
+Wrot for Tasks integrates seamlessly with Obsidian’s native Markdown syntax, making it easy to display images, link to other notes, and show link previews for external websites.
 
 This guide walks you through inserting these elements, how previews work, and a few key settings to keep in mind.
 
@@ -45,10 +45,10 @@ You can attach screenshots and photos directly into your post.
 ### Where Images Are Saved and Naming Rules
 
 - **Saving behavior**: Images are **saved to your Vault only when you publish your post**. If you discard the post, the file won't be saved.
-- **Default folder**: By default, Wrot respects your main Obsidian preferences under Settings > Files and links > Default location for new attachments.
-  - If you turn on "Custom attachment folder" in Wrot's settings, any images attached through Wrot will go into a dedicated folder instead. If that folder doesn't exist, Wrot automatically falls back to your main Obsidian setting.
+- **Default folder**: By default, Wrot for Tasks respects your main Obsidian preferences under Settings > Files and links > Default location for new attachments.
+  - If you turn on "Custom attachment folder" in Wrot for Tasks's settings, any images attached through Wrot for Tasks will go into a dedicated folder instead. If that folder doesn't exist, Wrot for Tasks automatically falls back to your main Obsidian setting.
 - **File names**: Images are automatically renamed using the format `Pasted Image YYYYMMDDHHmmss.<extension>`.
-- **Compression**: By default, attached images are compressed and stripped of location and similar embedded data before saving. Turn off "Compress images" in Wrot's settings to save them as they are.
+- **Compression**: By default, attached images are compressed and stripped of location and similar embedded data before saving. Turn off "Compress images" in Wrot for Tasks's settings to save them as they are.
   - Compressed images are saved as WebP. On iPhone and iPad, where WebP cannot be written, they become JPEG or PNG (with transparency) instead.
   - GIFs and other animated images are never compressed. An image that would not get smaller is also saved as is.
 
@@ -89,7 +89,7 @@ URLs that end with an image extension will automatically render inline as an ima
 obsidian://open?vault=MyVault&file=photo.png
 ```
 
-If Wrot can locate the image in the specified Vault, it renders as an image. If it can't find the file, it defaults to a standard link.
+If Wrot for Tasks can locate the image in the specified Vault, it renders as an image. If it can't find the file, it defaults to a standard link.
 
 ---
 
@@ -111,11 +111,11 @@ Besides the Link button, you can also type links to other notes in your Vault by
 
 ## 5. Web Link Previews (OGP Cards)
 
-When you include an external URL, Wrot can display it as a rich preview card with a title, description, and thumbnail.
+When you include an external URL, Wrot for Tasks can display it as a rich preview card with a title, description, and thumbnail.
 
 ### When Preview Cards Show Up
 
-- **"Link previews"** is enabled in Wrot's settings
+- **"Link previews"** is enabled in Wrot for Tasks's settings
 - The link starts with `http://` or `https://`
 - The destination website provides valid OGP metadata
 
@@ -143,6 +143,6 @@ Links to posts on `https://twitter.com/...` and `https://x.com/...` are automati
 
 ### Link preview cards aren't showing up
 
-- Double-check that "Link previews" is turned on in Wrot's settings.
+- Double-check that "Link previews" is turned on in Wrot for Tasks's settings.
 - Make sure the website actually supports OGP meta tags.
 - Direct links to image files will render as images rather than preview cards.
