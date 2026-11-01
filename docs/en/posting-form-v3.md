@@ -61,6 +61,12 @@ At the start of a line, typing `@2000` and pressing **Space or Enter** also inse
 
 Four digits stay unconverted until you confirm, so you can keep typing a range. Times use `0000`–`2359`, with minutes from `00` to `59`. Shortcuts inside code or math blocks, or in the middle of prose, stay literal.
 
+### Warning Before Posting Past Tasks
+
+Posting a new memo asks for confirmation if it contains incomplete tasks and the selected daily note date is before today, or if a task's start time on the selected date is before the current local time. Time ranges use their start time. The warning shows the affected date and, for timed tasks today, the start time.
+
+Choose **Add anyway** to save the entire post, or **Cancel** to keep the draft, images, and quote on the selected date. Closing the warning also cancels. This applies to the Post button, keyboard submission, and date posting shortcuts. Completed tasks and examples inside code or math blocks do not trigger the warning.
+
 ### Date Navigation Shortcuts
 
 Type a shortcut on its own line in the composer and press **Space, Enter, or Tab** to move forward from the currently displayed date:

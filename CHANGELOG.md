@@ -1,5 +1,9 @@
 # Release Notes
 
+## Unreleased
+
+- Added a confirmation modal before posting incomplete tasks to past daily note dates or with start times before the current local time. Canceling preserves the draft and attachments.
+
 ## 3.1.0-task.3 - 2026-11-01
 
 ### New Features

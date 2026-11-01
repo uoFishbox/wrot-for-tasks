@@ -18,6 +18,8 @@ import { completeTimedTask } from "../editor/composerTimeTask";
 import { dateShiftCommand, dateShiftOnSpace } from "../editor/composerDateShift";
 import { ComposerSuggest } from "../editor/composerSuggest";
 import { RemainingTasks } from "./RemainingTasks";
+import { taskPostWarning } from "../utils/taskPostWarning";
+import { confirmTaskPost } from "../utils/taskPostWarningModal";
 import { findLinkAt, isLinkableText, linkMarkdown } from "../editor/composerLink";
 import { HIGHLIGHT_EMOJI, TAG_SOURCE } from "../utils/patterns";
 import { isMathJaxReady, requestMathJax } from "../utils/mathjax";
@@ -1778,10 +1780,10 @@ export class WrotView extends ItemView {
     // The form never showed the pending opener, so the decoration it was drawing is closed
     // for the post rather than left open.
     const text = this.activeFormatMode ? this.closeArmedOpener(this.composer.value) : this.composer.value;
-    this.activeFormatMode = null;
     const rawText = typed ? toTildeFences(text.trim().replace(/＃/g, "#")) : "";
 
     if (this.editingMemo) {
+      this.activeFormatMode = null;
       await this.applyEdit(rawText);
       return;
     }
@@ -1794,6 +1796,9 @@ export class WrotView extends ItemView {
     const postDate = this.currentDate.clone();
 
     try {
+      const warning = taskPostWarning(rawText, postDate.toDate(), moment().toDate());
+      if (warning && !await confirmTaskPost(this.app, warning, postDate.format("YYYY-MM-DD"))) return;
+      this.activeFormatMode = null;
       const settings = this.plugin.settings;
       const templateGone = settings.postHeading !== "" && !dailyNoteTemplateFile(this.app);
       if (templateGone) {

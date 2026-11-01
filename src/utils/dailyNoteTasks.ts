@@ -15,6 +15,21 @@ export function dailyNoteTaskStartMinutes(text: string): number | null {
   return match ? Number(match[1]) * 60 + Number(match[2]) : null;
 }
 
+/** Incomplete checkboxes rendered in a memo body, with lines relative to that body. */
+export function incompleteMemoTaskEntries(content: string): DailyNoteTask[] {
+  const tasks: DailyNoteTask[] = [];
+  for (const segment of segmentBlocks(content)) {
+    if (segment.kind !== "text") continue;
+    segment.text.split("\n").forEach((line, index) => {
+      const item = parseListLine(line.replace(/^(?:\s*>\s?)*/, ""));
+      if (item?.kind === "check" && !item.checked) {
+        tasks.push({ line: segment.startLine + index, text: item.content.trim() });
+      }
+    });
+  }
+  return tasks;
+}
+
 /** Native Markdown tasks plus the checkboxes Wrot renders inside its memo fences. */
 export function incompleteDailyNoteTaskEntries(content: string, cache: CachedMetadata | null): DailyNoteTask[] {
   const tasks: DailyNoteTask[] = [];
@@ -38,18 +53,8 @@ export function incompleteDailyNoteTaskEntries(content: string, cache: CachedMet
     // still land on the actual task after blank lines or embedded code/math.
     const body = memo.rawBlock.split("\n").slice(1);
     if (body[body.length - 1]?.trim() === "```") body.pop();
-    for (const segment of segmentBlocks(body.join("\n"))) {
-      if (segment.kind !== "text") continue;
-      segment.text.split("\n").forEach((line, index) => {
-        const item = parseListLine(line.replace(/^(?:\s*>\s?)*/, ""));
-        if (item?.kind === "check" && !item.checked) {
-          tasks.push({
-            line: memo.lineStart + 1 + segment.startLine + index,
-            text: item.content.trim(),
-            time: memo.time,
-          });
-        }
-      });
+    for (const task of incompleteMemoTaskEntries(body.join("\n"))) {
+      tasks.push({ ...task, line: memo.lineStart + 1 + task.line, time: memo.time });
     }
   }
   return tasks.sort((a, b) => a.line - b.line);

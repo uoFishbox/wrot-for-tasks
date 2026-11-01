@@ -31,6 +31,7 @@ const bundle = await build({
           export class ItemView {} export class Component {} export class Events {} export class MarkdownView {} export class HoverPopover {}
           export class PluginSettingTab {} export class Setting {} export class AbstractInputSuggest {}
           export class Scope {} export class Menu {} export class MenuItem {}
+          export class Modal {} export class ButtonComponent {}
           export const Platform = {}; export const MarkdownRenderer = {};
           export const normalizePath = value => value;
           export const getLanguage = () => "ja";
