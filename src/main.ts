@@ -65,7 +65,7 @@ export default class WrotPlugin extends Plugin {
     await this.loadSettings();
     this.registerHoverLinkSource(CALENDAR_HOVER_SOURCE, {
       display: this.manifest.name,
-      defaultMod: false,
+      defaultMod: true,
     });
     // Started after layout: reads issued during load queue ahead of Obsidian's own styles.css read in the fs pool and count against startup.
     this.deferredState = new Promise((resolve) => {
