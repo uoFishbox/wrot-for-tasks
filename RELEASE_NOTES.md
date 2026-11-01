@@ -1,15 +1,15 @@
 # 3.1.0-task.3
 
-## 機能追加
+## New Features
 
-- タスクにマウスを重ねるか、モバイルで長押しすると、作成からの経過時間と予定までの残り時間・超過時間を表示。作成から予定までの進み具合もタイムラインで確認できます。
-- `@1d`・`@2w`・`@1m`・`@1y`・`@today` による日付移動と投稿に対応。末尾に `-` を付けると過去方向を指定でき、本文がある場合は移動先の日付に投稿します。
-- 投稿ツールバーに `@` ボタンを追加。
-- 日付ヘッダー上のマウスホイールで前後の日付に移動できるようにしました。
+- Added task timing popovers on hover or mobile long press, showing elapsed time since creation, time until or since the scheduled date, and a progress timeline.
+- Added date navigation and posting shortcuts: `@1d`, `@2w`, `@1m`, `@1y`, and `@today`. A trailing `-` moves backward; a shortcut with body text posts to the destination date.
+- Added an `@` button to the composer toolbar.
+- Added mouse-wheel date navigation over the date header.
 
-## 改善・修正
+## Improvements and Fixes
 
-- 予定日時を過ぎたタスクを別グループにまとめ、残りタスクの並び順と予定の判定を改善。
-- タスクの日付を `YYYY-MM-DD` 形式で表示。
-- IME 入力中の時刻候補表示と、入力補完の選択・表示位置を改善。
-- タスクの時間表示に必要な翻訳がビルド成果物に含まれるよう修正。
+- Grouped past scheduled tasks separately and refined task ordering and schedule detection.
+- Standardized task note dates as `YYYY-MM-DD`.
+- Improved time suggestions during IME composition, suggestion selection, and popup positioning.
+- Fixed inclusion of task timing translations in production builds.
