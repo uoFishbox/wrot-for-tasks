@@ -336,6 +336,10 @@ body.wr-font-follow .wr-calendar-nav-btn .svg-icon {
   border-radius: var(--wr-cal-day-radius, 50%);
 }
 
+.workspace-leaf-content[data-type="wrot-for-tasks-view"] .wr-calendar-day:hover {
+  background: var(--background-modifier-hover);
+}
+
 .workspace-leaf-content[data-type="wrot-for-tasks-view"] .wr-calendar-task-dots {
   position: absolute;
   bottom: 0.2em;
@@ -359,6 +363,7 @@ body.wr-font-follow .wr-calendar-nav-btn .svg-icon {
 }
 
 .workspace-leaf-content[data-type="wrot-for-tasks-view"] .wr-calendar-day-today,
+.workspace-leaf-content[data-type="wrot-for-tasks-view"] .wr-calendar-day-today:hover,
 .workspace-leaf-content[data-type="wrot-for-tasks-view"] .wr-calendar-day-selected.wr-calendar-day-today {
   background: var(--interactive-accent);
   color: var(--color-base-10) !important;
