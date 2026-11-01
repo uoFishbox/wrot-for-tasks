@@ -1,18 +1,15 @@
-# 3.1.0-task.2
+# 3.1.0-task.3
 
-**Wrot for Tasks**, based on [Wrot 3.1.0](https://github.com/villyoshioka/Wrot/releases/tag/3.1.0).
+## 機能追加
 
-## Changes
+- タスクにマウスを重ねるか、モバイルで長押しすると、作成からの経過時間と予定までの残り時間・超過時間を表示。作成から予定までの進み具合もタイムラインで確認できます。
+- `@1d`・`@2w`・`@1m`・`@1y`・`@today` による日付移動と投稿に対応。末尾に `-` を付けると過去方向を指定でき、本文がある場合は移動先の日付に投稿します。
+- 投稿ツールバーに `@` ボタンを追加。
+- 日付ヘッダー上のマウスホイールで前後の日付に移動できるようにしました。
 
-- Renamed the plugin to **Wrot for Tasks**.
-- Changed the plugin ID to `wrot-for-tasks` and the repository to `uoFishbox/wrot-for-tasks`.
-- Updated the ribbon, view title, settings shortcut, interface text, and installation documentation.
-- Retains the task panel, relative start times, timed task autocomplete, and calendar improvements from `3.1.0-task.1`.
+## 改善・修正
 
-## Installation
-
-Requires **Obsidian 1.14.4 or newer**. Install this fork through BRAT using `uoFishbox/wrot-for-tasks`, or download `main.js`, `manifest.json`, and `styles.css` into `.obsidian/plugins/wrot-for-tasks/`.
-
-The plugin ID has changed from `wrot` to `wrot-for-tasks`. Enable the new plugin explicitly. Previous settings and workspace views are not automatically migrated. Disable the previous Wrot installation before enabling this fork to avoid processing the same notes twice.
-
-Fork versions use `<upstream-version>-task.<release-number>`. For example, the next fork release based on Wrot 3.1.0 will be `3.1.0-task.3`; after merging Wrot 3.2.0, it will be `3.2.0-task.1`. Upstream tags are left available for future merges. Suffix versions are distributed through GitHub Releases/BRAT; Obsidian's built-in updater does not fully support them.
+- 予定日時を過ぎたタスクを別グループにまとめ、残りタスクの並び順と予定の判定を改善。
+- タスクの日付を `YYYY-MM-DD` 形式で表示。
+- IME 入力中の時刻候補表示と、入力補完の選択・表示位置を改善。
+- タスクの時間表示に必要な翻訳がビルド成果物に含まれるよう修正。
