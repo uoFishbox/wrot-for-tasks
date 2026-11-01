@@ -165,7 +165,7 @@ body.wr-font-follow .wr-nav-btn .svg-icon {
   z-index: 50;
   width: max-content;
   padding: 12px;
-  background: var(--wr-bg-color, #f8f8f8);
+  background: var(--background-primary);
   border: 1px solid rgba(var(--mono-rgb-100), 0.12);
   border-radius: 10px;
   box-shadow: 0 3px 12px rgba(0, 0, 0, 0.14);
@@ -354,16 +354,14 @@ body.wr-font-follow .wr-calendar-nav-btn .svg-icon {
   height: 0.375em;
 }
 
-.workspace-leaf-content[data-type="wrot-for-tasks-view"] .wr-calendar-day:hover {
-  background: rgba(var(--mono-rgb-100), 0.05);
-}
-
 .workspace-leaf-content[data-type="wrot-for-tasks-view"] .wr-calendar-day-outside {
   color: var(--text-faint);
 }
 
-.workspace-leaf-content[data-type="wrot-for-tasks-view"] .wr-calendar-day-today {
-  color: var(--text-accent);
+.workspace-leaf-content[data-type="wrot-for-tasks-view"] .wr-calendar-day-today,
+.workspace-leaf-content[data-type="wrot-for-tasks-view"] .wr-calendar-day-selected.wr-calendar-day-today {
+  background: var(--interactive-accent);
+  color: var(--color-base-10) !important;
   font-weight: 600;
 }
 
@@ -378,16 +376,10 @@ body.wr-font-follow .wr-calendar-nav-btn .svg-icon {
   pointer-events: none;
 }
 
-/* Selected beats the today highlight (hence the compound selector) */
-.workspace-leaf-content[data-type="wrot-for-tasks-view"] .wr-calendar-day-selected,
-.workspace-leaf-content[data-type="wrot-for-tasks-view"] .wr-calendar-day-selected.wr-calendar-day-today {
-  background: var(--interactive-accent);
-  color: var(--text-on-accent);
-  font-weight: 600;
-}
-
-.workspace-leaf-content[data-type="wrot-for-tasks-view"] .wr-calendar-day-selected:hover {
-  background: var(--interactive-accent-hover, var(--interactive-accent));
+/* Today keeps its accent highlight when selected. */
+.workspace-leaf-content[data-type="wrot-for-tasks-view"] .wr-calendar-day-selected {
+  background: var(--background-modifier-hover);
+  color: var(--text-normal);
 }
 
 /* Tag suggestion dropdown. Positioned by JS from the editor's caret coordinates. */
@@ -1047,7 +1039,7 @@ body .wr-submit-btn.wr-submit-active {
   }
 
   body.wr-submit-gradient .wr-submit-btn.wr-submit-active,
-  body.wr-submit-gradient .workspace-leaf-content[data-type="wrot-for-tasks-view"] .wr-calendar-day-selected {
+  body.wr-submit-gradient .workspace-leaf-content[data-type="wrot-for-tasks-view"] .wr-calendar-day-selected:not(.wr-calendar-day-today) {
     --wr-grad-end: oklch(from var(--interactive-accent) calc(l + 0.05 * var(--wr-grad-sign)) calc(c * (1 - 0.1 * max(0, var(--wr-grad-sign)))) calc(h - 8));
     background: linear-gradient(
       to right,
@@ -1175,6 +1167,7 @@ body .wr-submit-btn.wr-submit-active {
   margin-top: auto;
   padding-inline: var(--wr-content-gutter);
   overscroll-behavior: contain;
+  padding-bottom: var(--wr-content-gutter);
 }
 
 .wr-remaining-tasks-status {
@@ -1236,6 +1229,105 @@ body .wr-submit-btn.wr-submit-active {
   display: flex;
   align-items: center;
   gap: 8px;
+}
+
+.popover.hover-popover[data-wr-task-time] {
+  display: block;
+  width: 320px;
+  height: auto;
+  max-width: min(420px, calc(100vw - 24px));
+  min-height: 0;
+  padding: 12px 16px;
+  color: var(--text-normal);
+}
+
+.is-mobile .wr-remaining-task {
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+.is-mobile .wr-remaining-task :is(a, input, textarea, [contenteditable="true"]) {
+  -webkit-touch-callout: default;
+  -webkit-user-select: auto;
+  user-select: auto;
+}
+
+.popover.hover-popover[data-wr-task-time] > * {
+  width: 100%;
+}
+
+.wr-task-time-details {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 6px 16px;
+  margin: 0;
+  font-size: var(--font-ui-small);
+}
+
+.wr-task-time-details dt {
+  color: var(--text-muted);
+}
+
+.wr-task-time-details dd {
+  color: var(--text-normal);
+  margin: 0;
+  overflow-wrap: anywhere;
+  font-variant-numeric: tabular-nums;
+}
+
+.wr-task-time-timeline {
+  padding: 12px 12px 8px;
+  color: var(--text-muted);
+  font-size: var(--font-ui-smaller);
+  font-variant-numeric: tabular-nums;
+}
+
+.wr-task-time-timeline[hidden] {
+  display: none;
+}
+
+.wr-task-time-axis {
+  position: relative;
+  height: 2px;
+  background: var(--background-modifier-border);
+}
+
+.wr-task-time-fill {
+  width: var(--wr-task-current);
+  height: 100%;
+  background: var(--interactive-accent);
+}
+
+.wr-task-time-label {
+  margin-bottom: 10px;
+}
+
+.wr-task-time-label > span {
+  display: inline-block;
+  position: relative;
+  left: var(--wr-task-current);
+  max-width: 100%;
+  transform: translateX(calc(0% - var(--wr-task-current)));
+  overflow-wrap: anywhere;
+  text-align: center;
+}
+
+.wr-task-time-current {
+  position: absolute;
+  left: var(--wr-task-current);
+  top: -4px;
+  width: 10px;
+  height: 10px;
+  border: 2px solid var(--background-primary);
+  border-radius: 50%;
+  background: var(--interactive-accent);
+  transform: translateX(-50%);
+}
+
+.wr-task-time-timeline[data-overdue="true"] .wr-task-time-fill,
+.wr-task-time-timeline[data-overdue="true"] .wr-task-time-current {
+  background: var(--text-error);
 }
 
 .wr-remaining-task-days {

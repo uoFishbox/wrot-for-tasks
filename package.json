@@ -8,6 +8,7 @@
     "lint": "eslint .",
     "test:calendar": "node --test scripts/test-calendar-tasks.mjs",
     "test:remaining-task-time": "node --test scripts/test-remaining-task-time.mjs",
+    "test:i18n-pack": "node --test scripts/test-i18n-pack.mjs",
     "test:time-task": "node --test scripts/test-time-task.mjs",
     "test:date-shift": "node --test scripts/test-date-shift.mjs",
     "test:date-post": "node --test scripts/test-date-post.mjs",

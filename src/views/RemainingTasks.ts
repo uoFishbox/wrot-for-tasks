@@ -1,4 +1,4 @@
-import { App, CachedMetadata, Component, Notice, TFile } from "obsidian";
+import { App, CachedMetadata, Component, HoverParent, HoverPopover, Notice, Platform, TFile } from "obsidian";
 import { dateForDailyNote } from "../utils/dailyNote";
 import {
   DailyNoteTask,
@@ -10,6 +10,7 @@ import {
   remainingTaskTimeLabel,
   taskCreationDate,
   taskScheduleStatus,
+  taskTimeDetails,
   TaskSchedule,
 } from "../utils/remainingTaskTime";
 import { toggleCheckbox } from "../utils/memoWriter";
@@ -20,14 +21,22 @@ import {
 import { renderQuoteCard } from "../utils/quoteCard";
 import type WrotPlugin from "../main";
 import { t } from "../i18n";
+import { bindTaskLongPress, TASK_CONTROL_SELECTOR } from "../utils/taskLongPress";
 
 interface RemainingTask extends DailyNoteTask, TaskSchedule {
   filePath: string;
   noteDateLabel: string;
 }
 
+// Obsidian's native hide() also cancels pending shows and removes target listeners;
+// Component.unload() alone does neither. hide() is omitted from its public typings.
+type TaskHoverPopover = HoverPopover & { hide(): void; setIsFocused(focused: boolean): void };
+
 /** A view-local index: one initial scan, then only changed daily notes are parsed. */
-export class RemainingTasks extends Component {
+export class RemainingTasks extends Component implements HoverParent {
+  hoverPopover: HoverPopover | null = null;
+  private taskPopover: TaskHoverPopover | null = null;
+  private taskLongPressCleanups: (() => void)[] = [];
   private section: HTMLElement;
   private count: HTMLElement;
   private list: HTMLElement;
@@ -98,6 +107,8 @@ export class RemainingTasks extends Component {
 
   onunload(): void {
     this.closed = true;
+    this.clearTaskLongPress();
+    this.closeTaskPopover();
     if (this.renderTimer !== null)
       this.section.win.clearTimeout(this.renderTimer);
     this.renderTimer = null;
@@ -203,6 +214,8 @@ export class RemainingTasks extends Component {
   private render(now = new Date()): void {
     // Metadata updates must not replace rows while their completion feedback is visible.
     if (this.closed || this.completingRows.size > 0) return;
+    this.clearTaskLongPress();
+    this.closeTaskPopover();
     const today = calendarDateValue(now);
     const tasks = [...this.tasks.values()]
       .flat()
@@ -257,17 +270,25 @@ export class RemainingTasks extends Component {
         },
       });
       const openTask = (newTab: boolean): void => {
+        this.closeTaskPopover();
         void this.openTask(task, newTab).catch((error: unknown) => {
           new Notice(t("view.tasks.openFailed"));
           console.warn("Wrot for Tasks: could not open remaining task", error);
         });
       };
+      if (Platform.isMobile) {
+        this.taskLongPressCleanups.push(bindTaskLongPress(
+          row,
+          () => this.showTaskPopover(row, task, true),
+          () => this.closeTaskPopover(),
+        ));
+      } else {
+        row.addEventListener("mouseenter", () => this.showTaskPopover(row, task));
+      }
       row.addEventListener("click", (event) => {
         if (
           event.defaultPrevented ||
-          (event.target as Element | null)?.closest(
-            'a, button, input, label, select, textarea, [role="button"], [role="link"], [contenteditable="true"]',
-          )
+          (event.target as Element | null)?.closest(TASK_CONTROL_SELECTOR)
         )
           return;
         openTask(event.ctrlKey || event.metaKey);
@@ -296,6 +317,7 @@ export class RemainingTasks extends Component {
         {
           onTagClick: (tag) => this.plugin.openTagSearch(tag),
           onCheckToggle: (_lineIndex, checked) => {
+            this.closeTaskPopover();
             const checkbox = contentEl.querySelector<HTMLInputElement>(
               'input[type="checkbox"]',
             );
@@ -397,6 +419,72 @@ export class RemainingTasks extends Component {
     for (const [label, task] of this.timeLabels) {
       label.setText(remainingTaskTimeLabel(task, now) ?? "");
     }
+  }
+
+  private clearTaskLongPress(): void {
+    for (const cleanup of this.taskLongPressCleanups) cleanup();
+    this.taskLongPressCleanups = [];
+  }
+
+  private closeTaskPopover(): void {
+    this.taskPopover?.hide();
+    this.taskPopover = null;
+  }
+
+  private showTaskPopover(row: HTMLElement, task: RemainingTask, persistent = false): void {
+    if (this.closed || this.completingRows.has(row)) return;
+    this.closeTaskPopover();
+    const popover = new HoverPopover(this, row, persistent ? 0 : 300) as TaskHoverPopover;
+    this.taskPopover = popover;
+    // Load now so hiding during the initial wait also runs registered cleanup.
+    // The native popover assigns hoverPopover itself once it becomes visible.
+    popover.load();
+    if (persistent) {
+      popover.setIsFocused(true);
+      popover.registerDomEvent(row.doc, "pointerdown", (event) => {
+        if (!popover.hoverEl.contains(event.target as Node)) this.closeTaskPopover();
+      }, true);
+      popover.registerDomEvent(row.doc, "scroll", () => this.closeTaskPopover(), true);
+      popover.registerDomEvent(row.win, "resize", () => this.closeTaskPopover());
+      popover.registerDomEvent(row.doc, "keydown", (event) => {
+        if (event.key === "Escape") this.closeTaskPopover();
+      });
+    }
+    popover.hoverEl.setAttribute("data-wr-task-time", "");
+    const details = popover.hoverEl.createEl("dl", { cls: "wr-task-time-details" });
+    const labels = new Map<"createdElapsed" | "scheduledRemaining", HTMLElement>();
+    const values = new Map<"createdElapsed" | "scheduledRemaining", HTMLElement>();
+    for (const key of ["createdElapsed", "scheduledRemaining"] as const) {
+      labels.set(key, details.createEl("dt", { text: t(`view.tasks.${key}`) }));
+      values.set(key, details.createEl("dd"));
+    }
+    const timeline = popover.hoverEl.createDiv({ cls: "wr-task-time-timeline", attr: { role: "img" } });
+    const labelRow = timeline.createDiv({ cls: "wr-task-time-label", attr: { "aria-hidden": "true" } });
+    const elapsedLabel = labelRow.createSpan();
+    const axis = timeline.createDiv({ cls: "wr-task-time-axis", attr: { "aria-hidden": "true" } });
+    axis.createDiv({ cls: "wr-task-time-fill" });
+    axis.createSpan({ cls: "wr-task-time-current" });
+    const refresh = (): void => {
+      const now = new Date();
+      const times = taskTimeDetails(task, now);
+      const remainingHeading = t(taskScheduleStatus(task, now) === "past" ? "view.tasks.overdue" : "view.tasks.scheduledRemaining");
+      labels.get("scheduledRemaining")?.setText(remainingHeading);
+      for (const [key, value] of values) value.setText(times[key]);
+      timeline.hidden = times.timeline === null;
+      if (times.timeline === null) return;
+      elapsedLabel.setText(times.timeline.elapsedLabel);
+      const { elapsedDays, scheduledDays } = times.timeline;
+      // Extend the same day scale past the scheduled time when overdue.
+      const maximum = Math.max(scheduledDays, elapsedDays);
+      timeline.style.setProperty("--wr-task-current", `${elapsedDays / maximum * 100}%`);
+      timeline.setAttribute("data-overdue", String(elapsedDays > scheduledDays));
+      timeline.setAttribute("aria-label", `${t("view.tasks.createdElapsed")}: ${times.createdElapsed}, ${remainingHeading}: ${times.scheduledRemaining}`);
+    };
+    refresh();
+    popover.registerInterval(row.win.setInterval(refresh, 60_000));
+    popover.register(() => {
+      if (this.taskPopover === popover) this.taskPopover = null;
+    });
   }
 
   private finishCompletion(row: HTMLElement, completed: boolean): void {

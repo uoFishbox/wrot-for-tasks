@@ -31,12 +31,35 @@ const bundle = await build({
         let language = "ja";
         export const getLanguage = () => language;
         export const setLanguage = (value) => { language = value; };
+        export const Platform = { isMobile: false };
         export class Component {} export class Notice {} export class TFile {}
+        export class HoverPopover {
+          constructor(parent, target) {
+            this.parent = parent;
+            this.hoverEl = target.createDiv({ cls: "popover hover-popover" });
+            this.cleanups = [];
+            this.win = target.win;
+          }
+          load() { this.loaded = true; }
+          register(callback) { this.cleanups.push(callback); }
+          registerInterval(timer) { this.register(() => this.win.clearInterval(timer)); }
+          hide() {
+            this.hoverEl.remove();
+            if (this.parent.hoverPopover === this) this.parent.hoverPopover = null;
+            this.unload();
+          }
+          unload() {
+            if (!this.loaded) return;
+            this.loaded = false;
+            this.cleanups.forEach(callback => callback());
+            this.hoverEl.remove();
+          }
+        }
       ` }));
     },
   }],
 });
-const { calendarDateValue, remainingTaskTimeLabel, taskCreationDate, taskScheduleStatus, dailyNoteTaskStartMinutes,
+const { calendarDateValue, remainingTaskTimeLabel, taskCreationDate, taskScheduleStatus, taskTimeDetails, dailyNoteTaskStartMinutes,
   incompleteDailyNoteTaskEntries, RemainingTasks, initI18n, setLanguage } = await import(
   `data:text/javascript;base64,${Buffer.from(bundle.outputFiles[0].text).toString("base64")}`
 );
@@ -124,6 +147,16 @@ class Element {
     this.listeners = {};
     this.parent = parent;
     this.scrollTop = 0;
+    this.style = {
+      properties: {},
+      setProperty(name, value) { this.properties[name] = value; },
+      getPropertyValue(name) { return this.properties[name] ?? ""; },
+    };
+    this.win = parent?.win ?? {
+      intervals: new Map(),
+      setInterval(callback) { const id = this.intervals.size + 1; this.intervals.set(id, callback); return id; },
+      clearInterval(id) { this.intervals.delete(id); },
+    };
   }
   createEl(tag, options) {
     const child = new Element(options, this);
@@ -162,12 +195,141 @@ function taskView(entries) {
     app: { vault: { getName: () => "test" } }, plugin: { settings: {} },
     list: new Element(), count: new Element(), loading: false, closed: false,
     tasks: new Map([["daily.md", entries]]), failed: new Set(), completingRows: new Map(), timeLabels: new Map(),
+    hoverPopover: null, taskPopover: null, taskLongPressCleanups: [],
   });
 }
 
 function entry(text, line, day = noteDate, createdDate = day) {
   return { ...schedule(text, day, createdDate), text, line, filePath: "daily.md", noteDateLabel: "note date" };
 }
+
+test("hover details only contain durations and progress across multiple days", () => {
+  const created = new Date(2026, 9, 29, 8, 5);
+  const task = { ...schedule("09:15 task"), time: created.toISOString() };
+  const details = taskTimeDetails(task, date(9, 0));
+  assert.deepEqual(Object.keys(details), ["createdElapsed", "scheduledRemaining", "timeline"]);
+  assert.equal(details.createdElapsed, "2日55分");
+  assert.equal(details.scheduledRemaining, "15分");
+  assert.equal(taskTimeDetails(task, date(10, 30)).scheduledRemaining, "1時間15分");
+  assert.equal(taskTimeDetails(task, date(9, 15)).scheduledRemaining, "0分");
+});
+
+test("hover details handle unknown creation dates, untimed schedules, and unspecified dates", () => {
+  for (const time of [undefined, "invalid", "2026-02-30T10:00:00Z"]) {
+    const details = taskTimeDetails({ ...schedule("native task", noteDate, null), time }, date(9, 0));
+    assert.deepEqual(details, {
+      createdElapsed: "不明", scheduledRemaining: "未指定", timeline: null,
+    });
+  }
+  const reservation = schedule("advance task", noteDate + 86_400_000, noteDate);
+  assert.equal(taskTimeDetails(reservation, date(9, 0)).scheduledRemaining, "1日");
+  assert.equal(taskTimeDetails(reservation, new Date(2026, 10, 2)).scheduledRemaining, "1日");
+  assert.equal(taskTimeDetails(schedule("09:15 native", noteDate, null), date(9, 0)).scheduledRemaining, "15分");
+});
+
+test("the day scale starts at creation and extends past the scheduled day when overdue", () => {
+  const task = { ...schedule("10:00 task"), time: date(8, 0).toISOString() };
+  for (const [now, hours] of [[date(7, 0), 0], [date(8, 0), 0], [date(9, 0), 1], [date(10, 0), 2], [date(11, 0), 3]]) {
+    assert.deepEqual(taskTimeDetails(task, now).timeline, {
+      elapsedDays: hours / 24, scheduledDays: 2 / 24, elapsedLabel: hours === 0 ? "0分経過" : `${hours}時間経過`,
+    });
+  }
+  for (const time of [undefined, "invalid", date(10, 0).toISOString(), date(11, 0).toISOString()]) {
+    assert.equal(taskTimeDetails({ ...task, time }, date(9, 0)).timeline, null);
+  }
+  assert.equal(taskTimeDetails({ ...task, startMinutes: null, createdDate: noteDate }, date(9, 0)).timeline, null);
+});
+
+test("date-only progress follows calendar days without inventing a scheduled clock time", () => {
+  const task = { ...schedule("reservation", noteDate + 2 * 86_400_000, noteDate), time: date(8, 0).toISOString() };
+  assert.deepEqual(taskTimeDetails(task, date(23, 59)).timeline, { elapsedDays: 0, scheduledDays: 2, elapsedLabel: "15時間59分経過" });
+  assert.deepEqual(taskTimeDetails(task, new Date(2026, 10, 1, 23, 59)).timeline, { elapsedDays: 1, scheduledDays: 2, elapsedLabel: "1日15時間59分経過" });
+  assert.deepEqual(taskTimeDetails(task, new Date(2026, 10, 2, 23, 59)).timeline, { elapsedDays: 2, scheduledDays: 2, elapsedLabel: "2日15時間59分経過" });
+  assert.deepEqual(taskTimeDetails(task, new Date(2026, 10, 3)).timeline, { elapsedDays: 3, scheduledDays: 2, elapsedLabel: "2日16時間経過" });
+});
+
+test("the timeline displays elapsed time above the marker and refreshes it without ticks", (context) => {
+  context.mock.timers.enable({ apis: ["Date"], now: date(9, 0).getTime() });
+  const task = { ...entry("10:00 task", 0), time: date(8, 0).toISOString() };
+  const view = taskView([task]);
+  view.render();
+  const row = view.list.querySelector(".wr-remaining-task");
+  row.listeners.mouseenter();
+  const timeline = view.taskPopover.hoverEl.find("wr-task-time-timeline");
+  assert.equal(timeline.hidden, false);
+  assert.equal(timeline.getAttribute("role"), "img");
+  assert.equal(timeline.getAttribute("aria-label"), "経過時間: 1時間, 残り時間: 1時間");
+  assert.equal(timeline.style.getPropertyValue("--wr-task-current"), "50%");
+  const label = timeline.find("wr-task-time-label").children[0];
+  assert.equal(label.text, "1時間経過");
+  assert.equal(timeline.querySelectorAll(".wr-task-time-tick").length, 0);
+  assert.equal(timeline.find("wr-task-time-due-marker"), undefined);
+  assert.equal(timeline.find("wr-task-time-legend"), undefined);
+  context.mock.timers.setTime(date(11, 0).getTime());
+  [...row.win.intervals.values()][0]();
+  assert.equal(timeline.getAttribute("aria-label"), "経過時間: 3時間, 超過時間: 1時間");
+  assert.deepEqual(view.taskPopover.hoverEl.find("wr-task-time-details").children.map(child => child.text), [
+    "経過時間", "3時間", "超過時間", "1時間",
+  ]);
+  assert.equal(timeline.getAttribute("data-overdue"), "true");
+  assert.equal(timeline.style.getPropertyValue("--wr-task-current"), "100%");
+  assert.equal(label.text, "3時間経過");
+  view.closeTaskPopover();
+  assert.equal(row.win.intervals.size, 0);
+});
+
+test("the marker label uses elapsed minutes or days and also works at the start of the line", (context) => {
+  context.mock.timers.enable({ apis: ["Date"], now: date(9, 0).getTime() });
+  for (const [task, expected] of [
+    [{ ...entry("09:09 short task", 0), time: date(8, 52).toISOString() }, "8分経過"],
+    [{ ...entry("reservation", 0, noteDate + 4 * 86_400_000, noteDate - 2 * 86_400_000), time: new Date(2026, 9, 29, 8, 0).toISOString() }, "2日1時間経過"],
+    [{ ...entry("10:00 task", 0), time: date(9, 0).toISOString() }, "0分経過"],
+  ]) {
+    const view = taskView([task]);
+    view.render();
+    view.list.querySelector(".wr-remaining-task").listeners.mouseenter();
+    const timeline = view.taskPopover.hoverEl.find("wr-task-time-timeline");
+    assert.equal(timeline.find("wr-task-time-label").children[0].text, expected);
+    assert.equal(timeline.querySelectorAll(".wr-task-time-tick").length, 0);
+    assert.equal(timeline.find("wr-task-time-legend"), undefined);
+    view.closeTaskPopover();
+  }
+});
+
+test("task row hovers create native popovers and release them on switching, refresh, and opening", (context) => {
+  context.mock.timers.enable({ apis: ["Date"], now: date(9, 0).getTime() });
+  const tasks = [entry("09:15 task", 0), entry("unscheduled", 1)];
+  const view = taskView(tasks);
+  view.render(date(9, 0));
+  const [first, second] = view.list.querySelectorAll(".wr-remaining-task");
+  first.listeners.mouseenter();
+  const popover = view.taskPopover;
+  assert.equal(view.hoverPopover, null);
+  assert.equal(popover.hoverEl.cls, "popover hover-popover");
+  assert.equal(popover.hoverEl.getAttribute("data-wr-task-time"), "");
+  const details = popover.hoverEl.find("wr-task-time-details");
+  assert.deepEqual(details.children.filter(child => child.tag === "dt").map(child => child.text), [
+    "経過時間", "残り時間",
+  ]);
+  assert.equal(popover.hoverEl.find("wr-task-time-timeline").hidden, true);
+  assert.equal(details.children.filter(child => child.tag === "dd")[0].text, "不明");
+  assert.equal(first.win.intervals.size, 1);
+  second.listeners.mouseenter();
+  assert.equal(first.children.includes(popover.hoverEl), false);
+  assert.equal(first.win.intervals.size, 1);
+  view.render(date(9, 0));
+  assert.equal(view.taskPopover, null);
+  assert.equal(first.win.intervals.size, 0);
+  const row = view.list.querySelector(".wr-remaining-task");
+  row.listeners.mouseenter();
+  view.openTask = async () => {};
+  row.listeners.click({ target: row });
+  assert.equal(view.taskPopover, null);
+  assert.equal(row.win.intervals.size, 0);
+  view.completingRows.set(row, null);
+  row.listeners.mouseenter();
+  assert.equal(view.taskPopover, null);
+});
 
 test("the task list hides unscheduled metadata, opens rows and refreshes past status", () => {
   const today = calendarDateValue(new Date());
@@ -388,6 +550,57 @@ test("English labels follow the active app language", () => {
     assert.equal(label("09:15 test", date(9, 15)), "Now");
     assert.equal(label("09:15 test", date(9, 30)), "15m ago");
     assert.equal(label("09:15 test", date(10, 15)), "1h ago");
+  } finally {
+    setLanguage("ja");
+    initI18n();
+  }
+});
+
+test("every supported locale separates bare duration values from standalone elapsed text", (context) => {
+  context.mock.timers.enable({ apis: ["Date"], now: date(9, 0).getTime() });
+  const task = { ...entry("09:36 task", 0), time: date(8, 5).toISOString() };
+  const cases = [
+    ["en", "Elapsed", "Remaining", "55 minutes", "36 minutes", "55 minutes elapsed"],
+    ["en-GB", "Elapsed", "Remaining", "55 minutes", "36 minutes", "55 minutes elapsed"],
+    ["ja", "経過時間", "残り時間", "55分", "36分", "55分経過"],
+    ["ko", "경과 시간", "남은 시간", "55분", "36분", "55분 경과"],
+    ["es", "Tiempo transcurrido", "Tiempo restante", "55 minutos", "36 minutos", "Tiempo transcurrido: 55 minutos"],
+    ["pt", "Tempo decorrido", "Tempo restante", "55 minutos", "36 minutos", "Tempo decorrido: 55 minutos"],
+    ["fr", "Temps écoulé", "Temps restant", "55 minutes", "36 minutes", "Temps écoulé : 55 minutes"],
+    ["de", "Verstrichen", "Verbleibend", "55 Minuten", "36 Minuten", "55 Minuten vergangen"],
+    ["it", "Tempo trascorso", "Tempo rimanente", "55 minuti", "36 minuti", "Tempo trascorso: 55 minuti"],
+    ["ru", "Прошедшее время", "Оставшееся время", "55 минут", "36 минут", "Прошедшее время: 55 минут"],
+    ["zh-CN", "经过时间", "剩余时间", "55分钟", "36分钟", "已过55分钟"],
+    ["zh-TW", "經過時間", "剩餘時間", "55分鐘", "36分鐘", "已過55分鐘"],
+    ["zh", "经过时间", "剩余时间", "55分钟", "36分钟", "已过55分钟"],
+  ];
+  try {
+    for (const [locale, elapsedHeading, remainingHeading, elapsed, remaining, marker] of cases) {
+      setLanguage(locale);
+      initI18n();
+      const view = taskView([task]);
+      view.render();
+      view.list.querySelector(".wr-remaining-task").listeners.mouseenter();
+      const popover = view.taskPopover.hoverEl;
+      assert.deepEqual(popover.find("wr-task-time-details").children.map(child => child.text), [
+        elapsedHeading, elapsed, remainingHeading, remaining,
+      ], locale);
+      assert.equal(popover.find("wr-task-time-label").children[0].text, marker, locale);
+      view.closeTaskPopover();
+    }
+    for (const [locale, singular, zero, sentence] of [
+      ["en", "1 minute", "0 minutes", "1 minute elapsed"],
+      ["es", "1 minuto", "0 minutos", "Tiempo transcurrido: 1 minuto"],
+      ["fr", "1 minute", "0 minute", "Temps écoulé : 1 minute"],
+      ["ru", "1 минута", "0 минут", "Прошедшее время: 1 минута"],
+    ]) {
+      setLanguage(locale);
+      initI18n();
+      const details = taskTimeDetails({ ...task, time: date(8, 59).toISOString() }, date(9, 0));
+      assert.equal(details.createdElapsed, singular, locale);
+      assert.equal(details.timeline.elapsedLabel, sentence, locale);
+      assert.equal(taskTimeDetails({ ...task, time: date(9, 0).toISOString() }, date(9, 0)).createdElapsed, zero, locale);
+    }
   } finally {
     setLanguage("ja");
     initI18n();

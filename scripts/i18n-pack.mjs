@@ -3,7 +3,6 @@ import path from "path";
 
 // esbuild plugin: each locale becomes a value array in ja.ts key order, with the key list shipped once, so the bundle carries the keys one time. Sources stay as they are.
 
-const I18N_DIR = path.resolve("src/i18n");
 const KEYS_MODULE = "wr-i18n-keys";
 // Go regex syntax (no lookahead): index.ts is skipped inside the handler instead.
 const I18N_FILE = /src[\\/]i18n[\\/][\w-]+\.ts$/;
@@ -16,23 +15,30 @@ async function evalDict(file) {
     write: false,
     format: "cjs",
     platform: "node",
+    metafile: true,
     logLevel: "silent",
   });
   const mod = { exports: {} };
   new Function("module", "exports", result.outputFiles[0].text)(mod, mod.exports);
-  return mod.exports.default;
+  return {
+    dict: mod.exports.default,
+    watchFiles: Object.keys(result.metafile.inputs).map((file) => path.resolve(file)),
+  };
 }
 
 export function i18nPackPlugin() {
   return {
     name: "wr-i18n-pack",
     setup(build) {
+      const i18nDir = path.resolve(build.initialOptions.absWorkingDir ?? process.cwd(), "src/i18n");
+      const jaFile = path.join(i18nDir, "ja.ts");
       const dicts = new Map();
+      // A watch context reuses this plugin. Only share evaluations within one build.
+      build.onStart(() => dicts.clear());
       const dictOf = (file) => {
         if (!dicts.has(file)) dicts.set(file, evalDict(file));
         return dicts.get(file);
       };
-      const keysPromise = dictOf(path.join(I18N_DIR, "ja.ts")).then((ja) => Object.keys(ja));
 
       build.onResolve({ filter: new RegExp(`^${KEYS_MODULE}$`) }, () => ({
         path: KEYS_MODULE,
@@ -40,19 +46,23 @@ export function i18nPackPlugin() {
       }));
 
       build.onLoad({ filter: /.*/, namespace: "wr-i18n" }, async () => {
-        const keys = await keysPromise;
+        const { dict, watchFiles } = await dictOf(jaFile);
+        const keys = Object.keys(dict);
         return {
           contents:
             `export const K=${JSON.stringify(keys)};` +
             // Values sit in a function body the engine only skims; the object is built on first lookup.
             `export const D=(f)=>{let o=null;return new Proxy({},{get:(_,k)=>{if(o===null){const v=f();o={};for(let i=0;i<K.length;i++)o[K[i]]=v[i];}return o[k];}});};`,
           loader: "js",
+          watchFiles,
         };
       });
 
       build.onLoad({ filter: I18N_FILE }, async (args) => {
         if (path.basename(args.path) === "index.ts") return undefined;
-        const [keys, dict] = await Promise.all([keysPromise, dictOf(args.path)]);
+        const [ja, locale] = await Promise.all([dictOf(jaFile), dictOf(args.path)]);
+        const keys = Object.keys(ja.dict);
+        const dict = locale.dict;
         const own = Object.keys(dict);
         const missing = keys.filter((k) => !(k in dict));
         const extra = own.filter((k) => !keys.includes(k));
@@ -69,6 +79,8 @@ export function i18nPackPlugin() {
             `import {D} from "${KEYS_MODULE}";` +
             `export default D(()=>${JSON.stringify(values)});`,
           loader: "js",
+          // Include transitive imports (en-GB imports en) as well as the key order.
+          watchFiles: [...new Set([...ja.watchFiles, ...locale.watchFiles])],
         };
       });
     },

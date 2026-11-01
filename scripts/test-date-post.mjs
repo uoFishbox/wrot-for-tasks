@@ -28,7 +28,7 @@ const bundle = await build({
           export const notices = [];
           export class Notice { constructor(message) { notices.push(message); } }
           export class TFile { constructor(path) { this.path = path; this.name = path.split("/").pop(); this.extension = "md"; this.basename = path.replace(/\\.md$/, ""); } }
-          export class ItemView {} export class Component {} export class Events {} export class MarkdownView {}
+          export class ItemView {} export class Component {} export class Events {} export class MarkdownView {} export class HoverPopover {}
           export class PluginSettingTab {} export class Setting {} export class AbstractInputSuggest {}
           export class Scope {} export class Menu {} export class MenuItem {}
           export const Platform = {}; export const MarkdownRenderer = {};
