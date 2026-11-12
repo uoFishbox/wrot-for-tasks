@@ -206,6 +206,10 @@ const it = {
   "view.dateNav.shift.y": "Avanza di {count} anno/i",
   "view.dateNav.today": "Oggi",
   "view.dateNav.todaySuffix": " (Oggi)",
+  "view.dateNav.yesterday": "Ieri",
+  "view.dateNav.tomorrow": "Domani",
+  "view.dateNav.daysAgo": "{count} giorni fa",
+  "view.dateNav.daysAhead": "Tra {count} giorni",
 
   "view.empty.noMemos": "Nessun post da mostrare",
   "view.tasks.title": "Attività in sospeso",

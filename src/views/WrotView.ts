@@ -200,6 +200,8 @@ export class WrotView extends ItemView {
   private remainingTasks: RemainingTasks | null = null;
   private pinnedContainer: HTMLElement | null = null;
   private dateLabel!: HTMLElement;
+  private dateText!: HTMLElement;
+  private dateBadge!: HTMLElement;
   private dateNavEl!: HTMLElement;
   private calendarBtnEl: HTMLElement | null = null;
   private calendarPopover: CalendarPopoverHandle | null = null;
@@ -653,6 +655,9 @@ export class WrotView extends ItemView {
     });
 
     this.dateLabel = nav.createSpan({ cls: "wr-date-label" });
+    this.dateText = this.dateLabel.createSpan({ cls: "wr-date-text" });
+    this.dateBadge = this.dateLabel.createSpan({ cls: "wr-date-badge", attr: { "aria-live": "polite", "aria-atomic": "true" } });
+    this.dateBadge.hidden = true;
     this.dateLabel.addEventListener("wheel", (event) => {
       if (event.ctrlKey || event.deltaY === 0 || Math.abs(event.deltaX) > Math.abs(event.deltaY)) return;
       event.preventDefault();
@@ -1886,11 +1891,20 @@ export class WrotView extends ItemView {
     this.refreshing = true;
     // Past both skips above, so this render is going to happen: record the day now rather
     // than at the end, where the "no note for this date" branch returns early.
-    this.lastRenderedDay = moment().format("YYYY-MM-DD");
+    const today = moment().startOf("day");
+    this.lastRenderedDay = today.format("YYYY-MM-DD");
     try {
-      const isToday = this.currentDate.isSame(moment(), "day");
+      const dayOffset = this.currentDate.clone().startOf("day").diff(today, "days");
+      const isToday = dayOffset === 0;
       const dateText = this.currentDate.format(this.plugin.settings.headerDateFormat);
-      this.dateLabel.setText(isToday ? `${dateText}${t("view.dateNav.todaySuffix")}` : dateText);
+      this.dateText.setText(isToday ? `${dateText}${t("view.dateNav.todaySuffix")}` : dateText);
+      let badgeText = "";
+      if (dayOffset === -1) badgeText = t("view.dateNav.yesterday");
+      else if (dayOffset === 1) badgeText = t("view.dateNav.tomorrow");
+      else if (dayOffset < 0) badgeText = t("view.dateNav.daysAgo", { count: -dayOffset });
+      else if (dayOffset > 0) badgeText = t("view.dateNav.daysAhead", { count: dayOffset });
+      this.dateBadge.setText(badgeText);
+      this.dateBadge.hidden = isToday;
 
       // Resolve pins first; they render at the top independent of the current date.
       // Scheduled pins whose day has come join them, below the ones pinned by hand:

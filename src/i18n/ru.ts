@@ -198,6 +198,10 @@ const ru = {
   "view.dateNav.shift.y": "Вперёд на {count} г.",
   "view.dateNav.today": "Сегодня",
   "view.dateNav.todaySuffix": " (сегодня)",
+  "view.dateNav.yesterday": "Вчера",
+  "view.dateNav.tomorrow": "Завтра",
+  "view.dateNav.daysAgo": "{count} дн. назад",
+  "view.dateNav.daysAhead": "Через {count} дн.",
 
   "view.empty.noMemos": "Нет записей",
   "view.tasks.title": "Незавершённые задачи",

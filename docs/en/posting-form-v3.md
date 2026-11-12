@@ -69,6 +69,8 @@ Choose **Add anyway** to save the entire post, or **Cancel** to keep the draft, 
 
 ### Date Navigation Shortcuts
 
+When viewing a date other than today, a badge beside the header date shows “Yesterday”, “Tomorrow”, “7 days ago”, or “In 7 days”, for example. Use **Today** to return to today, hide the badge, and resume following the current day. In narrow panes, the badge wraps below the date.
+
 Type a shortcut on its own line in the composer and press **Space, Enter, or Tab** to move forward from the currently displayed date:
 
 Typing `@1d` shows “Move forward 1 day(s)” and “Go back 1 day(s)”. Choose with the arrow keys and confirm with **Enter, Tab**, or a click. Add a trailing hyphen (`@1d-`) to show only the backward action. The same applies to weeks, months, and years: `@2w-`, `@1m-`, and `@1y-`. Confirming with Space moves forward without a hyphen and backward with one.

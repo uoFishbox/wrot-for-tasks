@@ -202,6 +202,10 @@ const en = {
   "view.dateNav.shift.y": "Move forward {count} year(s)",
   "view.dateNav.today": "Today",
   "view.dateNav.todaySuffix": " (Today)",
+  "view.dateNav.yesterday": "Yesterday",
+  "view.dateNav.tomorrow": "Tomorrow",
+  "view.dateNav.daysAgo": "{count} days ago",
+  "view.dateNav.daysAhead": "In {count} days",
 
   "view.empty.noMemos": "No posts to show",
   "view.tasks.title": "Remaining tasks",

@@ -204,6 +204,10 @@ const ja = {
   "view.dateNav.today": "今日",
   // Suffix appended to the date label; keyed so each locale can restyle it, brackets included.
   "view.dateNav.todaySuffix": "（今日）",
+  "view.dateNav.yesterday": "昨日",
+  "view.dateNav.tomorrow": "明日",
+  "view.dateNav.daysAgo": "{count}日前",
+  "view.dateNav.daysAhead": "{count}日後",
 
   "view.empty.noMemos": "表示できる投稿がありません",
   "view.tasks.title": "未完了タスク",

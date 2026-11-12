@@ -202,6 +202,10 @@ const zhTW = {
   "view.dateNav.shift.y": "跳轉到{count}年後",
   "view.dateNav.today": "今天",
   "view.dateNav.todaySuffix": "（今天）",
+  "view.dateNav.yesterday": "昨天",
+  "view.dateNav.tomorrow": "明天",
+  "view.dateNav.daysAgo": "{count}天前",
+  "view.dateNav.daysAhead": "{count}天後",
 
   "view.empty.noMemos": "沒有可顯示的貼文",
   "view.tasks.title": "未完成任務",

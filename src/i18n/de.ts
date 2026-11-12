@@ -197,6 +197,10 @@ const de = {
   "view.dateNav.shift.y": "{count} Jahr(e) weiter",
   "view.dateNav.today": "Heute",
   "view.dateNav.todaySuffix": " (Heute)",
+  "view.dateNav.yesterday": "Gestern",
+  "view.dateNav.tomorrow": "Morgen",
+  "view.dateNav.daysAgo": "Vor {count} Tagen",
+  "view.dateNav.daysAhead": "In {count} Tagen",
 
   "view.empty.noMemos": "Keine Einträge vorhanden",
   "view.tasks.title": "Offene Aufgaben",

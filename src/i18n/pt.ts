@@ -199,6 +199,10 @@ const pt = {
   "view.dateNav.shift.y": "Avançar {count} ano(s)",
   "view.dateNav.today": "Hoje",
   "view.dateNav.todaySuffix": " (Hoje)",
+  "view.dateNav.yesterday": "Ontem",
+  "view.dateNav.tomorrow": "Amanhã",
+  "view.dateNav.daysAgo": "Há {count} dias",
+  "view.dateNav.daysAhead": "Daqui a {count} dias",
 
   "view.empty.noMemos": "Nenhuma postagem encontrada",
   "view.tasks.title": "Tarefas pendentes",

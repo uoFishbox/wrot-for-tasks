@@ -100,12 +100,43 @@ body.wr-font-follow .wr-nav-btn .svg-icon {
   font-size: var(--wr-font-date);
   color: var(--text-normal);
   flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 4px 6px;
   text-align: center;
   line-height: 1;
   cursor: pointer;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.wr-date-text {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.wr-date-badge {
+  flex-shrink: 0;
+  box-sizing: border-box;
+  max-width: 100%;
+  padding: 2px 7px;
+  border-radius: 5px;
+  background: var(--tag-background);
+  color: var(--tag-color);
+  font-size: var(--wr-font-ui-small);
+  font-weight: 500;
+  line-height: 1.4;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+.wr-date-badge[hidden] {
+  display: none;
 }
 
 .wr-date-label:hover {
@@ -129,6 +160,8 @@ body.wr-font-follow .wr-nav-btn .svg-icon {
   line-height: 1;
   min-height: 0;
   margin-left: auto;
+  flex-shrink: 0;
+  white-space: nowrap;
 }
 
 /* Suppress Obsidian's default button:focus-visible background lingering after a click */
@@ -311,6 +344,7 @@ body.wr-font-follow .wr-calendar-nav-btn .svg-icon {
 
 .workspace-leaf-content[data-type="wrot-for-tasks-view"] .wr-calendar-day {
   position: relative;
+  box-sizing: border-box;
   background: none;
   border: none;
   box-shadow: none;
@@ -319,7 +353,8 @@ body.wr-font-follow .wr-calendar-nav-btn .svg-icon {
   font-size: calc(var(--wr-font-ui-small) + 2px);
   line-height: 1;
   min-height: 0;
-  padding: 0;
+  /* Lift the date by 0.2em, leaving more room above the task dots. */
+  padding: 0 0 0.4em;
   /* Obsidian gives every button a fixed height; with width: 100% + aspect-ratio the
      cell width was derived from that height, so two heavy digits overflowed. A definite
      em width (40px at the 15px default) plus height: auto makes the font size decide
@@ -342,7 +377,7 @@ body.wr-font-follow .wr-calendar-nav-btn .svg-icon {
 
 .workspace-leaf-content[data-type="wrot-for-tasks-view"] .wr-calendar-task-dots {
   position: absolute;
-  bottom: 0.2em;
+  bottom: 0.3em;
   left: 0;
   width: 100%;
   display: flex;
@@ -353,9 +388,9 @@ body.wr-font-follow .wr-calendar-nav-btn .svg-icon {
 .workspace-leaf-content[data-type="wrot-for-tasks-view"] .wr-calendar-task-dot {
   display: block;
   flex-shrink: 0;
-  /* Include the SVG's padding while keeping the circle itself the same size. */
-  width: 0.375em;
-  height: 0.375em;
+  /* Include padding around the SVG circle. */
+  width: 0.45em;
+  height: 0.45em;
 }
 
 .workspace-leaf-content[data-type="wrot-for-tasks-view"] .wr-calendar-day-outside {

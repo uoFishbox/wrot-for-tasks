@@ -203,6 +203,10 @@ const es = {
   "view.dateNav.shift.y": "Avanzar {count} año(s)",
   "view.dateNav.today": "Hoy",
   "view.dateNav.todaySuffix": " (Hoy)",
+  "view.dateNav.yesterday": "Ayer",
+  "view.dateNav.tomorrow": "Mañana",
+  "view.dateNav.daysAgo": "Hace {count} días",
+  "view.dateNav.daysAhead": "En {count} días",
 
   "view.empty.noMemos": "No hay publicaciones para mostrar",
   "view.tasks.title": "Tareas pendientes",

@@ -202,6 +202,10 @@ const zhCN = {
   "view.dateNav.shift.y": "跳转到{count}年后",
   "view.dateNav.today": "今天",
   "view.dateNav.todaySuffix": "（今天）",
+  "view.dateNav.yesterday": "昨天",
+  "view.dateNav.tomorrow": "明天",
+  "view.dateNav.daysAgo": "{count}天前",
+  "view.dateNav.daysAhead": "{count}天后",
 
   "view.empty.noMemos": "暂无记录",
   "view.tasks.title": "未完成任务",

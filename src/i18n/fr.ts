@@ -203,6 +203,10 @@ const fr = {
   "view.dateNav.shift.y": "Avancer de {count} an(s)",
   "view.dateNav.today": "Aujourd'hui",
   "view.dateNav.todaySuffix": " (Aujourd'hui)",
+  "view.dateNav.yesterday": "Hier",
+  "view.dateNav.tomorrow": "Demain",
+  "view.dateNav.daysAgo": "Il y a {count} jours",
+  "view.dateNav.daysAhead": "Dans {count} jours",
 
   "view.empty.noMemos": "Aucune publication à afficher",
   "view.tasks.title": "Tâches en attente",

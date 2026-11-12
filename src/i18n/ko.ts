@@ -198,6 +198,10 @@ const ko = {
   "view.dateNav.shift.y": "{count}년 후로 이동",
   "view.dateNav.today": "오늘",
   "view.dateNav.todaySuffix": " (오늘)",
+  "view.dateNav.yesterday": "어제",
+  "view.dateNav.tomorrow": "내일",
+  "view.dateNav.daysAgo": "{count}일 전",
+  "view.dateNav.daysAhead": "{count}일 후",
 
   "view.empty.noMemos": "표시할 게시물이 없습니다",
   "view.tasks.title": "미완료 작업",
