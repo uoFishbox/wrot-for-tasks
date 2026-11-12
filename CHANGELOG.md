@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- Merged upstream Wrot 3.2.0, including reliable timeline checkbox writes, nested-list indentation, accent-insensitive tag completion, and Obsidian 1.15 diagram colors.
+- Changed UI class names and CSS variables from `wr-` to `wrot-`; custom CSS snippets must use the new prefix. Memo fences and block IDs are unchanged.
+- Added relative date badges and refined calendar task-dot spacing while retaining the task-focused calendar size and highlights.
 - Added a confirmation modal before posting incomplete tasks to past daily note dates or with start times before the current local time. Canceling preserves the draft and attachments.
 
 ## 3.1.0-task.3 - 2026-11-01
@@ -49,6 +52,39 @@ First task-focused fork release, based on upstream Wrot 3.1.0. See [fork version
 
 - Improved composer focus after date navigation and sidebar scrolling.
 - Distinguished fork release versions from upstream versions using the `-task.N` suffix.
+
+---
+
+## 3.2.0 - 2026-11-03
+
+### Updates
+
+- Updated dependencies
+
+### Improvements
+
+- Adapted to Pele, the new Mermaid rendering engine in Obsidian 1.15, so diagrams match the post's colors
+- Indenting a list in the post form now moves its nested items too
+- Tag autocomplete now ignores accents
+
+---
+
+## 3.1.1 - 2026-11-01
+
+### Updates
+
+- Updated dependencies
+
+### Improvements
+
+- The post form now gets the cursor when you press the Today button
+- Adjusted the calendar size
+
+### Bug Fixes
+
+- Fixed the post form width breaking under certain conditions\
+  With this fix, class names now start with wrot- instead of wr-, so CSS snippets that restyle Wrot need updating
+- Fixed checkboxes toggled in the timeline sometimes reverting under certain conditions
 
 ---
 

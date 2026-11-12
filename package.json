@@ -1,6 +1,6 @@
 {
   "name": "wrot-for-tasks",
-  "version": "3.1.0-task.3",
+  "version": "3.2.0-task.1",
   "description": "Daily notes, timed tasks, and a remaining-tasks timeline, based on Wrot.",
   "type": "module",
   "scripts": {
@@ -20,13 +20,16 @@
     "@codemirror/view": "6.43.13",
     "@eslint/js": "^10.0.1",
     "esbuild": "^0.28.2",
-    "eslint": "^10.13.0",
-    "globals": "^17.13.0",
+    "eslint": "^10.14.0",
+    "globals": "^17.14.0",
     "obsidian": "^1.14.4",
     "typescript": "^6.0.3",
-    "typescript-eslint": "^8.72.0"
+    "typescript-eslint": "^8.72.1"
   },
   "dependencies": {
     "obsidian-daily-notes-interface": "^0.9.5"
+  },
+  "overrides": {
+    "minimatch": "11.0.3"
   }
 }

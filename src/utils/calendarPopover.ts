@@ -16,7 +16,7 @@ interface CalendarPopoverOptions {
   // A button sitting wherever a row of others happens to end is not where the eye expects a
   // panel of this width to stop; the form around it is.
   alignTo?: HTMLElement;
-  // Parent that actually hosts the popover (view body = wr-container). Placed inside
+  // Parent that actually hosts the popover (view body = wrot-container). Placed inside
   // the anchor it would overflow the sidebar when the button sits at the right edge.
   container: HTMLElement;
   // Date used for the initial view and the selected-day highlight.
@@ -42,7 +42,7 @@ const GRID_CELLS = 6 * 7; // fixed 6 weeks so the height never changes per month
 
 function createTaskDot(container: HTMLElement): void {
   const svg = container.createSvg("svg", {
-    cls: "wr-calendar-task-dot",
+    cls: "wrot-calendar-task-dot",
     attr: {
       // Leave space around the stroke so subpixel rendering cannot clip its edge.
       viewBox: "-1 -1 12 12",
@@ -66,7 +66,7 @@ export function openCalendarPopover(
   // Month being shown, normalized to its first day.
   let viewMonth = initialDate.clone().startOf("month");
 
-  const popover = container.createDiv({ cls: "wr-calendar-popover" });
+  const popover = container.createDiv({ cls: "wrot-calendar-popover" });
 
   // Place below the button, inside the container: right edge aligns to the anchor
   // but is clamped so it never crosses the container's left edge.
@@ -97,16 +97,16 @@ export function openCalendarPopover(
   let mode: Mode = "month";
   const YEARS_PER_PAGE = 12; // years per page in year mode (fits the grid)
 
-  const header = popover.createDiv({ cls: "wr-calendar-header" });
-  const prevBtn = header.createEl("button", { cls: "wr-calendar-nav-btn" });
+  const header = popover.createDiv({ cls: "wrot-calendar-header" });
+  const prevBtn = header.createEl("button", { cls: "wrot-calendar-nav-btn" });
   setIcon(prevBtn, "chevron-left");
   // The month label is a button: pressing it opens year mode.
-  const monthLabel = header.createEl("button", { cls: "wr-calendar-month-label" });
-  const nextBtn = header.createEl("button", { cls: "wr-calendar-nav-btn" });
+  const monthLabel = header.createEl("button", { cls: "wrot-calendar-month-label" });
+  const nextBtn = header.createEl("button", { cls: "wrot-calendar-nav-btn" });
   setIcon(nextBtn, "chevron-right");
 
-  const weekdaysRow = popover.createDiv({ cls: "wr-calendar-weekdays" });
-  const grid = popover.createDiv({ cls: "wr-calendar-grid" });
+  const weekdaysRow = popover.createDiv({ cls: "wrot-calendar-weekdays" });
+  const grid = popover.createDiv({ cls: "wrot-calendar-grid" });
 
   let closed = false;
   const hoverParent: HoverParent = { hoverPopover: null };
@@ -125,11 +125,11 @@ export function openCalendarPopover(
 
   const showTasks = (entry: TaskCells, tasks: string[]) => {
     for (const cell of entry.cells) {
-      cell.querySelector(".wr-calendar-task-dots")?.remove();
+      cell.querySelector(".wrot-calendar-task-dots")?.remove();
       const labels: string[] = [];
       if (tasks.length > 0) {
         const dots = cell.createSpan({
-          cls: "wr-calendar-task-dots",
+          cls: "wrot-calendar-task-dots",
           attr: { "aria-hidden": "true" },
         });
         createTaskDot(dots);
@@ -200,7 +200,7 @@ export function openCalendarPopover(
     for (let i = 0; i < 7; i++) {
       const dow = (weekStart + i) % 7;
       weekdaysRow.createSpan({
-        cls: "wr-calendar-weekday",
+        cls: "wrot-calendar-weekday",
         text: weekdaysMin[dow],
       });
     }
@@ -211,7 +211,7 @@ export function openCalendarPopover(
     taskCells.clear();
     monthLabel.setText(viewMonth.format(t("calendar.monthYearFormat")));
     weekdaysRow.setCssStyles({ display: "" });
-    grid.removeClass("wr-calendar-grid-years");
+    grid.removeClass("wrot-calendar-grid-years");
     grid.empty();
 
     const today = moment();
@@ -223,7 +223,7 @@ export function openCalendarPopover(
     for (let i = 0; i < GRID_CELLS; i++) {
       const day = gridStart.clone().add(i, "day");
       const cell = grid.createEl("button", {
-        cls: "wr-calendar-day",
+        cls: "wrot-calendar-day",
         text: String(day.date()),
         attr: { "data-date": day.format("YYYY-MM-DD"), "aria-label": day.format("YYYY-MM-DD") },
       });
@@ -248,16 +248,16 @@ export function openCalendarPopover(
       }
       entry.cells.push(cell);
       if (!day.isSame(viewMonth, "month")) {
-        cell.addClass("wr-calendar-day-outside");
+        cell.addClass("wrot-calendar-day-outside");
       }
       if (day.isSame(today, "day")) {
-        cell.addClass("wr-calendar-day-today");
+        cell.addClass("wrot-calendar-day-today");
       }
       if (day.isSame(initialDate, "day")) {
-        cell.addClass("wr-calendar-day-selected");
+        cell.addClass("wrot-calendar-day-selected");
       }
       if (minDate && day.isBefore(minDate, "day")) {
-        cell.addClass("wr-calendar-day-disabled");
+        cell.addClass("wrot-calendar-day-disabled");
         continue;
       }
       cell.addEventListener("click", () => {
@@ -290,29 +290,29 @@ export function openCalendarPopover(
     const start = cur - (((cur % YEARS_PER_PAGE) + YEARS_PER_PAGE) % YEARS_PER_PAGE);
     monthLabel.setText(`${start} – ${start + YEARS_PER_PAGE - 1}`);
     weekdaysRow.setCssStyles({ display: "none" });
-    grid.addClass("wr-calendar-grid-years");
+    grid.addClass("wrot-calendar-grid-years");
     grid.empty();
 
     for (let i = 0; i < YEARS_PER_PAGE; i++) {
       const year = start + i;
       const cell = grid.createEl("button", {
-        cls: "wr-calendar-year",
+        cls: "wrot-calendar-year",
         text: String(year),
       });
       // Prevent the focus move: after returning to month mode, focus would land on a
       // re-rendered day cell and leave a faint highlight.
       cell.addEventListener("pointerdown", (e) => e.preventDefault());
       if (year === today.year()) {
-        cell.addClass("wr-calendar-day-today");
+        cell.addClass("wrot-calendar-day-today");
       }
       // Highlight the year currently being viewed in the calendar.
       if (year === viewMonth.year()) {
-        cell.addClass("wr-calendar-day-selected");
+        cell.addClass("wrot-calendar-day-selected");
       }
       // A year that ends before the earliest selectable day holds nothing that can be
       // picked, so it is out of reach here the same way those days are in month mode.
       if (minDate && year < minDate.year()) {
-        cell.addClass("wr-calendar-day-disabled");
+        cell.addClass("wrot-calendar-day-disabled");
         continue;
       }
       cell.addEventListener("click", () => {

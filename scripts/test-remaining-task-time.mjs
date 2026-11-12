@@ -253,26 +253,26 @@ test("the timeline displays elapsed time above the marker and refreshes it witho
   const task = { ...entry("10:00 task", 0), time: date(8, 0).toISOString() };
   const view = taskView([task]);
   view.render();
-  const row = view.list.querySelector(".wr-remaining-task");
+  const row = view.list.querySelector(".wrot-remaining-task");
   row.listeners.mouseenter();
-  const timeline = view.taskPopover.hoverEl.find("wr-task-time-timeline");
+  const timeline = view.taskPopover.hoverEl.find("wrot-task-time-timeline");
   assert.equal(timeline.hidden, false);
   assert.equal(timeline.getAttribute("role"), "img");
   assert.equal(timeline.getAttribute("aria-label"), "経過時間: 1時間, 残り時間: 1時間");
-  assert.equal(timeline.style.getPropertyValue("--wr-task-current"), "50%");
-  const label = timeline.find("wr-task-time-label").children[0];
+  assert.equal(timeline.style.getPropertyValue("--wrot-task-current"), "50%");
+  const label = timeline.find("wrot-task-time-label").children[0];
   assert.equal(label.text, "1時間経過");
-  assert.equal(timeline.querySelectorAll(".wr-task-time-tick").length, 0);
-  assert.equal(timeline.find("wr-task-time-due-marker"), undefined);
-  assert.equal(timeline.find("wr-task-time-legend"), undefined);
+  assert.equal(timeline.querySelectorAll(".wrot-task-time-tick").length, 0);
+  assert.equal(timeline.find("wrot-task-time-due-marker"), undefined);
+  assert.equal(timeline.find("wrot-task-time-legend"), undefined);
   context.mock.timers.setTime(date(11, 0).getTime());
   [...row.win.intervals.values()][0]();
   assert.equal(timeline.getAttribute("aria-label"), "経過時間: 3時間, 超過時間: 1時間");
-  assert.deepEqual(view.taskPopover.hoverEl.find("wr-task-time-details").children.map(child => child.text), [
+  assert.deepEqual(view.taskPopover.hoverEl.find("wrot-task-time-details").children.map(child => child.text), [
     "経過時間", "3時間", "超過時間", "1時間",
   ]);
   assert.equal(timeline.getAttribute("data-overdue"), "true");
-  assert.equal(timeline.style.getPropertyValue("--wr-task-current"), "100%");
+  assert.equal(timeline.style.getPropertyValue("--wrot-task-current"), "100%");
   assert.equal(label.text, "3時間経過");
   view.closeTaskPopover();
   assert.equal(row.win.intervals.size, 0);
@@ -287,11 +287,11 @@ test("the marker label uses elapsed minutes or days and also works at the start 
   ]) {
     const view = taskView([task]);
     view.render();
-    view.list.querySelector(".wr-remaining-task").listeners.mouseenter();
-    const timeline = view.taskPopover.hoverEl.find("wr-task-time-timeline");
-    assert.equal(timeline.find("wr-task-time-label").children[0].text, expected);
-    assert.equal(timeline.querySelectorAll(".wr-task-time-tick").length, 0);
-    assert.equal(timeline.find("wr-task-time-legend"), undefined);
+    view.list.querySelector(".wrot-remaining-task").listeners.mouseenter();
+    const timeline = view.taskPopover.hoverEl.find("wrot-task-time-timeline");
+    assert.equal(timeline.find("wrot-task-time-label").children[0].text, expected);
+    assert.equal(timeline.querySelectorAll(".wrot-task-time-tick").length, 0);
+    assert.equal(timeline.find("wrot-task-time-legend"), undefined);
     view.closeTaskPopover();
   }
 });
@@ -301,17 +301,17 @@ test("task row hovers create native popovers and release them on switching, refr
   const tasks = [entry("09:15 task", 0), entry("unscheduled", 1)];
   const view = taskView(tasks);
   view.render(date(9, 0));
-  const [first, second] = view.list.querySelectorAll(".wr-remaining-task");
+  const [first, second] = view.list.querySelectorAll(".wrot-remaining-task");
   first.listeners.mouseenter();
   const popover = view.taskPopover;
   assert.equal(view.hoverPopover, null);
   assert.equal(popover.hoverEl.cls, "popover hover-popover");
-  assert.equal(popover.hoverEl.getAttribute("data-wr-task-time"), "");
-  const details = popover.hoverEl.find("wr-task-time-details");
+  assert.equal(popover.hoverEl.getAttribute("data-wrot-task-time"), "");
+  const details = popover.hoverEl.find("wrot-task-time-details");
   assert.deepEqual(details.children.filter(child => child.tag === "dt").map(child => child.text), [
     "経過時間", "残り時間",
   ]);
-  assert.equal(popover.hoverEl.find("wr-task-time-timeline").hidden, true);
+  assert.equal(popover.hoverEl.find("wrot-task-time-timeline").hidden, true);
   assert.equal(details.children.filter(child => child.tag === "dd")[0].text, "不明");
   assert.equal(first.win.intervals.size, 1);
   second.listeners.mouseenter();
@@ -320,7 +320,7 @@ test("task row hovers create native popovers and release them on switching, refr
   view.render(date(9, 0));
   assert.equal(view.taskPopover, null);
   assert.equal(first.win.intervals.size, 0);
-  const row = view.list.querySelector(".wr-remaining-task");
+  const row = view.list.querySelector(".wrot-remaining-task");
   row.listeners.mouseenter();
   view.openTask = async () => {};
   row.listeners.click({ target: row });
@@ -345,15 +345,15 @@ test("the task list hides unscheduled metadata, opens rows and refreshes past st
   view.openTask = async (task, newTab) => { opened.push({ line: task.line, newTab }); };
   view.render();
   assert.equal(view.count.text, "4");
-  const unscheduled = view.list.querySelectorAll(".wr-remaining-task").find(row => row.attributes["data-task-status"] === "unscheduled");
+  const unscheduled = view.list.querySelectorAll(".wrot-remaining-task").find(row => row.attributes["data-task-status"] === "unscheduled");
   assert.ok(unscheduled);
-  assert.equal(unscheduled.find("wr-remaining-task-days"), undefined);
-  assert.equal(unscheduled.find("wr-remaining-task-source"), undefined);
-  assert.equal(unscheduled.find("wr-remaining-task-meta"), undefined);
+  assert.equal(unscheduled.find("wrot-remaining-task-days"), undefined);
+  assert.equal(unscheduled.find("wrot-remaining-task-source"), undefined);
+  assert.equal(unscheduled.find("wrot-remaining-task-meta"), undefined);
   assert.equal(unscheduled.attributes.tabindex, "0");
   unscheduled.listeners.click({ target: unscheduled, ctrlKey: true });
   assert.deepEqual(opened, [{ line: 0, newTab: true }]);
-  const content = unscheduled.find("wr-content");
+  const content = unscheduled.find("wrot-content");
   unscheduled.listeners.click({ target: content, ctrlKey: false, metaKey: false });
   assert.deepEqual(opened.at(-1), { line: 0, newTab: false });
 
@@ -380,13 +380,13 @@ test("the task list hides unscheduled metadata, opens rows and refreshes past st
     assert.equal(prevented, true);
     assert.deepEqual(opened.at(-1), { line: 0, newTab: true });
   }
-  for (const row of view.list.querySelectorAll(".wr-remaining-task").filter(row => row !== unscheduled)) {
-    const source = row.find("wr-remaining-task-source");
+  for (const row of view.list.querySelectorAll(".wrot-remaining-task").filter(row => row !== unscheduled)) {
+    const source = row.find("wrot-remaining-task-source");
     assert.equal(source.text, "note date");
     assert.equal(source.tag, "span");
     assert.equal(source.attributes.href, undefined);
     assert.equal(source.listeners.click, undefined);
-    assert.ok(row.find("wr-remaining-task-days").text);
+    assert.ok(row.find("wrot-remaining-task-days").text);
     row.listeners.click({ target: source, ctrlKey: false, metaKey: false });
     assert.equal(opened.at(-1).line, [...view.timeLabels].find(([label]) => label.parent === source.parent)[1].line);
   }
@@ -396,12 +396,12 @@ test("the task list hides unscheduled metadata, opens rows and refreshes past st
   view.updateTimeLabels(afterStart);
   const [timedLabel] = [...view.timeLabels].find(([, task]) => task.line === 1);
   assert.equal(timedLabel.text, "1分経過");
-  assert.equal(timedLabel.closest(".wr-remaining-task").attributes["data-task-status"], "past");
+  assert.equal(timedLabel.closest(".wrot-remaining-task").attributes["data-task-status"], "past");
   assert.equal(unscheduled.attributes["data-task-status"], "unscheduled");
   view.updateTimeLabels(new Date(afterStart.getTime() + day));
-  assert.equal(unscheduled.find("wr-remaining-task-days"), undefined);
+  assert.equal(unscheduled.find("wrot-remaining-task-days"), undefined);
   const advanceLabel = [...view.timeLabels].find(([, task]) => task.line === 2)[0];
-  assert.equal(advanceLabel.closest(".wr-remaining-task").attributes["data-task-status"], "past");
+  assert.equal(advanceLabel.closest(".wrot-remaining-task").attributes["data-task-status"], "past");
 });
 
 test("past tasks are isolated below current tasks, retaining ordering and row actions", () => {
@@ -413,18 +413,18 @@ test("past tasks are isolated below current tasks, retaining ordering and row ac
   view.render(date(9, 30));
   assert.equal(view.count.text, "5");
   assert.equal(view.list.scrollTop, 120);
-  assert.deepEqual(view.list.children.map(child => child.cls), ["wr-remaining-tasks-current", "wr-remaining-tasks-past"]);
-  const current = view.list.find("wr-remaining-tasks-current");
-  const past = view.list.find("wr-remaining-tasks-past");
+  assert.deepEqual(view.list.children.map(child => child.cls), ["wrot-remaining-tasks-current", "wrot-remaining-tasks-past"]);
+  const current = view.list.find("wrot-remaining-tasks-current");
+  const past = view.list.find("wrot-remaining-tasks-past");
   assert.equal(current.attributes.role, "list");
-  assert.equal(past.find("wr-remaining-tasks-past-title"), undefined);
-  assert.deepEqual(current.querySelectorAll(".wr-remaining-task").map(row => row.attributes["data-task-status"]), ["scheduled", "unscheduled"]);
-  assert.equal(past.querySelectorAll(".wr-remaining-task").length, 3);
-  assert.ok(past.querySelectorAll(".wr-remaining-task").every(row => row.attributes["data-task-status"] === "past"));
-  assert.deepEqual(past.querySelectorAll(".wr-remaining-task").map(row => row.find("wr-remaining-task-days").text), ["1時間30分経過", "30分経過", "1日経過"]);
+  assert.equal(past.find("wrot-remaining-tasks-past-title"), undefined);
+  assert.deepEqual(current.querySelectorAll(".wrot-remaining-task").map(row => row.attributes["data-task-status"]), ["scheduled", "unscheduled"]);
+  assert.equal(past.querySelectorAll(".wrot-remaining-task").length, 3);
+  assert.ok(past.querySelectorAll(".wrot-remaining-task").every(row => row.attributes["data-task-status"] === "past"));
+  assert.deepEqual(past.querySelectorAll(".wrot-remaining-task").map(row => row.find("wrot-remaining-task-days").text), ["1時間30分経過", "30分経過", "1日経過"]);
   const opened = [];
   view.openTask = async (task) => { opened.push(task.line); };
-  const row = past.querySelector(".wr-remaining-task");
+  const row = past.querySelector(".wrot-remaining-task");
   row.listeners.click({ target: row });
   assert.deepEqual(opened, [0]);
 });
@@ -432,64 +432,64 @@ test("past tasks are isolated below current tasks, retaining ordering and row ac
 test("time ticks move expired tasks and remove the group if the clock moves back", () => {
   const view = taskView([entry("09:15 task", 0), entry("unscheduled", 1)]);
   view.render(date(9, 14));
-  const beforeTick = view.list.find("wr-remaining-tasks-current");
-  assert.equal(view.list.find("wr-remaining-tasks-past"), undefined);
+  const beforeTick = view.list.find("wrot-remaining-tasks-current");
+  assert.equal(view.list.find("wrot-remaining-tasks-past"), undefined);
   view.updateTimeLabels(date(9, 15));
-  assert.equal(view.list.find("wr-remaining-tasks-current"), beforeTick);
-  assert.equal(view.list.find("wr-remaining-task-days").text, "ちょうど今");
+  assert.equal(view.list.find("wrot-remaining-tasks-current"), beforeTick);
+  assert.equal(view.list.find("wrot-remaining-task-days").text, "ちょうど今");
   view.updateTimeLabels(date(9, 15, 1));
-  assert.equal(view.list.find("wr-remaining-tasks-past").querySelectorAll(".wr-remaining-task").length, 1);
+  assert.equal(view.list.find("wrot-remaining-tasks-past").querySelectorAll(".wrot-remaining-task").length, 1);
   view.updateTimeLabels(date(9, 16));
-  assert.equal(view.list.find("wr-remaining-task-days").text, "1分経過");
+  assert.equal(view.list.find("wrot-remaining-task-days").text, "1分経過");
   assert.equal(view.count.text, "2");
   view.updateTimeLabels(date(9, 14));
-  assert.equal(view.list.find("wr-remaining-tasks-past"), undefined);
-  assert.equal(view.list.find("wr-remaining-tasks-current").querySelectorAll(".wr-remaining-task").length, 2);
+  assert.equal(view.list.find("wrot-remaining-tasks-past"), undefined);
+  assert.equal(view.list.find("wrot-remaining-tasks-current").querySelectorAll(".wrot-remaining-task").length, 2);
 });
 
 test("date-only reservations move after midnight; unscheduled tasks remain current", () => {
   const view = taskView([entry("reservation", 0, noteDate, noteDate - 86_400_000), entry("unscheduled", 1)]);
   view.render(date(23, 59, 59));
-  assert.equal(view.list.find("wr-remaining-tasks-past"), undefined);
+  assert.equal(view.list.find("wrot-remaining-tasks-past"), undefined);
   view.updateTimeLabels(new Date(2026, 10, 1));
-  assert.equal(view.list.find("wr-remaining-tasks-past").querySelectorAll(".wr-remaining-task").length, 1);
-  assert.equal(view.list.find("wr-remaining-tasks-current").querySelectorAll(".wr-remaining-task").length, 1);
+  assert.equal(view.list.find("wrot-remaining-tasks-past").querySelectorAll(".wrot-remaining-task").length, 1);
+  assert.equal(view.list.find("wrot-remaining-tasks-current").querySelectorAll(".wrot-remaining-task").length, 1);
 });
 
 test("all-past and empty task lists only show the past section when needed", () => {
   const view = taskView([entry("09:00 task", 0)]);
   view.render(date(10, 0));
-  assert.equal(view.list.find("wr-remaining-tasks-current").querySelectorAll(".wr-remaining-task").length, 0);
-  assert.equal(view.list.find("wr-remaining-tasks-status"), undefined);
-  assert.equal(view.list.find("wr-remaining-tasks-past").querySelectorAll(".wr-remaining-task").length, 1);
+  assert.equal(view.list.find("wrot-remaining-tasks-current").querySelectorAll(".wrot-remaining-task").length, 0);
+  assert.equal(view.list.find("wrot-remaining-tasks-status"), undefined);
+  assert.equal(view.list.find("wrot-remaining-tasks-past").querySelectorAll(".wrot-remaining-task").length, 1);
   view.tasks.clear();
   view.render(date(10, 0));
   assert.equal(view.count.text, "0");
-  assert.equal(view.list.find("wr-remaining-tasks-past"), undefined);
-  assert.equal(view.list.find("wr-remaining-tasks-status").text, "未完了のタスクはありません");
+  assert.equal(view.list.find("wrot-remaining-tasks-past"), undefined);
+  assert.equal(view.list.find("wrot-remaining-tasks-status").text, "未完了のタスクはありません");
 });
 
 test("completion defers regrouping and keeps counts and empty sections correct across both lists", () => {
   const currentTask = entry("unscheduled", 0);
   const view = taskView([currentTask, entry("00:00 past", 1, noteDate - 86_400_000)]);
   view.render(date(9, 0));
-  const current = view.list.find("wr-remaining-tasks-current").querySelector(".wr-remaining-task");
-  const past = view.list.find("wr-remaining-tasks-past").querySelector(".wr-remaining-task");
+  const current = view.list.find("wrot-remaining-tasks-current").querySelector(".wrot-remaining-task");
+  const past = view.list.find("wrot-remaining-tasks-past").querySelector(".wrot-remaining-task");
   view.completingRows.set(current, null);
   view.completingRows.set(past, null);
   view.updateTimeLabels(date(23, 59));
-  assert.equal(view.list.find("wr-remaining-tasks-current").querySelector(".wr-remaining-task"), current);
+  assert.equal(view.list.find("wrot-remaining-tasks-current").querySelector(".wrot-remaining-task"), current);
   view.section = { win: {
     getComputedStyle: () => ({ height: "100px" }), matchMedia: () => ({ matches: true }),
   } };
   view.tasks.set("daily.md", [currentTask]);
   view.finishCompletion(past, true);
   assert.equal(view.count.text, "1");
-  assert.equal(view.list.find("wr-remaining-tasks-past"), undefined);
+  assert.equal(view.list.find("wrot-remaining-tasks-past"), undefined);
   view.tasks.clear();
   view.finishCompletion(current, true);
   assert.equal(view.count.text, "0");
-  assert.equal(view.list.find("wr-remaining-tasks-status").text, "未完了のタスクはありません");
+  assert.equal(view.list.find("wrot-remaining-tasks-status").text, "未完了のタスクはありません");
 });
 
 test("single times and ranges show time until or since their start", () => {
@@ -580,12 +580,12 @@ test("every supported locale separates bare duration values from standalone elap
       initI18n();
       const view = taskView([task]);
       view.render();
-      view.list.querySelector(".wr-remaining-task").listeners.mouseenter();
+      view.list.querySelector(".wrot-remaining-task").listeners.mouseenter();
       const popover = view.taskPopover.hoverEl;
-      assert.deepEqual(popover.find("wr-task-time-details").children.map(child => child.text), [
+      assert.deepEqual(popover.find("wrot-task-time-details").children.map(child => child.text), [
         elapsedHeading, elapsed, remainingHeading, remaining,
       ], locale);
-      assert.equal(popover.find("wr-task-time-label").children[0].text, marker, locale);
+      assert.equal(popover.find("wrot-task-time-label").children[0].text, marker, locale);
       view.closeTaskPopover();
     }
     for (const [locale, singular, zero, sentence] of [

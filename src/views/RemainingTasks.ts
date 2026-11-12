@@ -57,13 +57,13 @@ export class RemainingTasks extends Component implements HoverParent {
   ) {
     super();
     this.section = container.createEl("section", {
-      cls: "wr-remaining-tasks",
+      cls: "wrot-remaining-tasks",
       attr: { "aria-label": t("view.tasks.title") },
     });
-    const header = this.section.createDiv({ cls: "wr-remaining-tasks-header" });
+    const header = this.section.createDiv({ cls: "wrot-remaining-tasks-header" });
     header.createEl("div", { text: t("view.tasks.title") });
-    this.count = header.createSpan({ cls: "wr-remaining-tasks-count" });
-    this.list = this.section.createDiv({ cls: "wr-remaining-tasks-list" });
+    this.count = header.createSpan({ cls: "wrot-remaining-tasks-count" });
+    this.list = this.section.createDiv({ cls: "wrot-remaining-tasks-list" });
   }
 
   onload(): void {
@@ -233,7 +233,7 @@ export class RemainingTasks extends Component implements HoverParent {
     this.timeLabels.clear();
     if (this.loading || this.failed.size > 0 || tasks.length === 0) {
       this.list.createDiv({
-        cls: "wr-remaining-tasks-status",
+        cls: "wrot-remaining-tasks-status",
         text: t(
           this.loading
             ? "view.tasks.loading"
@@ -244,13 +244,13 @@ export class RemainingTasks extends Component implements HoverParent {
       });
     }
     const currentList = this.list.createDiv({
-      cls: "wr-remaining-tasks-current",
+      cls: "wrot-remaining-tasks-current",
       attr: { role: "list", "aria-label": t("view.tasks.title") },
     });
     let pastList: HTMLElement | null = null;
     if (tasks.some((task) => taskScheduleStatus(task, now) === "past")) {
       const pastSection = this.list.createEl("section", {
-        cls: "wr-remaining-tasks-past",
+        cls: "wrot-remaining-tasks-past",
         attr: { "aria-label": t("view.tasks.pastTitle") },
       });
       pastList = pastSection.createDiv({
@@ -261,7 +261,7 @@ export class RemainingTasks extends Component implements HoverParent {
       const status = taskScheduleStatus(task, now);
       const parent = status === "past" && pastList ? pastList : currentList;
       const row = parent.createDiv({
-        cls: "wr-remaining-task",
+        cls: "wrot-remaining-task",
         attr: {
           role: "listitem",
           tabindex: "0",
@@ -303,7 +303,7 @@ export class RemainingTasks extends Component implements HoverParent {
         event.preventDefault();
         openTask(event.ctrlKey || event.metaKey);
       });
-      const contentEl = row.createDiv({ cls: "wr-content" });
+      const contentEl = row.createDiv({ cls: "wrot-content" });
       const resolveImagePath = (fileName: string): string | null => {
         const file = this.app.metadataCache.getFirstLinkpathDest(
           fileName,
@@ -326,7 +326,7 @@ export class RemainingTasks extends Component implements HoverParent {
             void this.toggleTask(task, checked)
               .then(() => {
                 if (this.closed || !checked) return;
-                row.addClass("wr-remaining-task-completing");
+                row.addClass("wrot-remaining-task-completing");
                 const timer = this.section.win.setTimeout(
                   () => this.finishCompletion(row, true),
                   450,
@@ -343,8 +343,8 @@ export class RemainingTasks extends Component implements HoverParent {
                   checkbox.disabled = false;
                 }
                 contentEl
-                  .querySelector(".wr-check-done")
-                  ?.classList.remove("wr-check-done");
+                  .querySelector(".wrot-check-done")
+                  ?.classList.remove("wrot-check-done");
                 this.finishCompletion(row, false);
               });
           },
@@ -380,7 +380,7 @@ export class RemainingTasks extends Component implements HoverParent {
       );
       if (previewUrls.length > 0) {
         renderUrlPreviews(
-          row.createDiv({ cls: "wr-media-area" }),
+          row.createDiv({ cls: "wrot-media-area" }),
           previewUrls,
           this.plugin.ogpCache,
           resolveImagePath,
@@ -388,13 +388,13 @@ export class RemainingTasks extends Component implements HoverParent {
       }
       const timeText = remainingTaskTimeLabel(task, now);
       if (timeText !== null) {
-        const meta = row.createDiv({ cls: "wr-remaining-task-meta" });
+        const meta = row.createDiv({ cls: "wrot-remaining-task-meta" });
         meta.createSpan({
-          cls: "wr-remaining-task-source",
+          cls: "wrot-remaining-task-source",
           text: task.noteDateLabel,
         });
         const timeLabel = meta.createSpan({
-          cls: "wr-remaining-task-days",
+          cls: "wrot-remaining-task-days",
           text: timeText,
         });
         this.timeLabels.set(timeLabel, task);
@@ -409,7 +409,7 @@ export class RemainingTasks extends Component implements HoverParent {
     for (const [label, task] of this.timeLabels) {
       if (
         label
-          .closest(".wr-remaining-task")
+          .closest(".wrot-remaining-task")
           ?.getAttribute("data-task-status") !== taskScheduleStatus(task, now)
       ) {
         this.render(now);
@@ -450,20 +450,20 @@ export class RemainingTasks extends Component implements HoverParent {
         if (event.key === "Escape") this.closeTaskPopover();
       });
     }
-    popover.hoverEl.setAttribute("data-wr-task-time", "");
-    const details = popover.hoverEl.createEl("dl", { cls: "wr-task-time-details" });
+    popover.hoverEl.setAttribute("data-wrot-task-time", "");
+    const details = popover.hoverEl.createEl("dl", { cls: "wrot-task-time-details" });
     const labels = new Map<"createdElapsed" | "scheduledRemaining", HTMLElement>();
     const values = new Map<"createdElapsed" | "scheduledRemaining", HTMLElement>();
     for (const key of ["createdElapsed", "scheduledRemaining"] as const) {
       labels.set(key, details.createEl("dt", { text: t(`view.tasks.${key}`) }));
       values.set(key, details.createEl("dd"));
     }
-    const timeline = popover.hoverEl.createDiv({ cls: "wr-task-time-timeline", attr: { role: "img" } });
-    const labelRow = timeline.createDiv({ cls: "wr-task-time-label", attr: { "aria-hidden": "true" } });
+    const timeline = popover.hoverEl.createDiv({ cls: "wrot-task-time-timeline", attr: { role: "img" } });
+    const labelRow = timeline.createDiv({ cls: "wrot-task-time-label", attr: { "aria-hidden": "true" } });
     const elapsedLabel = labelRow.createSpan();
-    const axis = timeline.createDiv({ cls: "wr-task-time-axis", attr: { "aria-hidden": "true" } });
-    axis.createDiv({ cls: "wr-task-time-fill" });
-    axis.createSpan({ cls: "wr-task-time-current" });
+    const axis = timeline.createDiv({ cls: "wrot-task-time-axis", attr: { "aria-hidden": "true" } });
+    axis.createDiv({ cls: "wrot-task-time-fill" });
+    axis.createSpan({ cls: "wrot-task-time-current" });
     const refresh = (): void => {
       const now = new Date();
       const times = taskTimeDetails(task, now);
@@ -476,7 +476,7 @@ export class RemainingTasks extends Component implements HoverParent {
       const { elapsedDays, scheduledDays } = times.timeline;
       // Extend the same day scale past the scheduled time when overdue.
       const maximum = Math.max(scheduledDays, elapsedDays);
-      timeline.style.setProperty("--wr-task-current", `${elapsedDays / maximum * 100}%`);
+      timeline.style.setProperty("--wrot-task-current", `${elapsedDays / maximum * 100}%`);
       timeline.setAttribute("data-overdue", String(elapsedDays > scheduledDays));
       timeline.setAttribute("aria-label", `${t("view.tasks.createdElapsed")}: ${times.createdElapsed}, ${remainingHeading}: ${times.scheduledRemaining}`);
     };
@@ -497,12 +497,12 @@ export class RemainingTasks extends Component implements HoverParent {
       // Start from the visible height if another completion is still resizing the section.
       this.sectionResizeAnimation?.cancel();
       this.sectionResizeAnimation = null;
-      const pastSection = row.closest(".wr-remaining-tasks-past");
+      const pastSection = row.closest(".wrot-remaining-tasks-past");
       row.remove();
-      if (pastSection && !pastSection.querySelector(".wr-remaining-task"))
+      if (pastSection && !pastSection.querySelector(".wrot-remaining-task"))
         pastSection.remove();
       this.count.setText(
-        String(this.list.querySelectorAll(".wr-remaining-task").length),
+        String(this.list.querySelectorAll(".wrot-remaining-task").length),
       );
     }
     this.render();

@@ -33,7 +33,7 @@ export function mergeRecentTags(existing: string[], used: string[]): string[] {
 
 interface TagSuggestOptions {
   field: ComposerField;
-  // Parent element hosting the popover (view body = wr-container); positioned and
+  // Parent element hosting the popover (view body = wrot-container); positioned and
   // clamped in container coordinates, same as the calendar popover.
   container: HTMLElement;
   // Candidates (no leading #, newest first); read on every call to reflect current settings.
@@ -53,7 +53,7 @@ interface ActiveToken {
 // an invisible dummy input to rebuild the session; both are editable, so the keyboard stays open.
 export function rebuildFocus(ta: ComposerField, container: HTMLElement): void {
   const dummy = container.createEl("input", {
-    cls: "wr-focus-bounce",
+    cls: "wrot-focus-bounce",
     attr: { type: "text" },
   });
   dummy.focus({ preventScroll: true });
@@ -63,6 +63,18 @@ export function rebuildFocus(ta: ComposerField, container: HTMLElement): void {
 
 // Tag completion controller for the input area. Passive: WrotView calls refresh()
 // on input/selectionchange/compositionend and handleKeydown() first in keydown.
+/**
+ * The form tags are compared in. Accents come off Latin and Greek letters only, as in Obsidian's
+ * own search: elsewhere the mark makes another letter (й, が).
+ */
+export function matchKey(text: string): string {
+  return text
+    .normalize("NFD")
+    .replace(/([\p{Script=Latin}\p{Script=Greek}])[\u0300-\u036f]+/gu, "$1")
+    .normalize("NFC")
+    .toLowerCase();
+}
+
 export class TagSuggest {
   private opts: TagSuggestOptions;
   private popover: HTMLDivElement | null = null;
@@ -212,23 +224,23 @@ export class TagSuggest {
     };
   }
 
-  // Prefix matches first, then substring matches; case-insensitive.
+  // Prefix matches first, then substring matches; ignores case and accents.
   private filterCandidates(candidates: string[], query: string): string[] {
     if (query === "") return candidates.slice(0, MAX_VISIBLE_ITEMS);
-    const q = query.toLowerCase();
+    const q = matchKey(query);
     const prefix: string[] = [];
     const partial: string[] = [];
     for (const tag of candidates) {
-      const lower = tag.toLowerCase();
-      if (lower.startsWith(q)) prefix.push(tag);
-      else if (lower.includes(q)) partial.push(tag);
+      const key = matchKey(tag);
+      if (key.startsWith(q)) prefix.push(tag);
+      else if (key.includes(q)) partial.push(tag);
     }
     return [...prefix, ...partial].slice(0, MAX_VISIBLE_ITEMS);
   }
 
   private renderItems(matches: string[]): void {
     if (!this.popover) {
-      this.popover = this.opts.container.createDiv({ cls: "wr-tag-suggest" });
+      this.popover = this.opts.container.createDiv({ cls: "wrot-tag-suggest" });
       // Keep clicks inside the popover from bubbling out (same as the calendar popover).
       this.popover.addEventListener("click", (e) => e.stopPropagation());
       // iOS synthesizes delayed compatibility mouse events after a tap; their default
@@ -245,7 +257,7 @@ export class TagSuggest {
 
     matches.forEach((tag, index) => {
       const item = this.popover!.createDiv({
-        cls: "wr-tag-suggest-item",
+        cls: "wrot-tag-suggest-item",
         text: `#${tag}`,
       });
       // Confirm on pointerup, not click (iOS WebKit may not fire click, which would
@@ -287,7 +299,7 @@ export class TagSuggest {
 
   private applySelection(): void {
     this.itemEls.forEach((el, index) => {
-      el.toggleClass("wr-tag-suggest-item-selected", index === this.selectedIndex);
+      el.toggleClass("wrot-tag-suggest-item-selected", index === this.selectedIndex);
     });
     this.itemEls[this.selectedIndex]?.scrollIntoView({ block: "nearest" });
   }
