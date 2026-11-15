@@ -187,7 +187,7 @@ body.wrot-font-follow .wrot-nav-btn .svg-icon {
   z-index: 50;
   width: max-content;
   padding: 12px;
-  background: var(--background-primary);
+  background: var(--background-secondary);
   border: 1px solid rgba(var(--mono-rgb-100), 0.12);
   border-radius: 10px;
   box-shadow: 0 3px 12px rgba(0, 0, 0, 0.14);
