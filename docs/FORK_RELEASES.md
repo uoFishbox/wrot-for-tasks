@@ -16,9 +16,11 @@ The plugin is named **Wrot for Tasks** and uses ID `wrot-for-tasks` from `3.1.0-
 
 1. Merge the chosen upstream version and retain the task features.
 2. Set the same fork version in `manifest.json`, `package.json`, and the two root version fields in `package-lock.json`. Add its minimum Obsidian version to `versions.json`.
-3. Update `RELEASE_NOTES.md` and `CHANGELOG.md`.
+3. Rewrite `RELEASE_NOTES.md` with this release's notes only, and add the same release to `CHANGELOG.md`. The workflow uses `RELEASE_NOTES.md` verbatim as the release body, so keep older releases out of it; the history belongs in `CHANGELOG.md`.
 4. Run `npm ci`, `npm run lint`, `node --test scripts/test-*.mjs`, and `npm run build`.
 5. Commit, tag with the exact version (without a `v` prefix), and push the commit and tag.
 6. Verify the Release workflow succeeds and the published release contains `main.js`, `manifest.json`, and `styles.css` with the matching version.
+
+Forks do not run workflows until Actions are enabled for the fork. While the repository is in that state, a tag push creates no workflow run at all, yet `GET /repos/{owner}/{repo}/actions/permissions` still reports `enabled: true` and the workflow still reports `state: active`, so neither can be used to detect it. If a tag push produces no run, enable Actions with `PUT /repos/{owner}/{repo}/actions/permissions` and a body of `{"enabled": true}`, then push the tag again. The run appears within a minute.
 
 References: [Obsidian manifest](https://docs.obsidian.md/Reference/Manifest), [BRAT developer guide](https://github.com/TfTHacker/obsidian42-brat/blob/main/BRAT-DEVELOPER-GUIDE.md).
