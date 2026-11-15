@@ -57,6 +57,7 @@ Clicking a list button turns **the line your cursor is on** into a list item (th
 | **Numbered List** | `1. `        |
 
 - Clicking a list button on a quote line creates a list inside the quote.
+- Posts containing unfinished checklist items are highlighted with a subtle accent-colored tint in the timeline, Reading View, and Live Preview. Completing every item removes the highlight; reopening an item restores it. Checklist examples inside code or math blocks do not count.
 - For continuing lists with `Enter` and changing indentation with `Tab` or `Backspace`, see "6. Managing Lists and Quotes" in [New Posting Form in Ver3.0.0 and Up](./posting-form-v3.md).
 
 ---

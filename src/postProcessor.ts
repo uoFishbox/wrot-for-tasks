@@ -23,6 +23,7 @@ import {
   wrScopeRoot,
 } from "./utils/blockLocation";
 import { parseMemos, type Memo } from "./utils/memoParser";
+import { incompleteMemoTaskEntries, memoTaskEntries } from "./utils/dailyNoteTasks";
 import type WrotPlugin from "./main";
 import { IMAGE_EXT_RE, QUOTE_MARKER_RE, TAG_TOKEN_RE, highlightColor, inlineTokenPattern, matchTags, splitLinkAlias } from "./utils/patterns";
 import { ListDepthTracker, NestedListStack, parseListLine, tagFor, type ListLine } from "./utils/listParser";
@@ -121,11 +122,7 @@ function snapshotOf(file: TFile, memos: Memo[]): WrViewSnapshot {
 }
 
 function checkboxStatesOf(memo: Memo): boolean[] {
-  return memo.content
-    .split("\n")
-    .map((line) => /^(?:>\s?)*[ \t\u3000]*- \[([ x])\] /.exec(line))
-    .filter((m): m is RegExpExecArray => m !== null)
-    .map((m) => m[1] === "x");
+  return memoTaskEntries(memo.content).map((task) => task.checked);
 }
 
 // Position only means anything while every memo of the file is mounted.
@@ -136,6 +133,7 @@ function applySnapshot(scope: HTMLElement, snap: WrViewSnapshot): void {
     stampWrBlockLocation(block, snap.sourcePath, snap.memos[i].lineStart);
     applyBlockIdClass(block, snap.memos[i]);
     const states = snap.states[i];
+    block.classList.toggle("wrot-has-incomplete-tasks", states.some((checked) => !checked));
     const boxes = Array.from(block.querySelectorAll<HTMLInputElement>('input[type="checkbox"]'));
     if (boxes.length !== states.length) return;
     boxes.forEach((box, k) => {
@@ -751,6 +749,9 @@ function convertListLines(
   const block = wrBlockContainer(code);
   if (!block) return;
 
+  const pendingTaskLines = new Set(incompleteMemoTaskEntries(fullText).map((task) => task.line));
+  block.classList.toggle("wrot-has-incomplete-tasks", pendingTaskLines.size > 0);
+
   // Rebuild: non-list content stays inside code; lists are placed on the parent block.
   code.textContent = "";
   const fragments: (string | HTMLElement)[] = [];
@@ -798,6 +799,9 @@ function convertListLines(
       if (info.checked) cb.checked = true;
       // lineIndex is 0-based within the fence body; the writer adds the fence line offset.
       cb.addEventListener("click", () => {
+        if (cb.checked) pendingTaskLines.delete(lineIndex);
+        else pendingTaskLines.add(lineIndex);
+        block.classList.toggle("wrot-has-incomplete-tasks", pendingTaskLines.size > 0);
         void toggleCheckboxForBlock(plugin, cb, block, lineIndex, fullText);
       });
       li.appendChild(cb);

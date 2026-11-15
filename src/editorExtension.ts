@@ -23,6 +23,7 @@ import {
   tagPattern,
 } from "./utils/patterns";
 import { ListDepthTracker, parseListLine } from "./utils/listParser";
+import { incompleteMemoTaskEntries } from "./utils/dailyNoteTasks";
 import { tokenizeLines, type TokenSpan } from "./utils/prismTokens";
 
 const ogpFetched = StateEffect.define<null>();
@@ -128,6 +129,7 @@ interface WrBlock {
   innerBlocks: BlockRange[];
   blockId: string | null;
   hasQuoteMarker: boolean;
+  hasIncompleteTasks: boolean;
   // 1-based doc line of the first quote marker [[X#^wr-T]]; -1 if none.
   quoteLineIdx: number;
 }
@@ -203,7 +205,8 @@ function findWrBlocks(view: EditorView, plugin: WrotPlugin | null): WrBlock[] {
       }
     }
 
-    blocks.push({ startLn, endLn, urlTexts, ruleClass, innerBlocks, blockId, hasQuoteMarker, quoteLineIdx });
+    const hasIncompleteTasks = incompleteMemoTaskEntries(bodyLines.join("\n")).length > 0;
+    blocks.push({ startLn, endLn, urlTexts, ruleClass, innerBlocks, blockId, hasQuoteMarker, hasIncompleteTasks, quoteLineIdx });
     ln = endLn;
   }
 
@@ -243,7 +246,9 @@ function buildDecorations(
     for (const block of blocks) {
       // Source mode shows a memo as plain text, like any other code block: no memo background
       // or text colors, so neither the line class the palette keys on nor the rule's class.
-      const wrLine = isSourceMode ? null : "wrot-codeblock-line";
+      const wrLine = isSourceMode ? null : block.hasIncompleteTasks
+        ? "wrot-codeblock-line wrot-has-incomplete-tasks"
+        : "wrot-codeblock-line";
       const memoRule = isSourceMode ? null : block.ruleClass;
       const openLine = doc.line(block.startLn);
       builder.add(openLine.from, openLine.from, makeLineDeco([wrLine, memoRule, block.blockId ? `wrot-block-id-${block.blockId}` : null]));

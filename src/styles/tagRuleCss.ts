@@ -81,6 +81,7 @@ export function buildTagRuleCss(rules: TagColorRule[], highlightTheme: Record<st
       body pre.${cls},
       body .wrot-lp-codeblock.${cls},
       body .cm-line.wrot-codeblock-line.${cls} {
+        --wrot-task-accent: ${accent ?? "var(--text-accent)"};
         --wrot-code-text: ${fg};
         --wrot-code-bg: ${bg};
         --wrot-diagram-text: ${visibleDiagramColor(fg, bg)};

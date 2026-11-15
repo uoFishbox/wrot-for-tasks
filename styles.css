@@ -2601,6 +2601,17 @@ body .wrot-codeblock-line {
   background-color: var(--wrot-bg-color, #f8f8f8);
 }
 
+/* Pending posts: keep the palette/tag-rule background beneath a subtle tint.
+   Five IDs beat the runtime color stamps (four IDs), including their background
+   shorthand, without replacing editing/flash rings. */
+body .wrot-card.wrot-has-incomplete-tasks:not(#wrot-task1#wrot-task2#wrot-task3#wrot-task4#wrot-task5),
+body div.block-language-wr.wrot-has-incomplete-tasks:not(#wrot-task1#wrot-task2#wrot-task3#wrot-task4#wrot-task5),
+body pre.wrot-has-incomplete-tasks:not(#wrot-task1#wrot-task2#wrot-task3#wrot-task4#wrot-task5),
+body .cm-line.wrot-codeblock-line.wrot-has-incomplete-tasks:not(#wrot-task1#wrot-task2#wrot-task3#wrot-task4#wrot-task5) {
+  background-image:
+    linear-gradient(color-mix(in srgb, var(--wrot-task-accent, var(--text-accent)) 8%, transparent), color-mix(in srgb, var(--wrot-task-accent, var(--text-accent)) 8%, transparent));
+}
+
 /* Reserve right padding on body lines only (so text avoids the ~28px-wide
    flair). The end line carries the media-area widget, so keep its previous
    state (no right margin) to preserve the balance of images / OGP cards. */

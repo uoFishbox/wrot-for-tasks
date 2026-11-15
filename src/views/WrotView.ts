@@ -3,6 +3,7 @@ import { VIEW_TYPE_WROT } from "../constants";
 import { parseMemos, Memo } from "../utils/memoParser";
 import { appendMemo, deleteMemo, setMemoCheckbox, updateMemo } from "../utils/memoWriter";
 import { getOrCreateDailyNote, getDailyNoteFile, dailyNotePathFor, dailyNoteTemplateFile } from "../utils/dailyNote";
+import { incompleteMemoTaskEntries } from "../utils/dailyNoteTasks";
 import { headingLocator, waitForTemplater } from "../utils/postHeading";
 import { segmentBlocks, toTildeFences } from "../utils/blockSegmenter";
 import { QUOTE_LINK_RE, renderTextWithTagsAndUrls, renderUrlPreviews } from "../utils/urlRenderer";
@@ -2435,6 +2436,13 @@ export class WrotView extends ItemView {
       ? this.ensurePinnedContainer()
       : this.listContainer;
     const card = host.createDiv({ cls: "wrot-card" });
+    const pendingTaskLines = new Set(
+      incompleteMemoTaskEntries(memo.content).map((task) => task.line),
+    );
+    card.classList.toggle(
+      "wrot-has-incomplete-tasks",
+      pendingTaskLines.size > 0,
+    );
     if (options.pinned) card.classList.add("wrot-card-pinned");
     const T = memo.time.replace(/[-:.TZ+]/g, "").slice(0, 17);
     card.classList.add(`wrot-block-id-wr-${T}`);
@@ -2463,6 +2471,12 @@ export class WrotView extends ItemView {
         // Pins live in other days' notes.
         const file = this.app.vault.getFileByPath(options.filePath);
         if (!file) return;
+        if (checked) pendingTaskLines.delete(lineIndex);
+        else pendingTaskLines.add(lineIndex);
+        card.classList.toggle(
+          "wrot-has-incomplete-tasks",
+          pendingTaskLines.size > 0,
+        );
         // Suppress the burst of modify events so full re-renders don't flicker the cards.
         this.ignoreModifyUntil = Date.now() + 500;
         const written = await setMemoCheckbox(this.app, file, memo.time, lineIndex, checked);

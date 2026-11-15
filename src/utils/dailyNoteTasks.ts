@@ -15,19 +15,24 @@ export function dailyNoteTaskStartMinutes(text: string): number | null {
   return match ? Number(match[1]) * 60 + Number(match[2]) : null;
 }
 
-/** Incomplete checkboxes rendered in a memo body, with lines relative to that body. */
-export function incompleteMemoTaskEntries(content: string): DailyNoteTask[] {
-  const tasks: DailyNoteTask[] = [];
+/** Checkboxes rendered in a memo body, with lines relative to that body. */
+export function memoTaskEntries(content: string): (DailyNoteTask & { checked: boolean })[] {
+  const tasks: (DailyNoteTask & { checked: boolean })[] = [];
   for (const segment of segmentBlocks(content)) {
     if (segment.kind !== "text") continue;
     segment.text.split("\n").forEach((line, index) => {
       const item = parseListLine(line.replace(/^(?:\s*>\s?)*/, ""));
-      if (item?.kind === "check" && !item.checked) {
-        tasks.push({ line: segment.startLine + index, text: item.content.trim() });
+      if (item?.kind === "check") {
+        tasks.push({ line: segment.startLine + index, text: item.content.trim(), checked: item.checked });
       }
     });
   }
   return tasks;
+}
+
+/** Incomplete checkboxes rendered in a memo body, excluding code and math examples. */
+export function incompleteMemoTaskEntries(content: string): DailyNoteTask[] {
+  return memoTaskEntries(content).filter((task) => !task.checked).map(({ line, text }) => ({ line, text }));
 }
 
 /** Native Markdown tasks plus the checkboxes Wrot renders inside its memo fences. */

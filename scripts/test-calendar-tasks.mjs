@@ -10,13 +10,25 @@ const bundle = await build({
   format: "esm",
   platform: "node",
 });
-const { incompleteDailyNoteTasks, incompleteDailyNoteTaskEntries, dailyNoteTaskStartMinutes } = await import(
+const { incompleteDailyNoteTasks, incompleteDailyNoteTaskEntries, dailyNoteTaskStartMinutes, memoTaskEntries } = await import(
   `data:text/javascript;base64,${Buffer.from(bundle.outputFiles[0].text).toString("base64")}`
 );
 
 const cache = (statuses = [], codeLines = []) => ({
   listItems: statuses.map((task, line) => ({ task, position: { start: { line } } })),
   sections: codeLines.map((line) => ({ type: "code", position: { start: { line } } })),
+});
+
+test("memo checkbox states exclude code and math and retain quoted and nested task order", () => {
+  const content = [
+    "intro", "  - [x] done", "~~~md", "- [ ] example", "~~~",
+    "$$", "- [ ] math", "$$", "> - [ ] quoted", "  - [ ] nested",
+  ].join("\n");
+  assert.deepEqual(memoTaskEntries(content), [
+    { line: 1, text: "done", checked: true },
+    { line: 8, text: "quoted", checked: false },
+    { line: 9, text: "nested", checked: false },
+  ]);
 });
 
 test("task start times accept single times and ranges, including midnight", () => {
