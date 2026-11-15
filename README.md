@@ -123,7 +123,7 @@ Wrot for Tasks supports **11 languages across 12 locales**. It automatically fol
 Wrot for Tasks gives you fine-grained control over how your feed looks and behaves.
 
 - **Panel location**: Dock your timeline in the left sidebar, right sidebar, or main editor area.
-- **Color themes**: Customize light and dark mode colors independently.
+- **Color themes**: Customize light and dark mode colors independently. Unset colors use the existing CSS styles; each reset button clears that color override.
 - **Tag rules**: Color-code specific tags for quick visual filtering.
 - **Pinning**: Limit pinned items (1, 3, or 5 notes) and keep pinned notes sticky at the top when scrolling.
 - **Button setup**: Customize post and update labels/icons, or hide the delete button from the post menu.

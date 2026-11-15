@@ -18,7 +18,7 @@ import { OGPCache } from "./utils/ogpCache";
 import { GraphTagInjector } from "./utils/graphTags";
 import { mergeRecentTags } from "./utils/tagSuggest";
 import { ATTACHMENT_EXT_RE, matchTags, tagPattern } from "./utils/patterns";
-import { blendColor, codeLightness, darkenColor, readDiagramTheme, readThemeHighlightColors, validHex } from "./utils/color";
+import { readDiagramTheme, readThemeHighlightColors } from "./utils/color";
 import { boostSelectors, WrStyleSheet } from "./styles/styleInjector";
 import { buildPaletteCss } from "./styles/paletteCss";
 import { buildTagRuleCss } from "./styles/tagRuleCss";
@@ -264,22 +264,9 @@ export default class WrotPlugin extends Plugin {
 
   applyBgColor(): void {
     const isDark = activeDocument.body.classList.contains("theme-dark");
-    const bgColor = validHex(
-      isDark ? this.settings.bgColorDark : this.settings.bgColorLight,
-      isDark ? DEFAULT_SETTINGS.bgColorDark : DEFAULT_SETTINGS.bgColorLight
-    );
-    const textColor = validHex(
-      isDark ? this.settings.textColorDark : this.settings.textColorLight,
-      isDark ? DEFAULT_SETTINGS.textColorDark : DEFAULT_SETTINGS.textColorLight
-    );
     const css = buildPaletteCss({
-      bgColor,
-      hoverColor: darkenColor(bgColor, 10),
-      textColor,
-      mutedColor: blendColor(textColor, bgColor, 0.45),
-      faintColor: blendColor(textColor, bgColor, 0.6),
-      unresolvedLinkColor: blendColor(textColor, bgColor, 0.3),
-      codeLightness: codeLightness(textColor, bgColor),
+      bgColor: isDark ? this.settings.bgColorDark : this.settings.bgColorLight,
+      textColor: isDark ? this.settings.textColorDark : this.settings.textColorLight,
       highlightTheme: readThemeHighlightColors(activeDocument, isDark),
       diagramTheme: readDiagramTheme(activeDocument),
     });

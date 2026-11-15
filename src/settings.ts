@@ -11,7 +11,7 @@ import {
 } from "obsidian";
 import type WrotPlugin from "./main";
 import { t, defaultTimestampFormat, defaultHeaderDateFormat } from "./i18n";
-import { blendColor, toHex } from "./utils/color";
+import { blendColor, toHex, validHex } from "./utils/color";
 import { HEX_COLOR_RE } from "./utils/patterns";
 import { dailyNoteTemplateFile } from "./utils/dailyNote";
 import { listTemplateHeadings } from "./utils/postHeading";
@@ -183,6 +183,14 @@ export interface WrotSettings {
   lastLocale?: string;
 }
 
+// Color pickers and tag rules need concrete hex values; these never enable a global override.
+const THEME_COLOR_PREVIEWS = {
+  bgColorLight: "#efefef",
+  bgColorDark: "#303030",
+  textColorLight: "#454545",
+  textColorDark: "#dcddde",
+};
+
 export const DEFAULT_SETTINGS: WrotSettings = {
   viewPlacement: "right",
   openOnStartup: false,
@@ -191,10 +199,10 @@ export const DEFAULT_SETTINGS: WrotSettings = {
   dateAwareTimestamp: false,
   timestampTimeFormat: "HH:mm:ss",
   timestampDateFormat: "YYYY/MM/DD",
-  bgColorLight: "#efefef",
-  bgColorDark: "#303030",
-  textColorLight: "#454545",
-  textColorDark: "#dcddde",
+  bgColorLight: "",
+  bgColorDark: "",
+  textColorLight: "",
+  textColorDark: "",
   submitLabel: "投稿",
   submitIcon: "send",
   updateLabel: "更新",
@@ -421,29 +429,21 @@ export class WrotSettingTab extends PluginSettingTab {
   }
 
   private defaultRuleBg(): string {
-    return this.isDarkTheme() ? this.plugin.settings.bgColorDark : this.plugin.settings.bgColorLight;
+    const key = this.isDarkTheme() ? "bgColorDark" : "bgColorLight";
+    return validHex(this.plugin.settings[key], THEME_COLOR_PREVIEWS[key]);
   }
 
   private defaultRuleText(): string {
-    return this.isDarkTheme()
-      ? this.plugin.settings.textColorDark
-      : this.plugin.settings.textColorLight;
+    const key = this.isDarkTheme() ? "textColorDark" : "textColorLight";
+    return validHex(this.plugin.settings[key], THEME_COLOR_PREVIEWS[key]);
   }
 
-  // A rule still carrying the light-theme default under a dark theme is treated as unset,
-  // so a fresh rule starts from the colour the user actually sees.
   private resolveRuleBg(value: string): string {
-    const isLightDefault = value === DEFAULT_SETTINGS.bgColorLight;
-    return HEX_COLOR_RE.test(value) && !(this.isDarkTheme() && isLightDefault)
-      ? value
-      : this.defaultRuleBg();
+    return validHex(value, this.defaultRuleBg());
   }
 
   private resolveRuleText(value: string): string {
-    const isLightDefault = value === DEFAULT_SETTINGS.textColorLight;
-    return HEX_COLOR_RE.test(value) && !(this.isDarkTheme() && isLightDefault)
-      ? value
-      : this.defaultRuleText();
+    return validHex(value, this.defaultRuleText());
   }
 
   private defaultAccent(): string {
@@ -539,7 +539,7 @@ export class WrotSettingTab extends PluginSettingTab {
             btn.setIcon("reset").onClick(async () => {
               if (options.onReset) await options.onReset();
               else await options.write(options.resetValue());
-              picker.setValue(options.resetValue());
+              picker.setValue(options.read());
             })
           );
       },
@@ -640,7 +640,7 @@ export class WrotSettingTab extends PluginSettingTab {
     return this.colorWithReset({
       name: t(`settings.item.${key}.name`),
       desc: t(`settings.item.${key}.desc`),
-      read: () => settings[key],
+      read: () => validHex(settings[key], THEME_COLOR_PREVIEWS[key]),
       write: async (value) => {
         settings[key] = value;
         await this.plugin.saveSettings();
@@ -1041,8 +1041,8 @@ export class WrotSettingTab extends PluginSettingTab {
     const newIndex = this.plugin.settings.tagColorRules.length;
     this.plugin.settings.tagColorRules.push({
       tag: "",
-      bgColor: DEFAULT_SETTINGS.bgColorLight,
-      textColor: DEFAULT_SETTINGS.textColorLight,
+      bgColor: this.defaultRuleBg(),
+      textColor: this.defaultRuleText(),
     });
     // Only the new rule is left editable, so the settled ones stay protected.
     this.unlockedRules.clear();

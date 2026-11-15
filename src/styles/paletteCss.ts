@@ -1,21 +1,19 @@
 import {
   blendColor,
+  codeLightness,
+  darkenColor,
   diagramThemeFor,
+  validHex,
   visibleDiagramColor,
   visibleHighlight,
-  type CodeLightness,
   type DiagramTheme,
 } from "../utils/color";
 
 /** Colors resolved from the settings for the active theme mode. */
 interface WrPalette {
-  bgColor: string;
-  hoverColor: string;
-  textColor: string;
-  mutedColor: string;
-  faintColor: string;
-  unresolvedLinkColor: string;
-  codeLightness: CodeLightness;
+  /** Empty values leave the corresponding static CSS untouched. */
+  bgColor?: string;
+  textColor?: string;
   // The theme's highlight colours (--color-red and the rest) as hex.
   highlightTheme: Record<string, string>;
   diagramTheme: DiagramTheme | null;
@@ -47,33 +45,54 @@ export function diagramThemeVars(theme: DiagramTheme | null, bg: string): string
  * user's chosen palette. Sits at boost level 2 in the specificity ladder.
  */
 export function buildPaletteCss(palette: WrPalette): string {
-  const {
-    bgColor,
-    hoverColor,
-    textColor,
-    mutedColor,
-    faintColor,
-    unresolvedLinkColor,
-    codeLightness,
-    highlightTheme,
-    diagramTheme,
-  } = palette;
+  const bg = validHex(palette.bgColor ?? "", "");
+  const text = validHex(palette.textColor ?? "", "");
+  if (!bg && !text) return "";
+
+  const bgColor = bg || "var(--background-primary)";
+  const textColor = text || "var(--text-normal)";
+  const mix = (ratio: number): string =>
+    bg && text
+      ? blendColor(text, bg, ratio)
+      : `color-mix(in srgb, ${textColor} ${Math.round((1 - ratio) * 100)}%, ${bgColor})`;
+  const hoverColor = bg
+    ? darkenColor(bg, 10)
+    : "var(--background-modifier-hover)";
+  const mutedColor = mix(0.45);
+  const faintColor = mix(0.6);
+  const unresolvedLinkColor = mix(0.3);
+  const lightness = bg && text ? codeLightness(text, bg) : null;
   // As far toward the background as faintColor (blendColor 0.6) takes the text.
   const quoteLink = `color-mix(in srgb, var(--text-accent) 40%, ${bgColor})`;
   return `/* @css */
       body {
-        --wrot-bg-color: ${bgColor};
-        ${highlightVars(highlightTheme, bgColor)}
+        ${
+          bg
+            ? `--wrot-bg-color: ${bg};
+        ${highlightVars(palette.highlightTheme, bg)}
         --wrot-bg-hover: ${hoverColor};
-        --wrot-code-text: ${textColor};
-        --wrot-code-bg: ${bgColor};
-        --wrot-diagram-text: ${visibleDiagramColor(textColor, bgColor)};
-        --wrot-code-l: ${codeLightness.base};
-        --wrot-code-muted-l: ${codeLightness.muted};
-        --wrot-code-faint-l: ${codeLightness.faint};
+        --wrot-code-bg: ${bg};`
+            : ""
+        }
+        ${
+          text
+            ? `--wrot-code-text: ${text};
+        --wrot-diagram-text: ${bg ? visibleDiagramColor(text, bg) : text};`
+            : ""
+        }
+        ${
+          lightness
+            ? `--wrot-code-l: ${lightness.base};
+        --wrot-code-muted-l: ${lightness.muted};
+        --wrot-code-faint-l: ${lightness.faint};`
+            : ""
+        }
       }
+      ${
+        bg
+          ? `/* @css */
       body .wrot-codeblock-display {
-        ${diagramThemeVars(diagramTheme, bgColor)}
+        ${diagramThemeVars(palette.diagramTheme, bg)}
       }
       body .wrot-input-area,
       body .wrot-card,
@@ -116,6 +135,12 @@ export function buildPaletteCss(palette: WrPalette): string {
         background: ${hoverColor};
         background-color: ${hoverColor};
       }
+      `
+          : ""
+      }
+      ${
+        text
+          ? `/* @css */
       /* Body textColor stamp. wrot-check-done is excluded so the later mutedColor rule wins:
          RV's pre structure never receives this rule, so LV must use the same color source */
       body .wrot-content,
@@ -408,6 +433,12 @@ export function buildPaletteCss(palette: WrPalette): string {
       body .wrot-pin-indicator .svg-icon {
         stroke: ${mutedColor};
       }
+      `
+          : ""
+      }
+      ${
+        bg
+          ? `/* @css */
       body .wrot-menu {
         background: ${bgColor};
         background-color: ${bgColor};
@@ -415,8 +446,16 @@ export function buildPaletteCss(palette: WrPalette): string {
         box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
       }
       body .wrot-menu .menu-item {
-        color: ${textColor};
         background-color: ${bgColor};
+      }
+      `
+          : ""
+      }
+      ${
+        text
+          ? `/* @css */
+      body .wrot-menu .menu-item {
+        color: ${textColor};
       }
       body .wrot-menu .menu-item .menu-item-icon .svg-icon {
         color: ${mutedColor};
@@ -428,6 +467,12 @@ export function buildPaletteCss(palette: WrPalette): string {
         color: var(--text-accent);
         stroke: var(--text-accent);
       }
+      `
+          : ""
+      }
+      ${
+        bg
+          ? `/* @css */
       .is-mobile body .wrot-menu .menu-item:not(.is-label):not(.is-disabled):hover,
       .is-mobile body .wrot-menu .menu-item:not(.is-label):not(.is-disabled):active,
       body .wrot-menu .menu-item:not(.is-disabled):hover,
@@ -446,23 +491,49 @@ export function buildPaletteCss(palette: WrPalette): string {
       body .wrot-menu .menu-item.wrot-menu-schedule-confirm.is-selected,
       body .wrot-menu .menu-item.wrot-menu-schedule-confirm:active {
         background-color: ${bgColor};
+      }
+      `
+          : ""
+      }
+      ${
+        text
+          ? `/* @css */
+      body .wrot-menu .menu-item.wrot-menu-schedule-confirm {
         color: ${mutedColor};
       }
       body .wrot-menu .menu-item.wrot-menu-schedule-confirm:hover .menu-item-icon .svg-icon {
         color: ${mutedColor};
         stroke: ${mutedColor};
       }
+      `
+          : ""
+      }
+      ${
+        bg
+          ? `/* @css */
       body .wrot-menu .menu-separator {
         border-color: ${hoverColor};
         background: transparent;
         background-color: transparent;
       }
+      `
+          : ""
+      }
+      ${
+        text
+          ? `/* @css */
       body .wrot-menu .menu-item.is-disabled {
         color: ${faintColor};
       }
+      `
+          : ""
+      }
+      ${
+        bg && text
+          ? `/* @css */
       body .wrot-thumbnail-remove {
-        background: ${blendColor(textColor, bgColor, 0.7)};
-        background-color: ${blendColor(textColor, bgColor, 0.7)};
+        background: ${mix(0.7)};
+        background-color: ${mix(0.7)};
         color: ${bgColor};
       }
       body .wrot-thumbnail-remove .svg-icon {
@@ -470,8 +541,11 @@ export function buildPaletteCss(palette: WrPalette): string {
         stroke: ${bgColor};
       }
       body .wrot-thumbnail-remove:hover {
-        background: ${blendColor(textColor, bgColor, 0.5)};
-        background-color: ${blendColor(textColor, bgColor, 0.5)};
+        background: ${mix(0.5)};
+        background-color: ${mix(0.5)};
+      }
+      `
+          : ""
       }
 `;
 }

@@ -571,7 +571,7 @@ body .wrot-link-popover-item-folder {
 
 .wrot-input-area {
   margin-bottom: 8px;
-  background: var(--wrot-bg-color, #f8f8f8);
+  background: var(--nav-item-background-active);
   border-radius: 12px;
   padding: 12px 14px;
 }
@@ -617,7 +617,6 @@ body .wrot-link-popover-item-folder {
 .wrot-native-composer .cm-scroller {
   min-height: 64px;
   overflow: visible;
-  padding: 8px;
 }
 
 .wrot-native-composer .cm-sizer {
@@ -1527,7 +1526,7 @@ body:not(.is-mobile) .workspace-drawer.mod-right .wrot-remaining-tasks-collapsed
 }
 
 .wrot-card {
-  background: var(--wrot-bg-color, #f8f8f8);
+  background: var(--nav-item-background-active);
   border-radius: 10px;
   padding: 12px 14px;
   position: relative;
@@ -2068,43 +2067,43 @@ body {
 }
 
 .wrot-codeblock-display {
-  --code-normal: var(--wrot-code-text);
+  --code-normal: var(--wrot-code-text, var(--text-normal));
   /* Mermaid diagrams (Obsidian 1.15+) read these through .mermaid, so they follow the memo.
      The series colors and the text on them stay the engine's. */
-  --mermaid-background: var(--wrot-code-bg);
-  --mermaid-text-color: var(--wrot-diagram-text);
-  --mermaid-line-color: var(--wrot-diagram-text);
-  --mermaid-muted-color: color-mix(in srgb, var(--wrot-diagram-text) 65%, var(--wrot-code-bg));
-  --mermaid-surface: color-mix(in srgb, var(--wrot-diagram-text) 10%, var(--wrot-code-bg));
-  --mermaid-surface-alt: color-mix(in srgb, var(--wrot-diagram-text) 5%, var(--wrot-code-bg));
-  --mermaid-border-color: color-mix(in srgb, var(--wrot-diagram-text) 35%, var(--wrot-code-bg));
+  --mermaid-background: var(--wrot-code-bg, var(--background-primary));
+  --mermaid-text-color: var(--wrot-diagram-text, var(--text-normal));
+  --mermaid-line-color: var(--wrot-diagram-text, var(--text-normal));
+  --mermaid-muted-color: color-mix(in srgb, var(--wrot-diagram-text, var(--text-normal)) 65%, var(--wrot-code-bg, var(--background-primary)));
+  --mermaid-surface: color-mix(in srgb, var(--wrot-diagram-text, var(--text-normal)) 10%, var(--wrot-code-bg, var(--background-primary)));
+  --mermaid-surface-alt: color-mix(in srgb, var(--wrot-diagram-text, var(--text-normal)) 5%, var(--wrot-code-bg, var(--background-primary)));
+  --mermaid-border-color: color-mix(in srgb, var(--wrot-diagram-text, var(--text-normal)) 35%, var(--wrot-code-bg, var(--background-primary)));
 }
 
 /* Grid and pie outlines, which the engine draws too close to the memo's background to show. */
 .wrot-codeblock-display .pele-grid,
 .wrot-codeblock-display .pele-graticule,
 .wrot-codeblock-display g.pele-slices {
-  stroke: color-mix(in srgb, var(--wrot-diagram-text) 22%, var(--wrot-code-bg));
+  stroke: color-mix(in srgb, var(--wrot-diagram-text, var(--text-normal)) 22%, var(--wrot-code-bg, var(--background-primary)));
 }
 
 /* The engine draws text on colored parts in its background color, which would be the memo's. */
 .wrot-codeblock-display g.pele-slice-labels[fill],
 .wrot-codeblock-display g.pele-leaves,
 .wrot-codeblock-display text[fill="var(--_bg)"] {
-  fill: var(--wrot-diagram-text);
+  fill: var(--wrot-diagram-text, var(--text-normal));
 }
 
 @supports (color: oklch(from red l c h)) {
   .wrot-codeblock-display,
   .cm-line.wrot-codeblock-line .token {
-    --code-keyword: oklch(from var(--wrot-code-theme-keyword) var(--wrot-code-l) c h);
-    --code-function: oklch(from var(--wrot-code-theme-function) var(--wrot-code-l) c h);
-    --code-value: oklch(from var(--wrot-code-theme-value) var(--wrot-code-l) c h);
-    --code-string: oklch(from var(--wrot-code-theme-string) var(--wrot-code-l) c h);
-    --code-tag: oklch(from var(--wrot-code-theme-tag) var(--wrot-code-l) c h);
-    --code-operator: oklch(from var(--wrot-code-theme-operator) var(--wrot-code-l) c h);
-    --code-punctuation: oklch(from var(--wrot-code-text) var(--wrot-code-muted-l) c h);
-    --code-comment: oklch(from var(--wrot-code-text) var(--wrot-code-faint-l) c h);
+    --code-keyword: oklch(from var(--wrot-code-theme-keyword) var(--wrot-code-l, l) c h);
+    --code-function: oklch(from var(--wrot-code-theme-function) var(--wrot-code-l, l) c h);
+    --code-value: oklch(from var(--wrot-code-theme-value) var(--wrot-code-l, l) c h);
+    --code-string: oklch(from var(--wrot-code-theme-string) var(--wrot-code-l, l) c h);
+    --code-tag: oklch(from var(--wrot-code-theme-tag) var(--wrot-code-l, l) c h);
+    --code-operator: oklch(from var(--wrot-code-theme-operator) var(--wrot-code-l, l) c h);
+    --code-punctuation: oklch(from var(--wrot-code-text, var(--text-normal)) var(--wrot-code-muted-l, l) c h);
+    --code-comment: oklch(from var(--wrot-code-text, var(--text-normal)) var(--wrot-code-faint-l, l) c h);
   }
 }
 
@@ -3164,7 +3163,7 @@ body.is-mobile .wrot-calendar-nav-btn:active:not(#x#y#z) {
 }
 
 .is-mobile .wrot-input-area {
-  padding: 4px 10px 4px;
+  padding: 12px;
   margin-bottom: 8px;
   border-radius: 8px;
 }
