@@ -750,6 +750,7 @@ export class WrotView extends ItemView {
   // never combine into a fully blank button: an empty label only renders as icon-only
   // when an icon is actually set, otherwise it falls back to the default label text.
   refreshSubmitButton(): void {
+    this.updateComposerPlaceholder();
     if (!this.submitBtnEl) return;
     const { submitLabel, submitIcon, updateLabel, updateIcon } = this.plugin.settings;
     const editing = this.editingMemo !== null;
@@ -812,7 +813,7 @@ export class WrotView extends ItemView {
     );
     this.composer = new ComposerField(
       inputArea,
-      this.plugin.settings.inputPlaceholder,
+      this.composerPlaceholder(),
       this.plugin.settings.checkStrikethrough,
       () => this.obsidianConfig("autoPairBrackets") !== false,
       [dateShiftOnSpace(shiftDate)]
@@ -1881,7 +1882,46 @@ export class WrotView extends ItemView {
     }
   }
 
+  private composerPlaceholder(): string {
+    if (!this.plugin.settings.dateAwarePlaceholder)
+      return t("defaults.inputPlaceholder");
+    if (this.editingMemo) return t("view.composer.placeholder.edit");
+    // Compare calendar days, independent of the current time or daylight saving.
+    const days = this.currentDate
+      .clone()
+      .startOf("day")
+      .diff(moment().startOf("day"), "days");
+    if (days === 0) return t("view.composer.placeholder.today");
+    if (days === -1) return t("view.composer.placeholder.yesterday");
+    if (days === 1) return t("view.composer.placeholder.tomorrow");
+    return days < 0
+      ? t("view.composer.placeholder.daysAgo", { count: -days })
+      : t("view.composer.placeholder.daysAhead", { count: days });
+  }
+
+  updateComposerPlaceholder(): void {
+    this.composer?.setPlaceholder(this.composerPlaceholder());
+  }
+
+  private updateDateLabel(): void {
+    this.updateComposerPlaceholder();
+    const today = moment().startOf("day");
+    const dayOffset = this.currentDate.clone().startOf("day").diff(today, "days");
+    const isToday = dayOffset === 0;
+    const dateText = this.currentDate.format(this.plugin.settings.headerDateFormat);
+    this.dateText.setText(isToday ? `${dateText}${t("view.dateNav.todaySuffix")}` : dateText);
+    let badgeText = "";
+    if (dayOffset === -1) badgeText = t("view.dateNav.yesterday");
+    else if (dayOffset === 1) badgeText = t("view.dateNav.tomorrow");
+    else if (dayOffset < 0) badgeText = t("view.dateNav.daysAgo", { count: -dayOffset });
+    else if (dayOffset > 0) badgeText = t("view.dateNav.daysAhead", { count: dayOffset });
+    this.dateBadge.setText(badgeText);
+    this.dateBadge.hidden = isToday;
+  }
+
   async refresh(): Promise<void> {
+    // Keep the destination hint current even when a timeline redraw is deferred.
+    this.updateComposerPlaceholder();
     // Changes can land while an earlier render is awaiting a file read. Remember that and
     // replay once, instead of dropping the change and leaving stale content on screen.
     if (this.refreshing) {
@@ -1896,17 +1936,7 @@ export class WrotView extends ItemView {
     const today = moment().startOf("day");
     this.lastRenderedDay = today.format("YYYY-MM-DD");
     try {
-      const dayOffset = this.currentDate.clone().startOf("day").diff(today, "days");
-      const isToday = dayOffset === 0;
-      const dateText = this.currentDate.format(this.plugin.settings.headerDateFormat);
-      this.dateText.setText(isToday ? `${dateText}${t("view.dateNav.todaySuffix")}` : dateText);
-      let badgeText = "";
-      if (dayOffset === -1) badgeText = t("view.dateNav.yesterday");
-      else if (dayOffset === 1) badgeText = t("view.dateNav.tomorrow");
-      else if (dayOffset < 0) badgeText = t("view.dateNav.daysAgo", { count: -dayOffset });
-      else if (dayOffset > 0) badgeText = t("view.dateNav.daysAhead", { count: dayOffset });
-      this.dateBadge.setText(badgeText);
-      this.dateBadge.hidden = isToday;
+      this.updateDateLabel();
 
       // Resolve pins first; they render at the top independent of the current date.
       // Scheduled pins whose day has come join them, below the ones pinned by hand:

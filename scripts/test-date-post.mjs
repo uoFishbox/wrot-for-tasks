@@ -10,6 +10,7 @@ const bundle = await build({
       export { dateShiftCommand, dateShiftSuggestions } from "./src/editor/composerDateShift.ts";
       export { Compartment, EditorState } from "@codemirror/state";
       export { DEFAULT_TOOLBAR_LAYOUT, resolveToolbarLayout } from "./src/settings.ts";
+      export { initI18n } from "./src/i18n/index.ts";
       export { TFile, notices } from "obsidian";`,
     resolveDir: process.cwd(),
   },
@@ -42,14 +43,63 @@ const bundle = await build({
     },
   }],
 });
-const { WrotView, dateShiftCommand, dateShiftSuggestions, Compartment, EditorState, TFile, notices, DEFAULT_TOOLBAR_LAYOUT, resolveToolbarLayout } = await import(
+const { WrotView, dateShiftCommand, dateShiftSuggestions, Compartment, EditorState, TFile, notices, DEFAULT_TOOLBAR_LAYOUT, resolveToolbarLayout, initI18n } = await import(
   `data:text/javascript;base64,${Buffer.from(bundle.outputFiles[0].text).toString("base64")}`
 );
 globalThis.moment = moment;
+initI18n();
 
 beforeEach((t) => {
   // Keep shortcut selection and the save path's today check on the same clock.
   t.mock.method(moment, "now", () => new Date(2026, 9, 31, 12).getTime());
+});
+
+test("empty composer names the destination note relative to today's calendar day", () => {
+  const view = Object.assign(Object.create(WrotView.prototype), {
+    plugin: { settings: { headerDateFormat: "YYYY-MM-DD", dateAwarePlaceholder: true } },
+    dateText: { setText() {} }, dateBadge: { setText() {} },
+    composer: { setPlaceholder(text) { this.placeholder = text; } },
+    editingMemo: null,
+  });
+  for (const [date, expected] of [
+    ["2026-10-31T23:59", "今日のノートに投稿…"],
+    ["2026-10-30T23:59", "昨日のノートに投稿…"],
+    ["2026-11-01T00:00", "明日のノートに投稿…"],
+    ["2026-11-02", "2日後のノートに投稿…"],
+    ["2026-10-29", "2日前のノートに投稿…"],
+  ]) {
+    view.currentDate = moment(date);
+    view.updateDateLabel();
+    assert.equal(view.composer.placeholder, expected);
+  }
+  view.editingMemo = { time: "test", filePath: "existing.md" };
+  view.refreshSubmitButton();
+  assert.equal(view.composer.placeholder, "投稿を編集…");
+  view.editingMemo = null;
+  view.refreshSubmitButton();
+  assert.equal(view.composer.placeholder, "2日前のノートに投稿…");
+  view.plugin.settings.dateAwarePlaceholder = false;
+  view.updateComposerPlaceholder();
+  assert.equal(view.composer.placeholder, "あなたが書くのを待っています...");
+});
+
+test("destination hint updates during deferred redraws and after midnight", async (t) => {
+  const view = Object.assign(Object.create(WrotView.prototype), {
+    currentDate: moment("2026-11-02"), anchoredToToday: false,
+    plugin: { settings: { dateAwarePlaceholder: true } },
+    composer: { setPlaceholder(text) { this.placeholder = text; } },
+    editingMemo: null, refreshing: true,
+  });
+  await view.refresh();
+  assert.equal(view.composer.placeholder, "2日後のノートに投稿…");
+  t.mock.method(moment, "now", () => new Date(2026, 10, 1, 0, 1).getTime());
+  await view.catchUpToToday();
+  assert.equal(view.composer.placeholder, "明日のノートに投稿…");
+  assert.equal(view.currentDate.format("YYYY-MM-DD"), "2026-11-02");
+  view.anchoredToToday = true;
+  await view.catchUpToToday();
+  assert.equal(view.composer.placeholder, "今日のノートに投稿…");
+  assert.equal(view.currentDate.format("YYYY-MM-DD"), "2026-11-01");
 });
 
 test("the @ button appears in fresh and previously saved toolbar layouts", () => {

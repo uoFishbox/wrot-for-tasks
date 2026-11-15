@@ -47,8 +47,9 @@ const ko = {
   "settings.option.submitGradientMode.auto": "자동",
   "settings.option.submitGradientMode.light": "밝게",
   "settings.option.submitGradientMode.dark": "어둡게",
-  "settings.item.inputPlaceholder.name": "입력창 안내 문구",
-  "settings.item.inputPlaceholder.desc": "비워 두면 표시되지 않습니다.",
+
+  "settings.item.dateAwarePlaceholder.name": "입력창에 대상 날짜 표시",
+  "settings.item.dateAwarePlaceholder.desc": "선택한 노트의 날짜에 맞는 안내 문구를 표시합니다. 끄면 고정 문구를 표시합니다.",
 
   "settings.item.tagSuggest.name": "태그 자동 완성",
   "settings.item.tagSuggest.desc": "# 입력 후 텍스트를 작성하면 추천 태그가 표시됩니다. \n비활성화하면 저장된 기록도 삭제됩니다.",
@@ -196,6 +197,13 @@ const ko = {
   "view.dateNav.shift.w": "{count}주 후로 이동",
   "view.dateNav.shift.m": "{count}개월 후로 이동",
   "view.dateNav.shift.y": "{count}년 후로 이동",
+  "view.composer.placeholder.today": "오늘 노트에 게시…",
+  "view.composer.placeholder.yesterday": "어제 노트에 게시…",
+  "view.composer.placeholder.tomorrow": "내일 노트에 게시…",
+  "view.composer.placeholder.daysAgo": "{count}일 전 노트에 게시…",
+  "view.composer.placeholder.daysAhead": "{count}일 후 노트에 게시…",
+  "view.composer.placeholder.edit": "게시물 편집…",
+
   "view.dateNav.today": "오늘",
   "view.dateNav.todaySuffix": " (오늘)",
   "view.dateNav.yesterday": "어제",

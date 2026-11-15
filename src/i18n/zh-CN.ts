@@ -47,8 +47,9 @@ const zhCN = {
   "settings.option.submitGradientMode.auto": "自动",
   "settings.option.submitGradientMode.light": "更亮",
   "settings.option.submitGradientMode.dark": "更暗",
-  "settings.item.inputPlaceholder.name": "输入框占位文本",
-  "settings.item.inputPlaceholder.desc": "留空则不显示占位文本。",
+
+  "settings.item.dateAwarePlaceholder.name": "在输入框中显示目标日期",
+  "settings.item.dateAwarePlaceholder.desc": "根据所选笔记的日期显示提示。关闭后显示固定提示。",
 
   "settings.item.tagSuggest.name": "标签自动补全",
   "settings.item.tagSuggest.desc": "在输入 # 时自动显示候选标签。\n关闭后将清除已记录的候选列表。",
@@ -200,6 +201,13 @@ const zhCN = {
   "view.dateNav.shift.w": "跳转到{count}周后",
   "view.dateNav.shift.m": "跳转到{count}个月后",
   "view.dateNav.shift.y": "跳转到{count}年后",
+  "view.composer.placeholder.today": "发布到今天的笔记…",
+  "view.composer.placeholder.yesterday": "发布到昨天的笔记…",
+  "view.composer.placeholder.tomorrow": "发布到明天的笔记…",
+  "view.composer.placeholder.daysAgo": "发布到{count}天前的笔记…",
+  "view.composer.placeholder.daysAhead": "发布到{count}天后的笔记…",
+  "view.composer.placeholder.edit": "编辑内容…",
+
   "view.dateNav.today": "今天",
   "view.dateNav.todaySuffix": "（今天）",
   "view.dateNav.yesterday": "昨天",

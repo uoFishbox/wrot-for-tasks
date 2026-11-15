@@ -47,8 +47,9 @@ const zhTW = {
   "settings.option.submitGradientMode.auto": "自動",
   "settings.option.submitGradientMode.light": "較亮",
   "settings.option.submitGradientMode.dark": "較暗",
-  "settings.item.inputPlaceholder.name": "輸入框提示文字",
-  "settings.item.inputPlaceholder.desc": "留空則隱藏。",
+
+  "settings.item.dateAwarePlaceholder.name": "在輸入框中顯示目標日期",
+  "settings.item.dateAwarePlaceholder.desc": "根據所選筆記的日期顯示提示。關閉後顯示固定提示。",
 
   "settings.item.tagSuggest.name": "標籤自動補全",
   "settings.item.tagSuggest.desc": "在輸入 # 後會顯示候選標籤。 \n關閉後將清除已記錄的候選項目。",
@@ -200,6 +201,13 @@ const zhTW = {
   "view.dateNav.shift.w": "跳轉到{count}週後",
   "view.dateNav.shift.m": "跳轉到{count}個月後",
   "view.dateNav.shift.y": "跳轉到{count}年後",
+  "view.composer.placeholder.today": "發佈到今天的筆記…",
+  "view.composer.placeholder.yesterday": "發佈到昨天的筆記…",
+  "view.composer.placeholder.tomorrow": "發佈到明天的筆記…",
+  "view.composer.placeholder.daysAgo": "發佈到{count}天前的筆記…",
+  "view.composer.placeholder.daysAhead": "發佈到{count}天後的筆記…",
+  "view.composer.placeholder.edit": "編輯內容…",
+
   "view.dateNav.today": "今天",
   "view.dateNav.todaySuffix": "（今天）",
   "view.dateNav.yesterday": "昨天",

@@ -47,8 +47,9 @@ const ja = {
   "settings.option.submitGradientMode.auto": "自動",
   "settings.option.submitGradientMode.light": "明るく",
   "settings.option.submitGradientMode.dark": "暗く",
-  "settings.item.inputPlaceholder.name": "投稿フォームの空欄メッセージ",
-  "settings.item.inputPlaceholder.desc": "空欄にすると非表示になります。",
+
+  "settings.item.dateAwarePlaceholder.name": "入力欄に投稿先の日付を表示",
+  "settings.item.dateAwarePlaceholder.desc": "空欄時に「2日後のノートに投稿…」などと表示します。オフにすると固定のメッセージを表示します。",
 
   "settings.item.tagSuggest.name": "タグ入力補完",
   "settings.item.tagSuggest.desc":
@@ -201,6 +202,13 @@ const ja = {
   "view.dateNav.shift.w": "{count}週間後に移動する",
   "view.dateNav.shift.m": "{count}か月後に移動する",
   "view.dateNav.shift.y": "{count}年後に移動する",
+  "view.composer.placeholder.today": "今日のノートに投稿…",
+  "view.composer.placeholder.yesterday": "昨日のノートに投稿…",
+  "view.composer.placeholder.tomorrow": "明日のノートに投稿…",
+  "view.composer.placeholder.daysAgo": "{count}日前のノートに投稿…",
+  "view.composer.placeholder.daysAhead": "{count}日後のノートに投稿…",
+  "view.composer.placeholder.edit": "投稿を編集…",
+
   "view.dateNav.today": "今日",
   // Suffix appended to the date label; keyed so each locale can restyle it, brackets included.
   "view.dateNav.todaySuffix": "（今日）",

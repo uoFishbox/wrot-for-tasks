@@ -8,6 +8,10 @@ Below is an overview of how typing, formatting, and deleting work in the updated
 >
 > Hiding syntax is purely visual within the editor. Everything still saves as standard Markdown under the hood, meaning older posts, your timeline, and your actual note files behave just as they always have.
 
+## Destination hint
+
+When the editor is empty, its placeholder shows the selected destination: “Post to today’s note…”, “Post to tomorrow’s note…”, or “Post to the note for 2 days from now…”. It follows date selection and updates when returning to the view after midnight. While editing a post, it shows “Edit post…”. In Settings → Advanced, **Show destination date in the editor** toggles this behavior (on by default). Turning it off immediately restores the fixed placeholder, such as “Note to self...”.
+
 ---
 
 ## 1. What Gets Formatted vs. What Stays as Plain Text

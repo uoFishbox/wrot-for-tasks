@@ -649,7 +649,7 @@ export default class WrotPlugin extends Plugin {
     // Pins and tag rules moved out to files of their own, but their keys are deliberately
     // left in raw here: Object.assign below carries them onto settings, and loadDeferredState
     // clears them from data.json only once they are safely written elsewhere.
-    for (const key of ["autoLinkEnabled", "autoLinkExcludeList", "zenMode", "zenModePins", "recentTags", "cancelLabel", "composerMode"]) {
+    for (const key of ["autoLinkEnabled", "autoLinkExcludeList", "zenMode", "zenModePins", "recentTags", "cancelLabel", "composerMode", "inputPlaceholder"]) {
       if (key in raw) {
         delete (raw as Record<string, unknown>)[key];
         dirty = true;
@@ -670,7 +670,6 @@ export default class WrotPlugin extends Plugin {
       timestampFormat: defaultTimestampFormat(),
       submitLabel: t("defaults.submitLabel"),
       updateLabel: t("defaults.updateLabel"),
-      inputPlaceholder: t("defaults.inputPlaceholder"),
     };
     this.pinFixedUnset = !("pinFixed" in raw);
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment -- value from untyped Obsidian/CodeMirror internal API
@@ -692,7 +691,6 @@ export default class WrotPlugin extends Plugin {
       this.settings.timestampFormat = defaultTimestampFormat();
       this.settings.submitLabel = t("defaults.submitLabel");
       this.settings.updateLabel = t("defaults.updateLabel");
-      this.settings.inputPlaceholder = t("defaults.inputPlaceholder");
       dirty = true;
     }
     if (previousLocale !== currentLocale) {

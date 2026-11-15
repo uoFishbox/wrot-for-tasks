@@ -47,8 +47,9 @@ const ru = {
   "settings.option.submitGradientMode.auto": "Автоматически",
   "settings.option.submitGradientMode.light": "Светлее",
   "settings.option.submitGradientMode.dark": "Темнее",
-  "settings.item.inputPlaceholder.name": "Подсказка в поле ввода",
-  "settings.item.inputPlaceholder.desc": "Оставьте пустым, чтобы убрать подсказку.",
+
+  "settings.item.dateAwarePlaceholder.name": "Показывать дату целевой заметки в редакторе",
+  "settings.item.dateAwarePlaceholder.desc": "Подсказка зависит от даты выбранной заметки. Выключите, чтобы показывать постоянный текст.",
 
   "settings.item.tagSuggest.name": "Автодополнение тегов",
   "settings.item.tagSuggest.desc": "Показывать варианты при вводе символа #. \nПри отключении сохранённый кэш подсказок будет очищен.",
@@ -196,6 +197,13 @@ const ru = {
   "view.dateNav.shift.w": "Вперёд на {count} нед.",
   "view.dateNav.shift.m": "Вперёд на {count} мес.",
   "view.dateNav.shift.y": "Вперёд на {count} г.",
+  "view.composer.placeholder.today": "Добавить запись в сегодняшнюю заметку…",
+  "view.composer.placeholder.yesterday": "Добавить запись во вчерашнюю заметку…",
+  "view.composer.placeholder.tomorrow": "Добавить запись в завтрашнюю заметку…",
+  "view.composer.placeholder.daysAgo": "Добавить запись в заметку за {count} дн. назад…",
+  "view.composer.placeholder.daysAhead": "Добавить запись в заметку на {count} дн. вперёд…",
+  "view.composer.placeholder.edit": "Редактировать запись…",
+
   "view.dateNav.today": "Сегодня",
   "view.dateNav.todaySuffix": " (сегодня)",
   "view.dateNav.yesterday": "Вчера",

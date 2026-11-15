@@ -47,8 +47,9 @@ const en = {
   "settings.option.submitGradientMode.auto": "Auto",
   "settings.option.submitGradientMode.light": "Lighter",
   "settings.option.submitGradientMode.dark": "Darker",
-  "settings.item.inputPlaceholder.name": "Compose placeholder text",
-  "settings.item.inputPlaceholder.desc": "Leave blank to hide.",
+
+  "settings.item.dateAwarePlaceholder.name": "Show destination date in the editor",
+  "settings.item.dateAwarePlaceholder.desc": "Show a date-aware placeholder for the selected note. Turn off to use a fixed message.",
 
   "settings.item.tagSuggest.name": "Tag autocomplete",
   "settings.item.tagSuggest.desc": "Show suggestions when typing after \"#\". \nDisabling this also clears cached tags.",
@@ -200,6 +201,13 @@ const en = {
   "view.dateNav.shift.w": "Move forward {count} week(s)",
   "view.dateNav.shift.m": "Move forward {count} month(s)",
   "view.dateNav.shift.y": "Move forward {count} year(s)",
+  "view.composer.placeholder.today": "Post to today’s note…",
+  "view.composer.placeholder.yesterday": "Post to yesterday’s note…",
+  "view.composer.placeholder.tomorrow": "Post to tomorrow’s note…",
+  "view.composer.placeholder.daysAgo": "Post to the note from {count} days ago…",
+  "view.composer.placeholder.daysAhead": "Post to the note for {count} days from now…",
+  "view.composer.placeholder.edit": "Edit post…",
+
   "view.dateNav.today": "Today",
   "view.dateNav.todaySuffix": " (Today)",
   "view.dateNav.yesterday": "Yesterday",

@@ -47,8 +47,9 @@ const de = {
   "settings.option.submitGradientMode.auto": "Automatisch",
   "settings.option.submitGradientMode.light": "Heller",
   "settings.option.submitGradientMode.dark": "Dunkler",
-  "settings.item.inputPlaceholder.name": "Platzhaltertext des Eingabefelds",
-  "settings.item.inputPlaceholder.desc": "Leer lassen, um den Hinweistext auszublenden.",
+
+  "settings.item.dateAwarePlaceholder.name": "Zieldatum im Eingabefeld anzeigen",
+  "settings.item.dateAwarePlaceholder.desc": "Zeigt einen datumsabhängigen Hinweis für die ausgewählte Notiz. Deaktivieren, um einen festen Text anzuzeigen.",
 
   "settings.item.tagSuggest.name": "Tag-Vervollständigung",
   "settings.item.tagSuggest.desc": "Zeigt Vorschläge nach der Eingabe von # an.\nBeim Deaktivieren wird der Vorschlagsverlauf gelöscht.",
@@ -195,6 +196,13 @@ const de = {
   "view.dateNav.shift.w": "{count} Woche(n) weiter",
   "view.dateNav.shift.m": "{count} Monat(e) weiter",
   "view.dateNav.shift.y": "{count} Jahr(e) weiter",
+  "view.composer.placeholder.today": "In die heutige Notiz posten…",
+  "view.composer.placeholder.yesterday": "In die gestrige Notiz posten…",
+  "view.composer.placeholder.tomorrow": "In die morgige Notiz posten…",
+  "view.composer.placeholder.daysAgo": "In die Notiz von vor {count} Tagen posten…",
+  "view.composer.placeholder.daysAhead": "In die Notiz für in {count} Tagen posten…",
+  "view.composer.placeholder.edit": "Beitrag bearbeiten…",
+
   "view.dateNav.today": "Heute",
   "view.dateNav.todaySuffix": " (Heute)",
   "view.dateNav.yesterday": "Gestern",

@@ -47,8 +47,9 @@ const es = {
   "settings.option.submitGradientMode.auto": "Automático",
   "settings.option.submitGradientMode.light": "Más claro",
   "settings.option.submitGradientMode.dark": "Más oscuro",
-  "settings.item.inputPlaceholder.name": "Texto del campo vacío",
-  "settings.item.inputPlaceholder.desc": "Si se deja en blanco, no se mostrará nada.",
+
+  "settings.item.dateAwarePlaceholder.name": "Mostrar la fecha de destino en el editor",
+  "settings.item.dateAwarePlaceholder.desc": "Muestra un texto indicativo según la fecha de la nota seleccionada. Desactiva para usar un mensaje fijo.",
 
   "settings.item.tagSuggest.name": "Sugerencias de etiquetas",
   "settings.item.tagSuggest.desc": "Muestra sugerencias al escribir después de #. \nAl desactivarlo, se borrarán las etiquetas recordadas.",
@@ -201,6 +202,13 @@ const es = {
   "view.dateNav.shift.w": "Avanzar {count} semana(s)",
   "view.dateNav.shift.m": "Avanzar {count} mes(es)",
   "view.dateNav.shift.y": "Avanzar {count} año(s)",
+  "view.composer.placeholder.today": "Publicar en la nota de hoy…",
+  "view.composer.placeholder.yesterday": "Publicar en la nota de ayer…",
+  "view.composer.placeholder.tomorrow": "Publicar en la nota de mañana…",
+  "view.composer.placeholder.daysAgo": "Publicar en la nota de hace {count} días…",
+  "view.composer.placeholder.daysAhead": "Publicar en la nota de dentro de {count} días…",
+  "view.composer.placeholder.edit": "Editar publicación…",
+
   "view.dateNav.today": "Hoy",
   "view.dateNav.todaySuffix": " (Hoy)",
   "view.dateNav.yesterday": "Ayer",

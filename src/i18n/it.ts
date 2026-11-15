@@ -48,8 +48,9 @@ const it = {
   "settings.option.submitGradientMode.auto": "Automatico",
   "settings.option.submitGradientMode.light": "Più chiaro",
   "settings.option.submitGradientMode.dark": "Più scuro",
-  "settings.item.inputPlaceholder.name": "Testo segnaposto",
-  "settings.item.inputPlaceholder.desc": "Lascia vuoto per non mostrare alcun testo.",
+
+  "settings.item.dateAwarePlaceholder.name": "Mostra la data di destinazione nell’editor",
+  "settings.item.dateAwarePlaceholder.desc": "Mostra un suggerimento basato sulla data della nota selezionata. Disattiva per usare un messaggio fisso.",
 
   "settings.item.tagSuggest.name": "Completamento automatico dei tag",
   "settings.item.tagSuggest.desc": "Digitando «#» compaiono i tag suggeriti. \nDisattivandolo, la cronologia dei tag memorizzati verrà eliminata.",
@@ -204,6 +205,13 @@ const it = {
   "view.dateNav.shift.w": "Avanza di {count} settimana/e",
   "view.dateNav.shift.m": "Avanza di {count} mese/i",
   "view.dateNav.shift.y": "Avanza di {count} anno/i",
+  "view.composer.placeholder.today": "Pubblica nella nota di oggi…",
+  "view.composer.placeholder.yesterday": "Pubblica nella nota di ieri…",
+  "view.composer.placeholder.tomorrow": "Pubblica nella nota di domani…",
+  "view.composer.placeholder.daysAgo": "Pubblica nella nota di {count} giorni fa…",
+  "view.composer.placeholder.daysAhead": "Pubblica nella nota tra {count} giorni…",
+  "view.composer.placeholder.edit": "Modifica il post…",
+
   "view.dateNav.today": "Oggi",
   "view.dateNav.todaySuffix": " (Oggi)",
   "view.dateNav.yesterday": "Ieri",

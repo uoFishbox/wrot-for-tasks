@@ -139,7 +139,7 @@ export interface WrotSettings {
   updateLabel: string;
   // Submit-button icon while editing a post. Empty shares submitIcon.
   updateIcon: string;
-  inputPlaceholder: string;
+  dateAwarePlaceholder: boolean;
   // Saves attached images into attachmentFolder instead of following Obsidian's own
   // attachment setting. The folder is never created here: a missing one falls back.
   useCustomAttachmentFolder: boolean;
@@ -192,7 +192,7 @@ export const DEFAULT_SETTINGS: WrotSettings = {
   submitIcon: "send",
   updateLabel: "更新",
   updateIcon: "send",
-  inputPlaceholder: "あなたが書くのを待っています...",
+  dateAwarePlaceholder: true,
   useCustomAttachmentFolder: false,
   attachmentFolder: "",
   shrinkImages: true,
@@ -322,6 +322,9 @@ export class WrotSettingTab extends PluginSettingTab {
       },
       submitGradientMode: () => this.plugin.applySubmitGradient(),
       calendarDayShape: () => this.plugin.applyCalendarDayShape(),
+      dateAwarePlaceholder: () => {
+        this.plugin.forEachView((view) => view.updateComposerPlaceholder());
+      },
       checkStrikethrough: () => {
         this.plugin.refreshViews();
         this.plugin.forEachView((view) => view.composer?.setCheckStrikethrough(settings.checkStrikethrough));
@@ -661,20 +664,11 @@ export class WrotSettingTab extends PluginSettingTab {
           resetValue: () => t("defaults.updateLabel"),
         }),
         this.iconRow("updateIcon"),
-        this.textWithReset({
-          name: t("settings.item.inputPlaceholder.name"),
-          desc: t("settings.item.inputPlaceholder.desc"),
-          placeholder: t("defaults.inputPlaceholder"),
-          read: () => settings.inputPlaceholder,
-          write: async (value) => {
-            settings.inputPlaceholder = value;
-            await this.plugin.saveSettings();
-            this.plugin.forEachView((view) => {
-              view.composer?.setPlaceholder(settings.inputPlaceholder);
-            });
-          },
-          resetValue: () => t("defaults.inputPlaceholder"),
-        }),
+        {
+          name: t("settings.item.dateAwarePlaceholder.name"),
+          desc: desc(t("settings.item.dateAwarePlaceholder.desc")),
+          control: { type: "toggle", key: "dateAwarePlaceholder" },
+        },
         {
           name: t("settings.item.pinLimit.name"),
           desc: desc(t("settings.item.pinLimit.desc")),

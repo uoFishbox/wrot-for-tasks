@@ -163,6 +163,7 @@ export class ComposerField {
   }
 
   setPlaceholder(text: string): void {
+    if (this.view.contentDOM.getAttribute("aria-placeholder") === text) return;
     this.view.dispatch({ effects: this.placeholderConf.reconfigure(placeholderAttr(text)) });
   }
 
