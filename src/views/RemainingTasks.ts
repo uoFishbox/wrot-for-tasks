@@ -74,6 +74,7 @@ export class RemainingTasks extends Component implements HoverParent {
     private plugin: WrotPlugin,
     private collapsed: boolean,
     private onCollapsedChange: (collapsed: boolean) => void,
+    private onOpenPost: (file: TFile, time: string) => Promise<void>,
   ) {
     super();
     this.section = container.createEl("section", {
@@ -760,6 +761,10 @@ export class RemainingTasks extends Component implements HoverParent {
     const file = this.app.vault.getAbstractFileByPath(task.filePath);
     if (!(file instanceof TFile)) {
       this.remove(task.filePath);
+      return;
+    }
+    if (task.time) {
+      await this.onOpenPost(file, task.time);
       return;
     }
     await this.app.workspace.getLeaf(newTab ? "tab" : false).openFile(file, {

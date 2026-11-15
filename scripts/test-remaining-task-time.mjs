@@ -9,7 +9,7 @@ const bundle = await build({
       export * from "./src/utils/dailyNoteTasks.ts";
       export { RemainingTasks } from "./src/views/RemainingTasks.ts";
       export { initI18n } from "./src/i18n/index.ts";
-      export { setLanguage } from "obsidian";`,
+      export { setLanguage, TFile } from "obsidian";`,
     resolveDir: process.cwd(),
   },
   bundle: true,
@@ -64,7 +64,7 @@ const bundle = await build({
   }],
 });
 const { calendarDateValue, remainingTaskTimeLabel, taskCreationDate, taskScheduleStatus, taskTimeDetails, dailyNoteTaskStartMinutes,
-  incompleteDailyNoteTaskEntries, RemainingTasks, initI18n, setLanguage } = await import(
+  incompleteDailyNoteTaskEntries, RemainingTasks, initI18n, setLanguage, TFile } = await import(
   `data:text/javascript;base64,${Buffer.from(bundle.outputFiles[0].text).toString("base64")}`
 );
 initI18n();
@@ -222,7 +222,7 @@ function resizeView(collapsed = false) {
   container.win.matchMedia = () => ({ matches: true });
   container.win.addEventListener = (name, callback) => { container.win[name] = callback; };
   const view = new RemainingTasks({ vault: { getName: () => "test" } }, container, { settings: {} },
-    collapsed, value => changes.push(value));
+    collapsed, value => changes.push(value), async () => {});
   view.registerResize();
   const send = (name, overrides = {}) => {
     const event = { pointerId: 1, isPrimary: true, button: 0, clientX: 0, clientY: 100,
@@ -439,6 +439,21 @@ test("task row hovers create native popovers and release them on switching, refr
   view.completingRows.set(row, null);
   row.listeners.mouseenter();
   assert.equal(view.taskPopover, null);
+});
+
+test("clicking a post task opens it in Wrot without opening the source note", async () => {
+  const task = { ...entry("task", 12), time: "2026-10-30T09:00:00+09:00" };
+  const file = Object.assign(new TFile(), { path: task.filePath });
+  const opened = [];
+  const view = taskView([task]);
+  view.app.vault.getAbstractFileByPath = () => file;
+  view.app.workspace = { getLeaf() { assert.fail("Source note must not open"); } };
+  view.onOpenPost = async (...args) => { opened.push(args); };
+  view.render();
+  const row = view.list.querySelector(".wrot-remaining-task");
+  row.listeners.click({ target: row });
+  await Promise.resolve();
+  assert.deepEqual(opened, [[file, task.time]]);
 });
 
 test("the task list hides unscheduled metadata, opens rows and refreshes past status", () => {

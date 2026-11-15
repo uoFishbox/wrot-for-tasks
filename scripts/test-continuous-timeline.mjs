@@ -65,6 +65,49 @@ test("task panel mode restores with the workspace independently of continuous sc
 const note = day => ({ path: `${day}.md`, day });
 const memo = (day, body = "post", hour = "12") => `\x60\x60\x60wr ${day}T${hour}:00:00\n${body}\n\x60\x60\x60\n`;
 
+test("task navigation reveals its post in either timeline mode", async () => {
+  for (const continuousScroll of [false, true]) {
+    const file = new TFile("2026-11-20.md");
+    const time = "2026-11-01T12:00:00";
+    const cards = [];
+    const list = {
+      scrollTop: 0, clientHeight: 300,
+      getBoundingClientRect: () => ({ top: 100 }),
+      style: { removeProperty() {} },
+      empty() { cards.length = 0; }, addClass() {}, removeClass() {},
+    };
+    const view = Object.assign(Object.create(WrotView.prototype), {
+      app: { vault: {
+        getAbstractFileByPath: path => path === file.path ? file : null,
+        getMarkdownFiles: () => [file],
+        read: async () => memo("2026-11-01", "- [ ] target") + memo("2026-11-20", "other", "13"),
+      } },
+      plugin: { settings: { pins: [], scheduledPins: [] }, matchesRuleFlag: () => false },
+      continuousScroll, timelineRevision: 0,
+      listContainer: list, contentEl: { querySelectorAll: () => cards },
+      closeCalendarPopover() {}, updateComposerPlaceholder() {}, updateDateLabel() {},
+      setArmedSchedule() {}, releaseEditModeIfTargetGone: async () => {},
+      queueTimelineScroll() {}, timelineAnchor: () => null, restoreTimelineAnchor() {},
+      alignTimelineScrollTarget() {}, renderTimelineDay() {}, clearPinnedContainer() {},
+      renderMemoCard(memo, options) {
+        const card = {
+          dataset: { memoKey: `${options.filePath}\n${memo.time}` },
+          getBoundingClientRect: () => ({ top: 700, height: 100 }),
+          setAttribute() {}, focus() { this.focused = true; },
+        };
+        cards.push(card);
+        return card;
+      },
+    });
+    await view.openTaskPost(file, time);
+    // Navigate by the destination note's date, even when the post was written earlier.
+    assert.equal(view.currentDate.format("YYYY-MM-DD"), "2026-11-20");
+    assert.equal(view.continuousScroll, continuousScroll);
+    assert.deepEqual(cards.filter(card => card.focused).map(card => card.dataset.memoKey), [`${file.path}\n${time}`]);
+    assert.ok(list.scrollTop > 0);
+  }
+});
+
 test("pagination skips calendar gaps, includes empty destinations, and never repeats a note", () => {
   const notes = [note("2026-11-13"), note("2020-01-01"), note("2010-01-01")];
   const window = new ContinuousTimeline([...notes, notes[0]], note("2025-06-01"));

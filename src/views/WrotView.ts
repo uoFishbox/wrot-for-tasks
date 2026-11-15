@@ -293,6 +293,8 @@ export class WrotView extends ItemView {
   private timelinePins = new Set<string>();
   private timelineWaiting = new Set<string>();
   private remainingTasks: RemainingTasks | null = null;
+  private revealedMemoKey: string | null = null;
+  private pendingMemoReveal = false;
   private tasksCollapsed = false;
   private pinnedContainer: HTMLElement | null = null;
   private dateLabel!: HTMLElement;
@@ -478,6 +480,7 @@ export class WrotView extends ItemView {
           this.tasksCollapsed = collapsed;
           this.app.workspace.requestSaveLayout();
         },
+        (file, time) => this.openTaskPost(file, time),
       ),
     );
 
@@ -544,6 +547,8 @@ export class WrotView extends ItemView {
   onClose(): Promise<void> {
     this.timelineRevision++;
     this.timelineScrollTarget = null;
+    this.pendingMemoReveal = false;
+    this.revealedMemoKey = null;
     if (this.timelineFrame !== null)
       this.containerEl.win.cancelAnimationFrame(this.timelineFrame);
     this.timelineFrame = null;
@@ -2296,6 +2301,45 @@ export class WrotView extends ItemView {
     }
   }
 
+  private async openTaskPost(file: TFile, time: string): Promise<void> {
+    const date = dateForDailyNote(file);
+    if (!date) throw new Error(`Not a daily note: ${file.path}`);
+    this.currentDate = date;
+    this.anchoredToToday = false;
+    this.revealedMemoKey = pinKey(file.path, time);
+    this.pendingMemoReveal = true;
+    this.timelineScrollTarget = null;
+    this.closeCalendarPopover();
+    // Explicit navigation must render even just after a checkbox write.
+    this.ignoreModifyUntil = 0;
+    await this.refresh();
+  }
+
+  private revealTaskPost(): void {
+    if (!this.pendingMemoReveal) return;
+    this.pendingMemoReveal = false;
+    const card = Array.from(
+      this.contentEl.querySelectorAll<HTMLElement>("[data-memo-key]"),
+    ).find((el) => el.dataset.memoKey === this.revealedMemoKey);
+    if (!card) {
+      this.revealedMemoKey = null;
+      new Notice(t("view.tasks.openFailed"));
+      return;
+    }
+    this.timelineScrollTarget = null;
+    const scroller =
+      this.pinnedContainer?.contains(card) && this.plugin.settings.pinFixed
+        ? this.pinnedContainer
+        : this.listContainer;
+    const rect = card.getBoundingClientRect();
+    scroller.scrollTop +=
+      rect.top -
+      scroller.getBoundingClientRect().top -
+      Math.max(0, (scroller.clientHeight - rect.height) / 2);
+    card.setAttribute("tabindex", "-1");
+    card.focus({ preventScroll: true });
+  }
+
   /** Keep a real card at the same screen position across inserts and refreshes. */
   private timelineAnchor(): { key: string; top: number } | null {
     const top = this.listContainer.getBoundingClientRect().top;
@@ -2462,10 +2506,11 @@ export class WrotView extends ItemView {
       const visible = memos.filter(
         (memo) =>
           !this.timelinePins.has(pinKey(note.path, memo.time)) &&
-          !this.plugin.matchesRuleFlag(
-            memo.tags,
-            (rule) => rule.hideFromTimeline === true,
-          ),
+          (pinKey(note.path, memo.time) === this.revealedMemoKey ||
+            !this.plugin.matchesRuleFlag(
+              memo.tags,
+              (rule) => rule.hideFromTimeline === true,
+            )),
       );
       if (visible.length === 0 && note.path !== selectedPath) continue;
       // A post's timestamp records when it was written, even when its destination
@@ -2793,6 +2838,7 @@ export class WrotView extends ItemView {
         // Pinned memos above are deliberately exempt: pinning names a single memo,
         // which outranks a rule that hides a whole tag.
         if (
+          key !== this.revealedMemoKey &&
           this.plugin.matchesRuleFlag(
             memo.tags,
             (rule) => rule.hideFromTimeline === true,
@@ -2820,7 +2866,7 @@ export class WrotView extends ItemView {
         this.refreshQueued = false;
         // eslint-disable-next-line @typescript-eslint/no-floating-promises -- replay must not alter this call's result
         this.refresh();
-      }
+      } else this.revealTaskPost();
       this.queueTimelineScroll();
     }
   }
@@ -3307,6 +3353,7 @@ export class WrotView extends ItemView {
       ? this.ensurePinnedContainer()
       : (options.host ?? this.listContainer);
     const card = host.createDiv({ cls: "wrot-card" });
+    card.dataset.memoKey = pinKey(options.filePath, memo.time);
     const pendingTaskLines = new Set(
       incompleteMemoTaskEntries(memo.content).map((task) => task.line),
     );
