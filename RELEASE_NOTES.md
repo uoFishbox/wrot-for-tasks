@@ -1,5 +1,6 @@
 # Unreleased
 
+- Added a remaining-tasks header that snaps between the normal list and a minimized one-line task-name summary when dragged, with muted task names, click/keyboard controls and per-view workspace persistence.
 - Merged upstream Wrot 3.2.0, including reliable timeline checkbox writes, nested-list indentation, accent-insensitive tag completion, and Obsidian 1.15 diagram colors.
 - Changed UI class names and CSS variables from `wr-` to `wrot-`; update custom CSS snippets to the new prefix. Memo fences and block IDs are unchanged.
 - Added relative date badges and refined calendar task-dot spacing while preserving the fork's task features and calendar layout.

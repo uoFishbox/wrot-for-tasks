@@ -32,7 +32,11 @@ const bundle = await build({
         export const getLanguage = () => language;
         export const setLanguage = (value) => { language = value; };
         export const Platform = { isMobile: false };
-        export class Component {} export class Notice {} export class TFile {}
+        export class Component {
+          registerDomEvent(target, name, callback) { target.addEventListener(name, callback); }
+          register(callback) { (this.cleanups ??= []).push(callback); }
+        }
+        export class Notice {} export class TFile {}
         export class HoverPopover {
           constructor(parent, target) {
             this.parent = parent;
@@ -169,6 +173,14 @@ class Element {
   empty() { this.children = []; }
   setText(text) { this.text = text; }
   setAttribute(name, value) { this.attributes[name] = value; }
+  toggleClass(name, enabled) {
+    this.classes ??= new Set((this.cls ?? "").split(" "));
+    if (enabled) this.classes.add(name);
+    else this.classes.delete(name);
+  }
+  setPointerCapture(id) { this.capturedPointer = id; }
+  hasPointerCapture(id) { return this.capturedPointer === id; }
+  releasePointerCapture() { this.capturedPointer = null; }
   getAttribute(name) { return this.attributes[name] ?? null; }
   addEventListener(event, callback) { this.listeners[event] = callback; }
   remove() { this.parent.children = this.parent.children.filter(child => child !== this); }
@@ -193,7 +205,7 @@ class Element {
 function taskView(entries) {
   return Object.assign(Object.create(RemainingTasks.prototype), {
     app: { vault: { getName: () => "test" } }, plugin: { settings: {} },
-    list: new Element(), count: new Element(), loading: false, closed: false,
+    list: new Element(), count: new Element(), summary: new Element(), loading: false, closed: false,
     tasks: new Map([["daily.md", entries]]), failed: new Set(), completingRows: new Map(), timeLabels: new Map(),
     hoverPopover: null, taskPopover: null, taskLongPressCleanups: [],
   });
@@ -202,6 +214,104 @@ function taskView(entries) {
 function entry(text, line, day = noteDate, createdDate = day) {
   return { ...schedule(text, day, createdDate), text, line, filePath: "daily.md", noteDateLabel: "note date" };
 }
+
+function resizeView(collapsed = false) {
+  const container = new Element();
+  const changes = [];
+  container.win.getComputedStyle = () => ({ height: "200px" });
+  container.win.matchMedia = () => ({ matches: true });
+  container.win.addEventListener = (name, callback) => { container.win[name] = callback; };
+  const view = new RemainingTasks({ vault: { getName: () => "test" } }, container, { settings: {} },
+    collapsed, value => changes.push(value));
+  view.registerResize();
+  const send = (name, overrides = {}) => {
+    const event = { pointerId: 1, isPrimary: true, button: 0, clientX: 0, clientY: 100,
+      detail: 1, preventDefault() { this.defaultPrevented = true; }, ...overrides };
+    view.header.listeners[name](event);
+    return event;
+  };
+  return { view, changes, send };
+}
+
+test("dragging the header snaps between two modes, with a dead band and no trailing click toggle", () => {
+  const { view, changes, send } = resizeView();
+  send("pointerdown");
+  send("pointermove", { clientY: 123 });
+  assert.equal(view.list.hidden, false);
+  send("pointermove", { clientY: 124 });
+  assert.equal(view.list.hidden, true);
+  assert.equal(view.header.getAttribute("aria-expanded"), "false");
+  send("pointermove", { clientY: 101 });
+  assert.equal(view.list.hidden, true);
+  assert.deepEqual(changes, []);
+  send("pointerup");
+  assert.deepEqual(changes, [true]);
+  assert.equal(view.header.capturedPointer, null);
+  assert.equal(send("click").defaultPrevented, true);
+  assert.equal(view.list.hidden, true);
+
+  send("pointerdown");
+  send("pointermove", { clientY: 76 });
+  send("pointerup");
+  send("click");
+  assert.equal(view.list.hidden, false);
+  assert.equal(view.header.getAttribute("aria-expanded"), "true");
+  assert.deepEqual(changes, [true, false]);
+});
+
+test("cancelled drags restore the starting mode without saving, including focus loss and unload", () => {
+  for (const cancel of ["pointercancel", "lostpointercapture", "Escape", "blur", "unload"]) {
+    const { view, changes, send } = resizeView(true);
+    send("pointerdown");
+    send("pointermove", { clientY: 70 });
+    assert.equal(view.list.hidden, false);
+    if (cancel === "Escape") send("keydown", { key: "Escape" });
+    else if (cancel === "blur") view.header.win.blur();
+    else if (cancel === "unload") view.cleanups.forEach(cleanup => cleanup());
+    else send(cancel);
+    assert.equal(view.list.hidden, true, cancel);
+    assert.deepEqual(changes, [], cancel);
+    assert.equal(view.header.capturedPointer, null);
+    send("click");
+    assert.equal(view.list.hidden, true, cancel);
+    assert.deepEqual(changes, [], cancel);
+  }
+});
+
+test("click and keyboard can restore minimized tasks", () => {
+  const { view, changes, send } = resizeView(true);
+  send("click");
+  assert.equal(view.list.hidden, false);
+  send("keydown", { key: "ArrowDown" });
+  send("keydown", { key: "ArrowDown" });
+  assert.deepEqual(changes, [false, true]);
+  send("keydown", { key: "ArrowUp" });
+  send("keydown", { key: " " });
+  send("keydown", { key: "Enter" });
+  assert.deepEqual(changes, [false, true, false, true, false]);
+});
+
+test("minimized tasks show comma-separated names and refresh without expanding", () => {
+  const { view, send } = resizeView(true);
+  assert.equal(view.title.text, "未完了タスク:");
+  view.loading = false;
+  view.tasks.set("daily.md", [entry("タスク2", 1), entry("タスク1", 0)]);
+  view.render(date(9, 0));
+  assert.equal(view.summary.text, "タスク1, タスク2");
+  assert.equal(view.list.hidden, true);
+  view.tasks.set("daily.md", [entry("変更後 <script>", 0)]);
+  view.render(date(9, 0));
+  assert.equal(view.summary.text, "変更後 <script>");
+  assert.equal(view.summary.children.length, 0);
+  send("click");
+  assert.equal(view.title.text, "未完了タスク");
+  assert.equal(view.list.hidden, false);
+  view.tasks.clear();
+  view.render(date(9, 0));
+  send("click");
+  assert.equal(view.summary.text, "未完了のタスクはありません");
+  assert.equal(view.title.text, "未完了タスク:");
+});
 
 test("hover details only contain durations and progress across multiple days", () => {
   const created = new Date(2026, 9, 29, 8, 5);

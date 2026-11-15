@@ -26,7 +26,8 @@ const bundle = await build({
           export const notices = [];
           export class Notice { constructor(message) { notices.push(message); } }
           export class TFile { constructor(path) { this.path = path; this.name = path.split("/").pop(); this.extension = "md"; this.basename = path.replace(/\\.md$/, ""); } }
-          export class ItemView {} export class Component {} export class Events {} export class MarkdownView {} export class HoverPopover {}
+          export class ItemView { async setState() {} }
+          export class Component {} export class Events {} export class MarkdownView {} export class HoverPopover {}
           export class PluginSettingTab {} export class Setting {} export class AbstractInputSuggest {}
           export class Scope {} export class Menu {} export class MenuItem {}
           export class Modal {} export class ButtonComponent {}
@@ -44,6 +45,22 @@ const { WrotView, ContinuousTimeline, timelineMemos, TFile, notices } = await im
   `data:text/javascript;base64,${Buffer.from(bundle.outputFiles[0].text).toString("base64")}`
 );
 globalThis.moment = moment;
+
+test("task panel mode restores with the workspace independently of continuous scrolling", async () => {
+  const restored = [];
+  const view = Object.assign(Object.create(WrotView.prototype), {
+    continuousScroll: true, tasksCollapsed: false,
+    remainingTasks: { setCollapsed: value => restored.push(value) },
+  });
+  await view.setState({ continuousScroll: true, tasksCollapsed: true }, {});
+  assert.deepEqual(view.getState(), { continuousScroll: true, tasksCollapsed: true });
+  await view.setState({ continuousScroll: true }, {});
+  assert.deepEqual(view.getState(), { continuousScroll: true, tasksCollapsed: false });
+  assert.deepEqual(restored, [true, false]);
+  view.remainingTasks = null;
+  await view.setState({ continuousScroll: true, tasksCollapsed: true }, {});
+  assert.equal(view.getState().tasksCollapsed, true);
+});
 
 const note = day => ({ path: `${day}.md`, day });
 const memo = (day, body = "post", hour = "12") => `\x60\x60\x60wr ${day}T${hour}:00:00\n${body}\n\x60\x60\x60\n`;

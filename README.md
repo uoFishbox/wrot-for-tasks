@@ -30,6 +30,8 @@ Because every post drops straight into your daily notes, Wrot for Tasks works ha
 
 ## What you can do
 
+- **Minimize remaining tasks**
+  Drag the remaining-tasks header down to show a one-line summary of task names, or up to restore the list. Click the header to toggle; each view remembers its mode ([learn more](docs/en/remaining-tasks.md)).
 - **A social-style timeline paired with a rich editor**  
   Browse your entries in a clean, chronological feed. The editor hides Markdown syntax so bold text and lists look finished as you write ([learn more](https://github.com/uoFishbox/wrot-for-tasks/blob/main/docs/en/posting-form-v3.md)). A customizable toolbar puts formatting, lists, quotes, and links within easy reach ([learn more](https://github.com/uoFishbox/wrot-for-tasks/blob/main/docs/en/toolbar.md)).
 - **Keep important notes pinned**  

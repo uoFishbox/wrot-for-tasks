@@ -293,6 +293,7 @@ export class WrotView extends ItemView {
   private timelinePins = new Set<string>();
   private timelineWaiting = new Set<string>();
   private remainingTasks: RemainingTasks | null = null;
+  private tasksCollapsed = false;
   private pinnedContainer: HTMLElement | null = null;
   private dateLabel!: HTMLElement;
   private dateText!: HTMLElement;
@@ -405,10 +406,19 @@ export class WrotView extends ItemView {
   }
 
   getState(): Record<string, unknown> {
-    return { continuousScroll: this.continuousScroll };
+    return {
+      continuousScroll: this.continuousScroll,
+      tasksCollapsed: this.tasksCollapsed,
+    };
   }
 
   async setState(state: unknown, result: ViewStateResult): Promise<void> {
+    this.tasksCollapsed =
+      !!state &&
+      typeof state === "object" &&
+      "tasksCollapsed" in state &&
+      state.tasksCollapsed === true;
+    this.remainingTasks?.setCollapsed(this.tasksCollapsed);
     const enabled =
       !!state &&
       typeof state === "object" &&
@@ -459,7 +469,16 @@ export class WrotView extends ItemView {
     this.listContainer = container.createDiv({ cls: "wrot-list" });
     this.registerTimelineScroll();
     this.remainingTasks = this.addChild(
-      new RemainingTasks(this.app, container, this.plugin),
+      new RemainingTasks(
+        this.app,
+        container,
+        this.plugin,
+        this.tasksCollapsed,
+        (collapsed) => {
+          this.tasksCollapsed = collapsed;
+          this.app.workspace.requestSaveLayout();
+        },
+      ),
     );
 
     this.scope!.register(["Mod"], "Enter", (evt) => {

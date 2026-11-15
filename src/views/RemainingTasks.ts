@@ -1,4 +1,13 @@
-import { App, CachedMetadata, Component, HoverParent, HoverPopover, Notice, Platform, TFile } from "obsidian";
+import {
+  App,
+  CachedMetadata,
+  Component,
+  HoverParent,
+  HoverPopover,
+  Notice,
+  Platform,
+  TFile,
+} from "obsidian";
 import { dateForDailyNote } from "../utils/dailyNote";
 import {
   DailyNoteTask,
@@ -21,7 +30,10 @@ import {
 import { renderQuoteCard } from "../utils/quoteCard";
 import type WrotPlugin from "../main";
 import { t } from "../i18n";
-import { bindTaskLongPress, TASK_CONTROL_SELECTOR } from "../utils/taskLongPress";
+import {
+  bindTaskLongPress,
+  TASK_CONTROL_SELECTOR,
+} from "../utils/taskLongPress";
 
 interface RemainingTask extends DailyNoteTask, TaskSchedule {
   filePath: string;
@@ -30,7 +42,10 @@ interface RemainingTask extends DailyNoteTask, TaskSchedule {
 
 // Obsidian's native hide() also cancels pending shows and removes target listeners;
 // Component.unload() alone does neither. hide() is omitted from its public typings.
-type TaskHoverPopover = HoverPopover & { hide(): void; setIsFocused(focused: boolean): void };
+type TaskHoverPopover = HoverPopover & {
+  hide(): void;
+  setIsFocused(focused: boolean): void;
+};
 
 /** A view-local index: one initial scan, then only changed daily notes are parsed. */
 export class RemainingTasks extends Component implements HoverParent {
@@ -38,6 +53,9 @@ export class RemainingTasks extends Component implements HoverParent {
   private taskPopover: TaskHoverPopover | null = null;
   private taskLongPressCleanups: (() => void)[] = [];
   private section: HTMLElement;
+  private header: HTMLElement;
+  private title: HTMLElement;
+  private summary: HTMLElement;
   private count: HTMLElement;
   private list: HTMLElement;
   private tasks = new Map<string, RemainingTask[]>();
@@ -54,20 +72,35 @@ export class RemainingTasks extends Component implements HoverParent {
     private app: App,
     container: HTMLElement,
     private plugin: WrotPlugin,
+    private collapsed: boolean,
+    private onCollapsedChange: (collapsed: boolean) => void,
   ) {
     super();
     this.section = container.createEl("section", {
       cls: "wrot-remaining-tasks",
       attr: { "aria-label": t("view.tasks.title") },
     });
-    const header = this.section.createDiv({ cls: "wrot-remaining-tasks-header" });
-    header.createEl("div", { text: t("view.tasks.title") });
-    this.count = header.createSpan({ cls: "wrot-remaining-tasks-count" });
+    this.header = this.section.createDiv({
+      cls: "wrot-remaining-tasks-header",
+      attr: {
+        role: "button",
+        tabindex: "0",
+        "aria-expanded": String(!collapsed),
+      },
+    });
+    this.title = this.header.createDiv({ cls: "wrot-remaining-tasks-title" });
+    this.summary = this.header.createSpan({
+      cls: "wrot-remaining-tasks-summary",
+      text: t("view.tasks.loading"),
+    });
+    this.count = this.header.createSpan({ cls: "wrot-remaining-tasks-count" });
     this.list = this.section.createDiv({ cls: "wrot-remaining-tasks-list" });
+    this.setCollapsed(collapsed);
   }
 
   onload(): void {
     this.closed = false;
+    this.registerResize();
     let today = calendarDateValue(new Date());
     this.registerInterval(
       this.section.win.setInterval(() => {
@@ -103,6 +136,122 @@ export class RemainingTasks extends Component implements HoverParent {
     );
     this.render();
     void this.scan();
+  }
+
+  setCollapsed(collapsed: boolean, animate = false): void {
+    const previousHeight = animate
+      ? parseFloat(this.section.win.getComputedStyle(this.section).height)
+      : 0;
+    this.sectionResizeAnimation?.cancel();
+    this.sectionResizeAnimation = null;
+    this.collapsed = collapsed;
+    if (collapsed) this.closeTaskPopover();
+    this.section.toggleClass("wrot-remaining-tasks-collapsed", collapsed);
+    this.header.setAttribute("aria-expanded", String(!collapsed));
+    this.title.setText(`${t("view.tasks.title")}${collapsed ? ":" : ""}`);
+    this.list.hidden = collapsed;
+    if (
+      !animate ||
+      this.section.win.matchMedia("(prefers-reduced-motion: reduce)").matches
+    )
+      return;
+    const height = parseFloat(
+      this.section.win.getComputedStyle(this.section).height,
+    );
+    if (
+      !Number.isFinite(previousHeight) ||
+      !Number.isFinite(height) ||
+      height === previousHeight
+    )
+      return;
+    this.sectionResizeAnimation = this.section.animate(
+      { height: [`${previousHeight}px`, `${height}px`] },
+      { duration: 160, easing: "ease-out" },
+    );
+    this.sectionResizeAnimation.onfinish = () => {
+      this.sectionResizeAnimation = null;
+    };
+  }
+
+  private registerResize(): void {
+    let drag: { id: number; x: number; y: number; collapsed: boolean } | null =
+      null;
+    let suppressClick = false;
+    const finish = (cancelled: boolean): void => {
+      if (!drag) return;
+      const previous = drag;
+      drag = null;
+      if (cancelled) {
+        suppressClick = true;
+        this.setCollapsed(previous.collapsed);
+      } else if (this.collapsed !== previous.collapsed)
+        this.onCollapsedChange(this.collapsed);
+      if (this.header.hasPointerCapture(previous.id))
+        this.header.releasePointerCapture(previous.id);
+    };
+    this.registerDomEvent(this.header, "pointerdown", (event: PointerEvent) => {
+      if (
+        event.defaultPrevented ||
+        !event.isPrimary ||
+        event.button !== 0 ||
+        drag
+      )
+        return;
+      suppressClick = false;
+      drag = {
+        id: event.pointerId,
+        x: event.clientX,
+        y: event.clientY,
+        collapsed: this.collapsed,
+      };
+      this.header.setPointerCapture(event.pointerId);
+    });
+    this.registerDomEvent(this.header, "pointermove", (event: PointerEvent) => {
+      if (drag?.id !== event.pointerId) return;
+      const delta = event.clientY - drag.y;
+      if (Math.hypot(event.clientX - drag.x, delta) > 6) suppressClick = true;
+      // A dead band keeps the two snap positions stable despite small pointer movements.
+      if (Math.abs(delta) < 24) return;
+      const collapsed = delta > 0;
+      if (collapsed !== this.collapsed) this.setCollapsed(collapsed, true);
+    });
+    this.registerDomEvent(this.header, "pointerup", (event: PointerEvent) => {
+      if (drag?.id === event.pointerId) finish(false);
+    });
+    for (const name of ["pointercancel", "lostpointercapture"] as const) {
+      this.registerDomEvent(this.header, name, (event: PointerEvent) => {
+        if (drag?.id === event.pointerId) finish(true);
+      });
+    }
+    this.registerDomEvent(this.header.win, "blur", () => finish(true));
+    this.register(() => finish(true));
+    this.registerDomEvent(this.header, "click", (event: MouseEvent) => {
+      if (suppressClick && event.detail !== 0) {
+        event.preventDefault();
+        return;
+      }
+      this.setCollapsed(!this.collapsed, true);
+      this.onCollapsedChange(this.collapsed);
+    });
+    this.registerDomEvent(this.header, "keydown", (event: KeyboardEvent) => {
+      if (event.key === "Escape" && drag) {
+        event.preventDefault();
+        finish(true);
+        return;
+      }
+      if (drag || !["Enter", " ", "ArrowUp", "ArrowDown"].includes(event.key))
+        return;
+      event.preventDefault();
+      const collapsed =
+        event.key === "ArrowDown"
+          ? true
+          : event.key === "ArrowUp"
+            ? false
+            : !this.collapsed;
+      if (collapsed === this.collapsed) return;
+      this.setCollapsed(collapsed, true);
+      this.onCollapsedChange(collapsed);
+    });
   }
 
   onunload(): void {
@@ -229,18 +378,24 @@ export class RemainingTasks extends Component implements HoverParent {
       );
     const scrollTop = this.list.scrollTop;
     this.count.setText(String(tasks.length));
+    const statusText = t(
+      this.loading
+        ? "view.tasks.loading"
+        : this.failed.size > 0
+          ? "view.tasks.readFailed"
+          : "view.tasks.empty",
+    );
+    this.summary.setText(
+      tasks.length > 0
+        ? tasks.map((task) => task.text || t("view.tasks.untitled")).join(", ")
+        : statusText,
+    );
     this.list.empty();
     this.timeLabels.clear();
     if (this.loading || this.failed.size > 0 || tasks.length === 0) {
       this.list.createDiv({
         cls: "wrot-remaining-tasks-status",
-        text: t(
-          this.loading
-            ? "view.tasks.loading"
-            : this.failed.size > 0
-              ? "view.tasks.readFailed"
-              : "view.tasks.empty",
-        ),
+        text: statusText,
       });
     }
     const currentList = this.list.createDiv({
@@ -277,13 +432,17 @@ export class RemainingTasks extends Component implements HoverParent {
         });
       };
       if (Platform.isMobile) {
-        this.taskLongPressCleanups.push(bindTaskLongPress(
-          row,
-          () => this.showTaskPopover(row, task, true),
-          () => this.closeTaskPopover(),
-        ));
+        this.taskLongPressCleanups.push(
+          bindTaskLongPress(
+            row,
+            () => this.showTaskPopover(row, task, true),
+            () => this.closeTaskPopover(),
+          ),
+        );
       } else {
-        row.addEventListener("mouseenter", () => this.showTaskPopover(row, task));
+        row.addEventListener("mouseenter", () =>
+          this.showTaskPopover(row, task),
+        );
       }
       row.addEventListener("click", (event) => {
         if (
@@ -431,43 +590,85 @@ export class RemainingTasks extends Component implements HoverParent {
     this.taskPopover = null;
   }
 
-  private showTaskPopover(row: HTMLElement, task: RemainingTask, persistent = false): void {
+  private showTaskPopover(
+    row: HTMLElement,
+    task: RemainingTask,
+    persistent = false,
+  ): void {
     if (this.closed || this.completingRows.has(row)) return;
     this.closeTaskPopover();
-    const popover = new HoverPopover(this, row, persistent ? 0 : 300) as TaskHoverPopover;
+    const popover = new HoverPopover(
+      this,
+      row,
+      persistent ? 0 : 300,
+    ) as TaskHoverPopover;
     this.taskPopover = popover;
     // Load now so hiding during the initial wait also runs registered cleanup.
     // The native popover assigns hoverPopover itself once it becomes visible.
     popover.load();
     if (persistent) {
       popover.setIsFocused(true);
-      popover.registerDomEvent(row.doc, "pointerdown", (event) => {
-        if (!popover.hoverEl.contains(event.target as Node)) this.closeTaskPopover();
-      }, true);
-      popover.registerDomEvent(row.doc, "scroll", () => this.closeTaskPopover(), true);
-      popover.registerDomEvent(row.win, "resize", () => this.closeTaskPopover());
+      popover.registerDomEvent(
+        row.doc,
+        "pointerdown",
+        (event) => {
+          if (!popover.hoverEl.contains(event.target as Node))
+            this.closeTaskPopover();
+        },
+        true,
+      );
+      popover.registerDomEvent(
+        row.doc,
+        "scroll",
+        () => this.closeTaskPopover(),
+        true,
+      );
+      popover.registerDomEvent(row.win, "resize", () =>
+        this.closeTaskPopover(),
+      );
       popover.registerDomEvent(row.doc, "keydown", (event) => {
         if (event.key === "Escape") this.closeTaskPopover();
       });
     }
     popover.hoverEl.setAttribute("data-wrot-task-time", "");
-    const details = popover.hoverEl.createEl("dl", { cls: "wrot-task-time-details" });
-    const labels = new Map<"createdElapsed" | "scheduledRemaining", HTMLElement>();
-    const values = new Map<"createdElapsed" | "scheduledRemaining", HTMLElement>();
+    const details = popover.hoverEl.createEl("dl", {
+      cls: "wrot-task-time-details",
+    });
+    const labels = new Map<
+      "createdElapsed" | "scheduledRemaining",
+      HTMLElement
+    >();
+    const values = new Map<
+      "createdElapsed" | "scheduledRemaining",
+      HTMLElement
+    >();
     for (const key of ["createdElapsed", "scheduledRemaining"] as const) {
       labels.set(key, details.createEl("dt", { text: t(`view.tasks.${key}`) }));
       values.set(key, details.createEl("dd"));
     }
-    const timeline = popover.hoverEl.createDiv({ cls: "wrot-task-time-timeline", attr: { role: "img" } });
-    const labelRow = timeline.createDiv({ cls: "wrot-task-time-label", attr: { "aria-hidden": "true" } });
+    const timeline = popover.hoverEl.createDiv({
+      cls: "wrot-task-time-timeline",
+      attr: { role: "img" },
+    });
+    const labelRow = timeline.createDiv({
+      cls: "wrot-task-time-label",
+      attr: { "aria-hidden": "true" },
+    });
     const elapsedLabel = labelRow.createSpan();
-    const axis = timeline.createDiv({ cls: "wrot-task-time-axis", attr: { "aria-hidden": "true" } });
+    const axis = timeline.createDiv({
+      cls: "wrot-task-time-axis",
+      attr: { "aria-hidden": "true" },
+    });
     axis.createDiv({ cls: "wrot-task-time-fill" });
     axis.createSpan({ cls: "wrot-task-time-current" });
     const refresh = (): void => {
       const now = new Date();
       const times = taskTimeDetails(task, now);
-      const remainingHeading = t(taskScheduleStatus(task, now) === "past" ? "view.tasks.overdue" : "view.tasks.scheduledRemaining");
+      const remainingHeading = t(
+        taskScheduleStatus(task, now) === "past"
+          ? "view.tasks.overdue"
+          : "view.tasks.scheduledRemaining",
+      );
       labels.get("scheduledRemaining")?.setText(remainingHeading);
       for (const [key, value] of values) value.setText(times[key]);
       timeline.hidden = times.timeline === null;
@@ -476,9 +677,18 @@ export class RemainingTasks extends Component implements HoverParent {
       const { elapsedDays, scheduledDays } = times.timeline;
       // Extend the same day scale past the scheduled time when overdue.
       const maximum = Math.max(scheduledDays, elapsedDays);
-      timeline.style.setProperty("--wrot-task-current", `${elapsedDays / maximum * 100}%`);
-      timeline.setAttribute("data-overdue", String(elapsedDays > scheduledDays));
-      timeline.setAttribute("aria-label", `${t("view.tasks.createdElapsed")}: ${times.createdElapsed}, ${remainingHeading}: ${times.scheduledRemaining}`);
+      timeline.style.setProperty(
+        "--wrot-task-current",
+        `${(elapsedDays / maximum) * 100}%`,
+      );
+      timeline.setAttribute(
+        "data-overdue",
+        String(elapsedDays > scheduledDays),
+      );
+      timeline.setAttribute(
+        "aria-label",
+        `${t("view.tasks.createdElapsed")}: ${times.createdElapsed}, ${remainingHeading}: ${times.scheduledRemaining}`,
+      );
     };
     refresh();
     popover.registerInterval(row.win.setInterval(refresh, 60_000));

@@ -1192,11 +1192,28 @@ body .wrot-submit-btn.wrot-submit-active {
   min-height: 70px;
   max-height: 32%;
   border-top: 1px solid var(--background-modifier-border);
+  position: relative;
+}
 
+.wrot-remaining-tasks.wrot-remaining-tasks-collapsed {
+  flex: 0 0 auto;
+  min-height: 0;
+  max-height: none;
+  overflow: hidden;
+}
+
+.wrot-remaining-tasks-collapsed > .wrot-remaining-tasks-list {
+  display: none;
 }
 
 .workspace-split.mod-right-split .wrot-remaining-tasks-list,
 .workspace-drawer.mod-right .wrot-remaining-tasks-list {
+  padding-bottom: var(--size-4-8);
+}
+
+/* The hidden list no longer reserves its bottom padding when minimized. */
+body:not(.is-mobile) .workspace-split.mod-right-split .wrot-remaining-tasks-collapsed,
+body:not(.is-mobile) .workspace-drawer.mod-right .wrot-remaining-tasks-collapsed {
   padding-bottom: var(--size-4-8);
 }
 
@@ -1206,10 +1223,52 @@ body .wrot-submit-btn.wrot-submit-active {
   flex-shrink: 0;
   gap: 8px;
   padding: 10px 4px 6px;
+  cursor: ns-resize;
+  touch-action: none;
+  user-select: none;
+}
+
+.wrot-remaining-tasks-header::before {
+  content: "";
+  position: absolute;
+  top: -4px;
+  inset-inline: 0;
+  height: 10px;
+  cursor: ns-resize;
+}
+
+.wrot-remaining-tasks-header:focus-visible {
+  outline: 2px solid var(--interactive-accent);
+  outline-offset: -2px;
 }
 
 .wrot-remaining-tasks-header  {
   font-size: var(--wrot-font-ui-small);
+}
+
+.wrot-remaining-tasks-summary {
+  display: none;
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  color: var(--text-muted);
+}
+
+.wrot-remaining-tasks-collapsed .wrot-remaining-tasks-header {
+  gap: 4px;
+}
+
+.wrot-remaining-tasks-collapsed .wrot-remaining-tasks-title {
+  flex-shrink: 0;
+}
+
+.wrot-remaining-tasks-collapsed .wrot-remaining-tasks-summary {
+  display: block;
+}
+
+.wrot-remaining-tasks-collapsed .wrot-remaining-tasks-count {
+  display: none;
 }
 
 .wrot-remaining-tasks-count,
