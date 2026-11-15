@@ -573,15 +573,23 @@ body .wrot-link-popover-item-folder {
   margin-bottom: 8px;
   background: var(--wrot-bg-color, #f8f8f8);
   border-radius: 12px;
-  padding: 6px 14px 8px;
+  padding: 12px 14px;
 }
 
-.wrot-input-header {
+.wrot-input-footer {
   display: flex;
-  justify-content: flex-end;
-  align-items: center;
+  align-items: flex-end;
+  flex-wrap: wrap;
+  gap: 8px;
   margin-top: 4px;
-  margin-bottom: 6px;
+}
+
+.wrot-input-actions {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  gap: 8px;
+  margin-left: auto;
 }
 
 /* The composer is a CodeMirror editor (.cm-editor), whatever its class name. */
@@ -756,10 +764,11 @@ body .wrot-textarea .cm-line.wrot-cv-quote-5::before {
 
 .wrot-input-toolbar {
   display: flex;
+  flex: 1 1 160px;
+  min-width: 0;
   align-items: center;
   flex-wrap: wrap;
   gap: 8px;
-  margin-top: 4px;
 }
 
 .wrot-input-toolbar.wrot-toolbar-wrapped {
@@ -999,15 +1008,6 @@ body .wrot-submit-btn {
   cursor: pointer;
   font-weight: 500;
   color: var(--text-muted);
-}
-
-/* Pushed to the left edge by the auto margin against the header's flex-end, and
-   flush with the textarea's edge. Declared at the same ID-level specificity as
-   the shared toolbar metrics, which otherwise zero the margin out. */
-body .wrot-cancel-btn:not(#x#y#z) {
-  margin-right: auto;
-  padding-left: 0;
-  padding-right: 6px;
 }
 
 /* Same size as the toolbar glyphs; only the stroke is nudged, since a bare ×
@@ -3117,9 +3117,8 @@ body.is-mobile .wrot-calendar-nav-btn:active:not(#x#y#z) {
   border-radius: 8px;
 }
 
-.is-mobile .wrot-input-header {
-  margin-top: 4px;
-  margin-bottom: 8px;
+.is-mobile .wrot-input-footer {
+  margin-top: 2px;
 }
 
 body.is-mobile .wrot-submit-btn:not(#x) {
@@ -3157,7 +3156,6 @@ body.is-mobile .wrot-textarea.cm-focused:not(#x#y#z) {
 
 .is-mobile .wrot-input-toolbar {
   gap: 8px;
-  margin-top: 2px;
 }
 
 .is-mobile .wrot-input-toolbar.wrot-toolbar-wrapped {

@@ -1036,26 +1036,6 @@ export class WrotView extends ItemView {
   private buildInputArea(container: HTMLElement): void {
     const inputArea = container.createDiv({ cls: "wrot-input-area" });
 
-    const header = inputArea.createDiv({ cls: "wrot-input-header" });
-    // Third way out of edit mode, next to Escape and the card menu's cancel item:
-    // both of those can be out of reach on mobile or with the card scrolled away.
-    const cancelBtn = header.createEl("button", {
-      cls: "wrot-toolbar-btn wrot-cancel-btn",
-    });
-    setIcon(cancelBtn, "x");
-    cancelBtn.setAttr("aria-label", t("view.postMenu.cancelEdit"));
-    this.cancelBtnEl = cancelBtn;
-    cancelBtn.addEventListener("click", () => this.exitEditMode());
-    const submitBtn = header.createEl("button", {
-      cls: "wrot-submit-btn",
-    });
-    this.submitLabelEl = submitBtn.createSpan();
-    this.submitIconEl = submitBtn.createSpan({ cls: "wrot-submit-icon" });
-    this.submitBtnEl = submitBtn;
-    this.refreshSubmitButton();
-    // eslint-disable-next-line @typescript-eslint/no-misused-promises -- async handler intentionally used as a callback
-    submitBtn.addEventListener("click", () => this.submitMemo());
-
     const canPost = () =>
       !this.editingMemo && !this.toolbarEditing && !this.submittingMemo;
     const shiftDate = dateShiftCommand(
@@ -1189,9 +1169,30 @@ export class WrotView extends ItemView {
       this.setPendingImage(file);
     });
 
-    const toolbar = inputArea.createDiv({ cls: "wrot-input-toolbar" });
+    const footer = inputArea.createDiv({ cls: "wrot-input-footer" });
+    const toolbar = footer.createDiv({ cls: "wrot-input-toolbar" });
     this.toolbarEl = toolbar;
     this.toolbarBtns.clear();
+
+    const actions = footer.createDiv({ cls: "wrot-input-actions" });
+    // Third way out of edit mode, next to Escape and the card menu's cancel item:
+    // both of those can be out of reach on mobile or with the card scrolled away.
+    const cancelBtn = actions.createEl("button", {
+      cls: "wrot-toolbar-btn wrot-cancel-btn",
+    });
+    setIcon(cancelBtn, "x");
+    cancelBtn.setAttr("aria-label", t("view.postMenu.cancelEdit"));
+    this.cancelBtnEl = cancelBtn;
+    cancelBtn.addEventListener("click", () => this.exitEditMode());
+    const submitBtn = actions.createEl("button", {
+      cls: "wrot-submit-btn",
+    });
+    this.submitLabelEl = submitBtn.createSpan();
+    this.submitIconEl = submitBtn.createSpan({ cls: "wrot-submit-icon" });
+    this.submitBtnEl = submitBtn;
+    this.refreshSubmitButton();
+    // eslint-disable-next-line @typescript-eslint/no-misused-promises -- async handler intentionally used as a callback
+    submitBtn.addEventListener("click", () => this.submitMemo());
 
     // The suggest dropdown can overlap the toolbar; while it is shown (and during the
     // ghost-click window right after a tap-commit) toolbar buttons must not react.
@@ -1583,7 +1584,7 @@ export class WrotView extends ItemView {
                 .setTitle(t("view.formatMenu.editToolbar"))
                 .setIcon("wrench")
                 .onClick(() => this.setToolbarEditing(true));
-              // Editing a post already owns the header's ×; the toolbar cannot claim it too.
+              // Editing a post already owns the cancel button; the toolbar cannot claim it too.
               if (this.editingMemo) item.setDisabled(true);
             });
           }
