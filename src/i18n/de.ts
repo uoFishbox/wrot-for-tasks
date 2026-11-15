@@ -215,6 +215,8 @@ const de = {
   "view.dateNav.tomorrow": "Morgen",
   "view.dateNav.daysAgo": "Vor {count} Tagen",
   "view.dateNav.daysAhead": "In {count} Tagen",
+  "view.dateNav.continuousScroll": "Fortlaufendes Scrollen",
+  "view.dateNav.continuousScrollError": "Beiträge konnten nicht geladen werden. Bitte erneut versuchen.",
 
   "view.empty.noMemos": "Keine Einträge vorhanden",
   "view.tasks.title": "Offene Aufgaben",

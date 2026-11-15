@@ -96,8 +96,6 @@ body.wrot-font-follow .wrot-nav-btn .svg-icon {
 }
 
 .wrot-date-label {
-  font-weight: 600;
-  font-size: var(--wrot-font-date);
   color: var(--text-normal);
   flex: 1;
   min-width: 0;
@@ -107,7 +105,6 @@ body.wrot-font-follow .wrot-nav-btn .svg-icon {
   justify-content: center;
   gap: 4px 6px;
   text-align: center;
-  line-height: 1;
   cursor: pointer;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -115,24 +112,12 @@ body.wrot-font-follow .wrot-nav-btn .svg-icon {
 }
 
 .wrot-date-text {
+  font-weight: 600;
+  font-size: var(--wrot-font-date);
+  line-height: 1;
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
-}
-
-.wrot-date-badge {
-  flex-shrink: 0;
-  box-sizing: border-box;
-  max-width: 100%;
-  padding: 2px 7px;
-  border-radius: 5px;
-  background: var(--tag-background);
-  color: var(--tag-color);
-  font-size: var(--wrot-font-ui-small);
-  font-weight: 500;
-  line-height: 1.4;
-  white-space: normal;
-  overflow-wrap: anywhere;
 }
 
 .wrot-date-badge[hidden] {
@@ -186,10 +171,14 @@ body.wrot-font-follow .wrot-nav-btn .svg-icon {
 
 /* While the calendar is open, pin the light hover tint so the darker :active
    color (0.08) cannot cut in on arrow taps and flicker. */
-.workspace-leaf-content[data-type="wrot-for-tasks-view"] .wrot-calendar-btn.wrot-toolbar-active,
-.workspace-leaf-content[data-type="wrot-for-tasks-view"] .wrot-calendar-btn.wrot-toolbar-active:hover,
-.workspace-leaf-content[data-type="wrot-for-tasks-view"] .wrot-calendar-btn.wrot-toolbar-active:active {
+.workspace-leaf-content[data-type="wrot-for-tasks-view"] .wrot-nav-btn.wrot-toolbar-active,
+.workspace-leaf-content[data-type="wrot-for-tasks-view"] .wrot-nav-btn.wrot-toolbar-active:hover,
+.workspace-leaf-content[data-type="wrot-for-tasks-view"] .wrot-nav-btn.wrot-toolbar-active:active {
   background: rgba(var(--mono-rgb-100), 0.05);
+}
+
+.workspace-leaf-content[data-type="wrot-for-tasks-view"] .wrot-continuous-btn.wrot-toolbar-active {
+  color: var(--text-accent);
 }
 
 /* Custom calendar popover. Positioned by JS inside wrot-container so it never overflows the sidebar edge; custom-drawn for cross-platform consistency, colors follow the configured bg/text. */
@@ -1151,7 +1140,42 @@ body .wrot-submit-btn.wrot-submit-active {
   /* The floor is empty space the schedule picker adds under the last card when it
      needs somewhere to open into. Zero at rest; its height is measured, so only the
      value comes from script. */
-  padding-bottom: calc(4px + var(--wrot-list-floor, 0px));
+  padding-bottom: calc(4px + var(--wrot-list-floor, 0px) + var(--wrot-post-scroll-floor, 0px));
+}
+
+/* Let native scroll anchoring also handle images loading above the viewport. */
+.wrot-list-continuous > * {
+  flex-shrink: 0;
+}
+
+.wrot-timeline-day {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4px 8px;
+  padding: 9px 0px 0px;
+}
+
+.text-icon-button.wrot-timeline-day-text {
+  font-size: var(--wrot-font-ui-small);
+}
+
+/* Only the future-to-present boundary, including across lazily loaded pages. */
+.wrot-list-continuous > [data-timeline-future="true"] + .wrot-timeline-day[data-timeline-future="false"] {
+  margin-top: 8px;
+  border-top: 1px solid var(--background-modifier-border);
+}
+
+.wrot-timeline-future-hint {
+  max-width: 100%;
+  color: var(--text-faint);
+  font-size: var(--wrot-font-ui-small);
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+}
+
+.flair.mod-pop.hint-today {
+  margin-inline-start: 0px;
 }
 
 /* Held still while the schedule picker is open: it is placed against the card's
@@ -2983,9 +3007,9 @@ body.is-mobile .wrot-today-btn:active:not(#x#y#z) {
 /* While the calendar is open, pin the faint glow: the mobile :active rule
    above would flicker on arrow taps; the extra class + same ID boost holds
    the light tint. */
-body.is-mobile .wrot-calendar-btn.wrot-toolbar-active:not(#x#y#z),
-body.is-mobile .wrot-calendar-btn.wrot-toolbar-active:active:not(#x#y#z),
-body.is-mobile .wrot-calendar-btn.wrot-toolbar-active:hover:not(#x#y#z) {
+body.is-mobile .wrot-nav-btn.wrot-toolbar-active:not(#x#y#z),
+body.is-mobile .wrot-nav-btn.wrot-toolbar-active:active:not(#x#y#z),
+body.is-mobile .wrot-nav-btn.wrot-toolbar-active:hover:not(#x#y#z) {
   background: rgba(var(--mono-rgb-100), 0.05);
 }
 
@@ -3131,7 +3155,7 @@ body:not(.wrot-font-follow).is-mobile .wrot-today-btn {
   font-size: 11px;
 }
 
-body:not(.wrot-font-follow).is-mobile .wrot-date-label {
+body:not(.wrot-font-follow).is-mobile .wrot-date-text {
   font-size: 13px;
 }
 

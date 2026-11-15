@@ -221,6 +221,8 @@ const es = {
   "view.dateNav.tomorrow": "Mañana",
   "view.dateNav.daysAgo": "Hace {count} días",
   "view.dateNav.daysAhead": "En {count} días",
+  "view.dateNav.continuousScroll": "Desplazamiento continuo",
+  "view.dateNav.continuousScrollError": "No se pudieron cargar las publicaciones. Inténtalo de nuevo.",
 
   "view.empty.noMemos": "No hay publicaciones para mostrar",
   "view.tasks.title": "Tareas pendientes",

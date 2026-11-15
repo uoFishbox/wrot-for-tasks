@@ -224,6 +224,8 @@ const it = {
   "view.dateNav.tomorrow": "Domani",
   "view.dateNav.daysAgo": "{count} giorni fa",
   "view.dateNav.daysAhead": "Tra {count} giorni",
+  "view.dateNav.continuousScroll": "Scorrimento continuo",
+  "view.dateNav.continuousScrollError": "Impossibile caricare i post. Riprova.",
 
   "view.empty.noMemos": "Nessun post da mostrare",
   "view.tasks.title": "Attività in sospeso",

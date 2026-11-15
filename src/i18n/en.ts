@@ -220,6 +220,8 @@ const en = {
   "view.dateNav.tomorrow": "Tomorrow",
   "view.dateNav.daysAgo": "{count} days ago",
   "view.dateNav.daysAhead": "In {count} days",
+  "view.dateNav.continuousScroll": "Continuous scrolling",
+  "view.dateNav.continuousScrollError": "Could not load posts. Please try again.",
 
   "view.empty.noMemos": "No posts to show",
   "view.tasks.title": "Remaining tasks",

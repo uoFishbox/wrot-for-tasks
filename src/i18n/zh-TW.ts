@@ -220,6 +220,8 @@ const zhTW = {
   "view.dateNav.tomorrow": "明天",
   "view.dateNav.daysAgo": "{count}天前",
   "view.dateNav.daysAhead": "{count}天後",
+  "view.dateNav.continuousScroll": "連續捲動",
+  "view.dateNav.continuousScrollError": "無法載入貼文。請重試。",
 
   "view.empty.noMemos": "沒有可顯示的貼文",
   "view.tasks.title": "未完成任務",

@@ -216,6 +216,8 @@ const ru = {
   "view.dateNav.tomorrow": "Завтра",
   "view.dateNav.daysAgo": "{count} дн. назад",
   "view.dateNav.daysAhead": "Через {count} дн.",
+  "view.dateNav.continuousScroll": "Непрерывная прокрутка",
+  "view.dateNav.continuousScrollError": "Не удалось загрузить записи. Повторите попытку.",
 
   "view.empty.noMemos": "Нет записей",
   "view.tasks.title": "Незавершённые задачи",

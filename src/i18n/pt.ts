@@ -217,6 +217,8 @@ const pt = {
   "view.dateNav.tomorrow": "Amanhã",
   "view.dateNav.daysAgo": "Há {count} dias",
   "view.dateNav.daysAhead": "Daqui a {count} dias",
+  "view.dateNav.continuousScroll": "Rolagem contínua",
+  "view.dateNav.continuousScrollError": "Não foi possível carregar as publicações. Tente novamente.",
 
   "view.empty.noMemos": "Nenhuma postagem encontrada",
   "view.tasks.title": "Tarefas pendentes",

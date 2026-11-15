@@ -1,28 +1,82 @@
-import { ItemView, WorkspaceLeaf, Notice, TFile, EventRef, setIcon, Menu, MenuItem, Platform, Scope, MarkdownRenderer, renderMath, finishRenderMath } from "obsidian";
+import {
+  ItemView,
+  WorkspaceLeaf,
+  Notice,
+  TFile,
+  EventRef,
+  setIcon,
+  Menu,
+  MenuItem,
+  Platform,
+  Scope,
+  MarkdownRenderer,
+  renderMath,
+  finishRenderMath,
+  type ViewStateResult,
+} from "obsidian";
 import { VIEW_TYPE_WROT } from "../constants";
 import { parseMemos, Memo } from "../utils/memoParser";
-import { appendMemo, deleteMemo, setMemoCheckbox, updateMemo } from "../utils/memoWriter";
-import { getOrCreateDailyNote, getDailyNoteFile, dailyNotePathFor, dailyNoteTemplateFile } from "../utils/dailyNote";
 import { renderMemoTimestamp } from "../utils/memoTimestamp";
 import { incompleteMemoTaskEntries } from "../utils/dailyNoteTasks";
+import {
+  appendMemo,
+  deleteMemo,
+  setMemoCheckbox,
+  updateMemo,
+} from "../utils/memoWriter";
+import {
+  getOrCreateDailyNote,
+  getDailyNoteFile,
+  dailyNotePathFor,
+  dailyNoteTemplateFile,
+  dateForDailyNote,
+} from "../utils/dailyNote";
+import {
+  ContinuousTimeline,
+  timelineMemos,
+  type TimelineNote,
+} from "../utils/continuousTimeline";
 import { headingLocator, waitForTemplater } from "../utils/postHeading";
 import { segmentBlocks, toTildeFences } from "../utils/blockSegmenter";
-import { QUOTE_LINK_RE, renderTextWithTagsAndUrls, renderUrlPreviews } from "../utils/urlRenderer";
+import {
+  QUOTE_LINK_RE,
+  renderTextWithTagsAndUrls,
+  renderUrlPreviews,
+} from "../utils/urlRenderer";
 import { invalidateMemoCache, renderQuoteCard } from "../utils/quoteCard";
 import { ensureBlockIdOnFence } from "../utils/memoWriter";
-import { isImageFile, saveImageToVault, buildEmbedLink, shrinkImage } from "../utils/imageAttachment";
-import { openCalendarPopover, CalendarPopoverHandle } from "../utils/calendarPopover";
+import {
+  isImageFile,
+  saveImageToVault,
+  buildEmbedLink,
+  shrinkImage,
+} from "../utils/imageAttachment";
+import {
+  openCalendarPopover,
+  CalendarPopoverHandle,
+} from "../utils/calendarPopover";
 import { openLinkPopover, LinkPopoverHandle } from "../utils/linkPopover";
 import { buildDateDrum } from "../utils/dateDrum";
-import { TagSuggest, extractTagsForHistory, rebuildFocus } from "../utils/tagSuggest";
+import {
+  TagSuggest,
+  extractTagsForHistory,
+  rebuildFocus,
+} from "../utils/tagSuggest";
 import { ComposerField } from "../editor/composerField";
 import { completeTimedTask } from "../editor/composerTimeTask";
-import { dateShiftCommand, dateShiftOnSpace } from "../editor/composerDateShift";
+import {
+  dateShiftCommand,
+  dateShiftOnSpace,
+} from "../editor/composerDateShift";
 import { ComposerSuggest } from "../editor/composerSuggest";
 import { RemainingTasks } from "./RemainingTasks";
 import { taskPostWarning } from "../utils/taskPostWarning";
 import { confirmTaskPost } from "../utils/taskPostWarningModal";
-import { findLinkAt, isLinkableText, linkMarkdown } from "../editor/composerLink";
+import {
+  findLinkAt,
+  isLinkableText,
+  linkMarkdown,
+} from "../editor/composerLink";
 import { HIGHLIGHT_EMOJI, TAG_SOURCE } from "../utils/patterns";
 import { isMathJaxReady, requestMathJax } from "../utils/mathjax";
 import {
@@ -140,8 +194,9 @@ function matchesPin(pin: PinEntry, memo: Memo, filePath: string): boolean {
 function insertEmbedAboveBottomBlock(bodyText: string, embed: string): string {
   if (!bodyText) return embed;
 
-  // eslint-disable-next-line no-useless-escape -- escape kept for regex readability
-  const markerMatch = bodyText.match(/^([\s\S]*?)\n?(\[\[[^\[\]]+#\^wr-\d{17}\]\])\s*$/);
+  const markerMatch = bodyText.match(
+    /^([\s\S]*?)\n?(\[\[[^[\]]+#\^wr-\d{17}\]\])\s*$/,
+  );
   if (markerMatch) {
     const before = markerMatch[1].replace(/\n+$/, "");
     const marker = markerMatch[2];
@@ -199,6 +254,16 @@ export class WrotView extends ItemView {
   // catch-up whether there is anything to pick up.
   private lastRenderedDay: string | null = null;
   private listContainer!: HTMLElement;
+  private continuousScroll = false;
+  private continuousBtn: HTMLButtonElement | null = null;
+  private timeline: ContinuousTimeline | null = null;
+  private timelineDay: string | null = null;
+  private timelineScrollTarget: { day: string; posted?: boolean } | null = null;
+  private timelineLoading = false;
+  private timelineRevision = 0;
+  private timelineFrame: number | null = null;
+  private timelinePins = new Set<string>();
+  private timelineWaiting = new Set<string>();
   private remainingTasks: RemainingTasks | null = null;
   private pinnedContainer: HTMLElement | null = null;
   private dateLabel!: HTMLElement;
@@ -226,6 +291,7 @@ export class WrotView extends ItemView {
   private fileChangeRef: EventRef | null = null;
   private fileDeleteRef: EventRef | null = null;
   private fileCreateRef: EventRef | null = null;
+  private fileRenameRef: EventRef | null = null;
   private fileRawRef: EventRef | null = null;
   private refreshTimer: number | null = null;
   private ignoreNextModify = false;
@@ -310,6 +376,25 @@ export class WrotView extends ItemView {
     return "feather";
   }
 
+  getState(): Record<string, unknown> {
+    return { continuousScroll: this.continuousScroll };
+  }
+
+  async setState(state: unknown, result: ViewStateResult): Promise<void> {
+    const enabled =
+      !!state &&
+      typeof state === "object" &&
+      "continuousScroll" in state &&
+      state.continuousScroll === true;
+    if (this.continuousScroll !== enabled) {
+      this.continuousScroll = enabled;
+      this.timelineDay = null;
+      this.updateContinuousButton();
+      if (this.listContainer) await this.refresh();
+    }
+    await super.setState(state, result);
+  }
+
   async onOpen(): Promise<void> {
     const container = this.contentEl;
     container.empty();
@@ -317,21 +402,37 @@ export class WrotView extends ItemView {
 
     // currentColor can't carry a gradient; userSpaceOnUse because a per-path bbox is empty on vertical strokes.
     const gradient = container
-      .createSvg("svg", { cls: "wrot-gradient-defs", attr: { "aria-hidden": "true" } })
+      .createSvg("svg", {
+        cls: "wrot-gradient-defs",
+        attr: { "aria-hidden": "true" },
+      })
       .createSvg("defs")
       .createSvg("linearGradient", {
-        attr: { id: "wrot-accent-gradient", gradientUnits: "userSpaceOnUse", x1: "0", y1: "0", x2: "24", y2: "0" },
+        attr: {
+          id: "wrot-accent-gradient",
+          gradientUnits: "userSpaceOnUse",
+          x1: "0",
+          y1: "0",
+          x2: "24",
+          y2: "0",
+        },
       });
     for (let band = 0; band < 4; band++) {
       for (const offset of [band / 4, (band + 1) / 4]) {
-        gradient.createSvg("stop", { cls: `wrot-grad-band-${band}`, attr: { offset: String(offset) } });
+        gradient.createSvg("stop", {
+          cls: `wrot-grad-band-${band}`,
+          attr: { offset: String(offset) },
+        });
       }
     }
 
     this.buildDateNav(container);
     this.buildInputArea(container);
     this.listContainer = container.createDiv({ cls: "wrot-list" });
-    this.remainingTasks = this.addChild(new RemainingTasks(this.app, container, this.plugin));
+    this.registerTimelineScroll();
+    this.remainingTasks = this.addChild(
+      new RemainingTasks(this.app, container, this.plugin),
+    );
 
     this.scope!.register(["Mod"], "Enter", (evt) => {
       if (this.composer?.hasFocus) {
@@ -356,7 +457,7 @@ export class WrotView extends ItemView {
         if (leaf !== this.leaf) return;
         // eslint-disable-next-line @typescript-eslint/no-floating-promises -- fire-and-forget; failure is non-critical
         this.catchUpToToday();
-      })
+      }),
     );
     // The view's own window, not the main one: a timeline living in a popout is come
     // back to by focusing that popout.
@@ -382,12 +483,23 @@ export class WrotView extends ItemView {
           if (path !== draftPath) return;
           // eslint-disable-next-line @typescript-eslint/no-floating-promises -- fire-and-forget; failure is non-critical
           this.syncDraftFromDisk();
-        })
+        }),
       );
     }
   }
 
+  onResize(): void {
+    if (!this.listContainer) return;
+    this.alignTimelineScrollTarget();
+    this.queueTimelineScroll();
+  }
+
   onClose(): Promise<void> {
+    this.timelineRevision++;
+    this.timelineScrollTarget = null;
+    if (this.timelineFrame !== null)
+      this.containerEl.win.cancelAnimationFrame(this.timelineFrame);
+    this.timelineFrame = null;
     if (this.remainingTasks) this.removeChild(this.remainingTasks);
     this.remainingTasks = null;
     if (this.draftTimer !== null) window.clearTimeout(this.draftTimer);
@@ -425,11 +537,7 @@ export class WrotView extends ItemView {
         return;
       }
       if (!(file instanceof TFile)) return;
-      const currentFile = getDailyNoteFile(
-        this.app,
-        this.currentDate
-      );
-      if ((currentFile && file.path === currentFile.path) || this.holdsPinnedMemo(file.path)) {
+      if (this.affectsCurrentView(file)) {
         this.requestRefresh();
       }
     });
@@ -444,6 +552,17 @@ export class WrotView extends ItemView {
       if (!this.affectsCurrentView(file)) return;
       this.requestRefresh();
     });
+    this.fileRenameRef = this.app.vault.on("rename", (file, oldPath) => {
+      if (!(file instanceof TFile)) return;
+      if (
+        this.affectsCurrentView(file) ||
+        oldPath === dailyNotePathFor(this.currentDate) ||
+        this.holdsPinnedMemo(oldPath) ||
+        this.timeline?.visible.some((note) => note.path === oldPath)
+      ) {
+        this.requestRefresh();
+      }
+    });
     // On mobile, a note rewritten by sync does not always raise "modify"; the undocumented
     // "raw" signal still fires. Desktop gets "modify" reliably and would refresh twice.
     if (Platform.isMobile) {
@@ -452,9 +571,16 @@ export class WrotView extends ItemView {
       };
       this.fileRawRef = vault.on("raw", (path) => {
         // "modify" may have consumed the flag already; the time window covers the rest.
-        if (this.ignoreNextModify || Date.now() < this.ignoreModifyUntil) return;
+        if (this.ignoreNextModify || Date.now() < this.ignoreModifyUntil)
+          return;
         if (Date.now() - this.ownWriteAt < OWN_WRITE_WINDOW_MS) return;
-        if (path !== dailyNotePathFor(this.currentDate) && !this.holdsPinnedMemo(path)) return;
+        const file = this.app.vault.getAbstractFileByPath(path);
+        if (
+          path !== dailyNotePathFor(this.currentDate) &&
+          !this.holdsPinnedMemo(path) &&
+          !(file instanceof TFile && this.affectsCurrentView(file))
+        )
+          return;
         this.requestRefresh();
       });
     }
@@ -475,6 +601,7 @@ export class WrotView extends ItemView {
     // Matched by path rather than by looking the note up: a deleted file is no longer there
     // to be found, and the timeline would sit on the posts of a note that is gone.
     if (file.path === dailyNotePathFor(this.currentDate)) return true;
+    if (this.continuousScroll && dateForDailyNote(file)) return true;
     // Pins show above the day's posts whatever date is open, so their notes count too.
     return this.holdsPinnedMemo(file.path);
   }
@@ -521,6 +648,10 @@ export class WrotView extends ItemView {
       this.app.vault.offref(this.fileCreateRef);
       this.fileCreateRef = null;
     }
+    if (this.fileRenameRef) {
+      this.app.vault.offref(this.fileRenameRef);
+      this.fileRenameRef = null;
+    }
     if (this.fileRawRef) {
       this.app.vault.offref(this.fileRawRef);
       this.fileRawRef = null;
@@ -545,7 +676,10 @@ export class WrotView extends ItemView {
     const now = moment();
     const rollTo = this.anchoredToToday && !this.currentDate.isSame(now, "day");
     if (!rollTo && this.lastRenderedDay === now.format("YYYY-MM-DD")) return;
-    if (rollTo) this.currentDate = now;
+    if (rollTo) {
+      this.currentDate = now;
+      this.timelineDay = null;
+    }
     await this.refresh();
   }
 
@@ -651,6 +785,7 @@ export class WrotView extends ItemView {
     prevBtn.addEventListener("click", () => {
       this.currentDate = this.currentDate.clone().subtract(1, "day");
       this.anchoredToToday = false;
+      this.timelineDay = null;
       this.focusInput();
       // eslint-disable-next-line @typescript-eslint/no-floating-promises -- fire-and-forget; failure is non-critical
       this.refresh();
@@ -658,23 +793,42 @@ export class WrotView extends ItemView {
 
     this.dateLabel = nav.createSpan({ cls: "wrot-date-label" });
     this.dateText = this.dateLabel.createSpan({ cls: "wrot-date-text" });
-    this.dateBadge = this.dateLabel.createSpan({ cls: "wrot-date-badge", attr: { "aria-live": "polite", "aria-atomic": "true" } });
+    this.dateBadge = this.dateLabel.createSpan({
+      cls: "wrot-date-badge",
+      attr: { "aria-live": "polite", "aria-atomic": "true" },
+    });
     this.dateBadge.hidden = true;
-    this.dateLabel.addEventListener("wheel", (event) => {
-      if (event.ctrlKey || event.deltaY === 0 || Math.abs(event.deltaX) > Math.abs(event.deltaY)) return;
-      event.preventDefault();
-      event.stopPropagation();
-      this.currentDate = this.currentDate.clone().add(Math.sign(event.deltaY), "day");
-      this.anchoredToToday = false;
-      // eslint-disable-next-line @typescript-eslint/no-floating-promises -- fire-and-forget; failure is non-critical
-      this.refresh();
-    }, { passive: false });
+    this.dateLabel.addEventListener(
+      "wheel",
+      (event) => {
+        if (
+          event.ctrlKey ||
+          event.deltaY === 0 ||
+          Math.abs(event.deltaX) > Math.abs(event.deltaY)
+        )
+          return;
+        event.preventDefault();
+        event.stopPropagation();
+        this.currentDate = this.currentDate
+          .clone()
+          .add(Math.sign(event.deltaY), "day");
+        this.anchoredToToday = false;
+        this.timelineDay = null;
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises -- fire-and-forget; failure is non-critical
+        this.refresh();
+      },
+      { passive: false },
+    );
     // eslint-disable-next-line @typescript-eslint/no-misused-promises -- async handler intentionally used as a callback
     this.dateLabel.addEventListener("click", async () => {
       this.dateLabel.classList.add("wrot-date-label-active");
-      window.setTimeout(() => this.dateLabel.classList.remove("wrot-date-label-active"), 300);
-      const file = getDailyNoteFile(this.app, this.currentDate)
-        ?? await getOrCreateDailyNote(this.app, this.currentDate);
+      window.setTimeout(
+        () => this.dateLabel.classList.remove("wrot-date-label-active"),
+        300,
+      );
+      const file =
+        getDailyNoteFile(this.app, this.currentDate) ??
+        (await getOrCreateDailyNote(this.app, this.currentDate));
       await this.openOrFocusFile(file);
     });
 
@@ -683,15 +837,20 @@ export class WrotView extends ItemView {
     nextBtn.addEventListener("click", () => {
       this.currentDate = this.currentDate.clone().add(1, "day");
       this.anchoredToToday = false;
+      this.timelineDay = null;
       this.focusInput();
       // eslint-disable-next-line @typescript-eslint/no-floating-promises -- fire-and-forget; failure is non-critical
       this.refresh();
     });
 
-    const todayBtn = nav.createEl("button", { cls: "wrot-today-btn", text: t("view.dateNav.today") });
+    const todayBtn = nav.createEl("button", {
+      cls: "wrot-today-btn",
+      text: t("view.dateNav.today"),
+    });
     todayBtn.addEventListener("click", () => {
       this.currentDate = moment();
       this.anchoredToToday = true;
+      this.timelineDay = null;
       // Synchronously inside the click: iOS raises the keyboard only within the user gesture.
       this.focusInput();
       // eslint-disable-next-line @typescript-eslint/no-floating-promises -- fire-and-forget; failure is non-critical
@@ -699,6 +858,33 @@ export class WrotView extends ItemView {
     });
 
     this.updateCalendarButton();
+    this.continuousBtn = nav.createEl("button", {
+      cls: "wrot-nav-btn wrot-continuous-btn",
+    });
+    setIcon(this.continuousBtn, "scroll-text");
+    this.updateContinuousButton();
+    this.continuousBtn.addEventListener("click", () => {
+      this.continuousScroll = !this.continuousScroll;
+      this.timelineDay = null;
+      this.closeCalendarPopover();
+      this.updateContinuousButton();
+      this.app.workspace.requestSaveLayout();
+      // eslint-disable-next-line @typescript-eslint/no-floating-promises -- same refresh as date navigation
+      this.refresh();
+    });
+  }
+
+  private updateContinuousButton(): void {
+    this.continuousBtn?.setAttr(
+      "aria-label",
+      t("view.dateNav.continuousScroll"),
+    );
+    this.continuousBtn?.setAttr("aria-pressed", String(this.continuousScroll));
+    this.continuousBtn?.setAttr("title", t("view.dateNav.continuousScroll"));
+    this.continuousBtn?.toggleClass(
+      "wrot-toolbar-active",
+      this.continuousScroll,
+    );
   }
 
   // Creates/removes the calendar button per showCalendarButton; kept standalone so the
@@ -712,7 +898,9 @@ export class WrotView extends ItemView {
       return;
     }
     if (this.calendarBtnEl) return;
-    const calendarBtn = this.dateNavEl.createEl("button", { cls: "wrot-nav-btn wrot-calendar-btn" });
+    const calendarBtn = this.dateNavEl.createEl("button", {
+      cls: "wrot-nav-btn wrot-calendar-btn",
+    });
     setIcon(calendarBtn, "calendar-1");
     calendarBtn.setAttr("aria-label", t("view.dateNav.today"));
     calendarBtn.addEventListener("click", () => {
@@ -729,6 +917,7 @@ export class WrotView extends ItemView {
         onSelect: (date) => {
           this.currentDate = date;
           this.anchoredToToday = false;
+          this.timelineDay = null;
           this.focusInput();
           // eslint-disable-next-line @typescript-eslint/no-floating-promises -- fire-and-forget; failure is non-critical
           this.refresh();
@@ -1759,9 +1948,14 @@ export class WrotView extends ItemView {
     }
   }
 
-  private shiftComposerDate(date: ReturnType<typeof moment>, followToday: boolean, post: boolean): void {
+  private shiftComposerDate(
+    date: ReturnType<typeof moment>,
+    followToday: boolean,
+    post: boolean,
+  ): void {
     this.currentDate = date;
     this.anchoredToToday = followToday;
+    this.timelineDay = null;
     this.closeCalendarPopover();
     // eslint-disable-next-line @typescript-eslint/no-floating-promises -- same refresh as date navigation
     this.refresh();
@@ -1788,7 +1982,9 @@ export class WrotView extends ItemView {
     if (!typed && !this.pendingImage && !this.pendingQuote) return;
     // The form never showed the pending opener, so the decoration it was drawing is closed
     // for the post rather than left open.
-    const text = this.activeFormatMode ? this.closeArmedOpener(this.composer.value) : this.composer.value;
+    const text = this.activeFormatMode
+      ? this.closeArmedOpener(this.composer.value)
+      : this.composer.value;
     const rawText = typed ? toTildeFences(text.trim().replace(/＃/g, "#")) : "";
 
     if (this.editingMemo) {
@@ -1805,11 +2001,24 @@ export class WrotView extends ItemView {
     const postDate = this.currentDate.clone();
 
     try {
-      const warning = taskPostWarning(rawText, postDate.toDate(), moment().toDate());
-      if (warning && !await confirmTaskPost(this.app, warning, postDate.format("YYYY-MM-DD"))) return;
+      const warning = taskPostWarning(
+        rawText,
+        postDate.toDate(),
+        moment().toDate(),
+      );
+      if (
+        warning &&
+        !(await confirmTaskPost(
+          this.app,
+          warning,
+          postDate.format("YYYY-MM-DD"),
+        ))
+      )
+        return;
       this.activeFormatMode = null;
       const settings = this.plugin.settings;
-      const templateGone = settings.postHeading !== "" && !dailyNoteTemplateFile(this.app);
+      const templateGone =
+        settings.postHeading !== "" && !dailyNoteTemplateFile(this.app);
       if (templateGone) {
         settings.postHeading = "";
         await this.plugin.saveSettings();
@@ -1817,11 +2026,7 @@ export class WrotView extends ItemView {
       }
 
       const existed = getDailyNoteFile(this.app, postDate) !== null;
-      const file = await getOrCreateDailyNote(
-        this.app,
-        postDate,
-        templateGone
-      );
+      const file = await getOrCreateDailyNote(this.app, postDate, templateGone);
       if (!existed) await waitForTemplater(this.app, file);
 
       let bodyText = joinQuote(rawText, this.pendingQuote);
@@ -1831,7 +2036,7 @@ export class WrotView extends ItemView {
           this.app,
           image,
           file,
-          this.attachmentFolder()
+          this.attachmentFolder(),
         );
         const embed = buildEmbedLink(savedFile);
         bodyText = insertEmbedAboveBottomBlock(bodyText, embed);
@@ -1840,11 +2045,18 @@ export class WrotView extends ItemView {
       this.markOwnWrite();
       const locate = headingLocator(settings.postHeading, postDate);
       let headingFound = true;
-      const postedTime = await appendMemo(this.app, file, bodyText, locate ? (lines) => {
-        const at = locate(lines);
-        headingFound = at !== null;
-        return at;
-      } : undefined);
+      const postedTime = await appendMemo(
+        this.app,
+        file,
+        bodyText,
+        locate
+          ? (lines) => {
+              const at = locate(lines);
+              headingFound = at !== null;
+              return at;
+            }
+          : undefined,
+      );
       if (!headingFound && !settings.postHeadingNoticed) {
         new Notice(t("view.notice.postHeadingMissing"));
         settings.postHeadingNoticed = true;
@@ -1876,11 +2088,359 @@ export class WrotView extends ItemView {
       this.clearPendingImage();
       this.setPendingQuote(null);
       this.composer.dispatchEvent(new Event("input"));
+      if (this.continuousScroll && this.currentDate.isSame(postDate, "day")) {
+        this.timelineScrollTarget = {
+          day: postDate.format("YYYY-MM-DD"),
+          posted: true,
+        };
+      }
       await this.refresh();
       await this.plugin.saveDraft("");
     } catch (e) {
       new Notice(t("view.notice.saveFailed", { error: String(e) }));
     }
+  }
+
+  /** Keep a real card at the same screen position across inserts and refreshes. */
+  private timelineAnchor(): { key: string; top: number } | null {
+    const top = this.listContainer.getBoundingClientRect().top;
+    const card = Array.from(
+      this.listContainer.querySelectorAll<HTMLElement>("[data-timeline-key]"),
+    ).find((el) => el.getBoundingClientRect().bottom > top);
+    return card
+      ? {
+          key: card.dataset.timelineKey!,
+          top: card.getBoundingClientRect().top,
+        }
+      : null;
+  }
+
+  private restoreTimelineAnchor(
+    anchor: { key: string; top: number } | null,
+  ): void {
+    if (!anchor) return;
+    const card = Array.from(
+      this.listContainer.querySelectorAll<HTMLElement>("[data-timeline-key]"),
+    ).find((el) => el.dataset.timelineKey === anchor.key);
+    if (card)
+      this.listContainer.scrollTop +=
+        card.getBoundingClientRect().top - anchor.top;
+  }
+
+  private registerTimelineScroll(): void {
+    this.registerDomEvent(this.listContainer, "scroll", () =>
+      this.queueTimelineScroll(),
+    );
+    // A programmatic scroll also fires "scroll". Cancel only on user input so
+    // a pending jump cannot pull the reader back after they start browsing.
+    const cancel = () => {
+      this.timelineScrollTarget = null;
+    };
+    this.registerDomEvent(this.listContainer, "wheel", cancel, {
+      passive: true,
+    });
+    this.registerDomEvent(this.listContainer, "touchstart", cancel, {
+      passive: true,
+    });
+    this.registerDomEvent(this.listContainer, "pointerdown", cancel);
+    this.registerDomEvent(this.listContainer, "keydown", (event) => {
+      if (
+        [
+          "ArrowUp",
+          "ArrowDown",
+          "PageUp",
+          "PageDown",
+          "Home",
+          "End",
+          " ",
+        ].includes(event.key)
+      )
+        cancel();
+    });
+  }
+
+  /** Retry a jump when the initial page was too short to scroll that far. */
+  private alignTimelineScrollTarget(): void {
+    const request = this.timelineScrollTarget;
+    const timeline = this.timeline;
+    if (
+      !request ||
+      request.day !== this.timelineDay ||
+      !timeline ||
+      !this.continuousScroll ||
+      !this.listContainer.clientHeight
+    )
+      return;
+    // A render already in flight when posting may still hold the old note.
+    // Align after the queued refresh includes the new post below the header.
+    if (request.posted && this.refreshQueued) return;
+    const rows = Array.from(
+      this.listContainer.querySelectorAll<HTMLElement>(".wrot-timeline-day"),
+    );
+    const target =
+      rows.find((row) => row.dataset.timelineDay! <= request.day) ??
+      rows.at(-1);
+    if (!target) {
+      this.timelineScrollTarget = null;
+      return;
+    }
+    const top = this.listContainer.getBoundingClientRect().top;
+    if (request.posted && timeline.to === timeline.notes.length) {
+      // A short history still needs enough room below the day's header to align it.
+      // scrollHeight is at least clientHeight, so measure the actual last card.
+      const bottom =
+        this.listContainer.lastElementChild!.getBoundingClientRect().bottom;
+      const needed = Math.max(
+        0,
+        this.listContainer.clientHeight -
+          (bottom - target.getBoundingClientRect().top),
+      );
+      this.listContainer.style.setProperty(
+        "--wrot-post-scroll-floor",
+        `${needed}px`,
+      );
+    }
+    this.listContainer.scrollTop += target.getBoundingClientRect().top - top;
+    // At the end of history there may never be enough content below the date.
+    // Stop at the closest reachable position rather than retaining a stale jump.
+    if (
+      Math.abs(target.getBoundingClientRect().top - top) < 1 ||
+      timeline.to === timeline.notes.length
+    )
+      this.timelineScrollTarget = null;
+  }
+
+  private queueTimelineScroll(): void {
+    if (!this.continuousScroll || this.timelineFrame !== null) return;
+    this.timelineFrame = this.containerEl.win.requestAnimationFrame(() => {
+      this.timelineFrame = null;
+      if (
+        this.refreshing ||
+        this.timelineLoading ||
+        !this.continuousScroll ||
+        this.schedulePopover
+      )
+        return;
+      // eslint-disable-next-line @typescript-eslint/no-floating-promises -- handled inside the loader
+      this.loadTimelineEdge();
+    });
+  }
+
+  private selectTimelineDay(day: string): void {
+    this.timelineScrollTarget = null;
+    this.currentDate = moment(day, "YYYY-MM-DD");
+    this.timelineDay = day;
+    this.anchoredToToday = false;
+    this.closeCalendarPopover();
+    this.updateDateLabel();
+    for (const title of this.listContainer.querySelectorAll<HTMLElement>(
+      'div[role="button"][data-timeline-day]',
+    )) {
+      const selected = title.dataset.timelineDay === day;
+      title.toggleClass("is-active", selected);
+      title.setAttr("aria-pressed", String(selected));
+    }
+    // Replay a refresh that was reading the previously selected day when clicked.
+    if (this.refreshing) this.refreshQueued = true;
+  }
+
+  private async readTimelineNotes(
+    notes: TimelineNote[],
+  ): Promise<{ note: TimelineNote; memos: Memo[] }[]> {
+    return Promise.all(
+      notes.map(async (note) => {
+        const file = this.app.vault.getAbstractFileByPath(note.path);
+        const content =
+          file instanceof TFile ? await this.app.vault.read(file) : "";
+        return { note, memos: timelineMemos(content) };
+      }),
+    );
+  }
+
+  private renderTimelineNotes(
+    entries: { note: TimelineNote; memos: Memo[] }[],
+    host: HTMLElement,
+  ): void {
+    const selectedPath = dailyNotePathFor(this.currentDate);
+    const today = moment().startOf("day");
+    for (const { note, memos } of entries) {
+      const visible = memos.filter(
+        (memo) =>
+          !this.timelinePins.has(pinKey(note.path, memo.time)) &&
+          !this.plugin.matchesRuleFlag(
+            memo.tags,
+            (rule) => rule.hideFromTimeline === true,
+          ),
+      );
+      if (visible.length === 0 && note.path !== selectedPath) continue;
+      // A post's timestamp records when it was written, even when its destination
+      // is in the future or past. Navigation follows the destination note's date.
+      const daysAhead = moment(note.day, "YYYY-MM-DD").diff(today, "days");
+      const futureLabel =
+        daysAhead > 0
+          ? daysAhead === 1
+            ? t("view.dateNav.tomorrow")
+            : t("view.dateNav.daysAhead", { count: daysAhead })
+          : null;
+      this.renderTimelineDay(host, note.day, futureLabel);
+      if (visible.length === 0) {
+        const empty = host.createDiv({
+          cls: "wrot-empty",
+          text: t("view.empty.noMemos"),
+        });
+        empty.dataset.timelineDay = note.day;
+        empty.dataset.timelineFuture = String(futureLabel !== null);
+      }
+      for (const memo of visible) {
+        const key = pinKey(note.path, memo.time);
+        const card = this.renderMemoCard(memo, {
+          pinned: false,
+          filePath: note.path,
+          host,
+          waitingSchedule: this.timelineWaiting.has(key),
+        });
+        card.dataset.timelineDay = note.day;
+        card.dataset.timelineKey = key;
+        card.dataset.timelineFuture = String(futureLabel !== null);
+      }
+    }
+  }
+
+  private renderTimelineDay(
+    host: HTMLElement,
+    day: string,
+    futureLabel: string | null,
+  ): void {
+    const heading = host.createDiv({
+      cls: "wrot-timeline-day",
+      attr: { role: "heading", "aria-level": "3" },
+    });
+    heading.dataset.timelineDay = day;
+    heading.dataset.timelineFuture = String(futureLabel !== null);
+    const date = moment(day, "YYYY-MM-DD");
+    const selected = day === this.currentDate.format("YYYY-MM-DD");
+    const title = heading.createDiv({
+      cls: selected
+        ? "text-icon-button tappable wrot-timeline-day-text is-active"
+        : "text-icon-button tappable wrot-timeline-day-text",
+      text: date.format(this.plugin.settings.headerDateFormat),
+      attr: {
+        role: "button",
+        tabindex: "0",
+        "aria-pressed": String(selected),
+      },
+    });
+    title.dataset.timelineDay = day;
+    title.addEventListener("click", () => this.selectTimelineDay(day));
+    title.addEventListener("keydown", (event) => {
+      if (event.key !== "Enter" && event.key !== " ") return;
+      event.preventDefault();
+      this.selectTimelineDay(day);
+    });
+    const hint =
+      futureLabel ??
+      (date.isSame(moment(), "day") ? t("view.dateNav.today") : null);
+    if (hint) {
+      heading.createSpan({
+        cls: futureLabel
+          ? "wrot-timeline-future-hint"
+          : "flair mod-pop hint-today",
+        text: hint,
+      });
+    }
+  }
+
+  private async refreshContinuousTimeline(
+    pins: { memo: Memo; filePath: string; fromSchedule: boolean }[],
+    pinnedKeys: Set<string>,
+    waiting: Set<string>,
+  ): Promise<void> {
+    const revision = this.timelineRevision;
+    const day = this.currentDate.format("YYYY-MM-DD");
+    const keepPosition = this.timelineDay === day;
+    if (!keepPosition && this.timelineScrollTarget?.day !== day)
+      this.timelineScrollTarget = { day };
+    const notes = this.app.vault.getMarkdownFiles().flatMap((file) => {
+      const date = dateForDailyNote(file);
+      return date ? [{ path: file.path, day: date.format("YYYY-MM-DD") }] : [];
+    });
+    const timeline = new ContinuousTimeline(
+      notes,
+      { path: dailyNotePathFor(this.currentDate), day },
+      keepPosition ? this.timeline?.visible.map((note) => note.path) : [],
+    );
+    const entries = await this.readTimelineNotes(timeline.visible);
+    if (
+      revision !== this.timelineRevision ||
+      !this.continuousScroll ||
+      day !== this.currentDate.format("YYYY-MM-DD")
+    )
+      return;
+    const anchor = this.timelineAnchor();
+    if (!keepPosition)
+      this.listContainer.style.removeProperty("--wrot-post-scroll-floor");
+    this.timeline = timeline;
+    this.timelineDay = day;
+    this.timelinePins = pinnedKeys;
+    this.timelineWaiting = waiting;
+    this.listContainer.empty();
+    this.listContainer.addClass("wrot-list-continuous");
+    this.clearPinnedContainer();
+    for (const { memo, filePath, fromSchedule } of pins) {
+      this.renderMemoCard(memo, { pinned: true, filePath, fromSchedule });
+    }
+    this.renderTimelineNotes(entries, this.listContainer);
+    if (this.timelineScrollTarget) this.alignTimelineScrollTarget();
+    else this.restoreTimelineAnchor(anchor);
+    // Fill a short viewport, including when the first several notes contain no visible posts.
+    this.queueTimelineScroll();
+  }
+
+  private async loadTimelineEdge(): Promise<void> {
+    const timeline = this.timeline;
+    if (
+      !timeline ||
+      this.timelineLoading ||
+      this.refreshing ||
+      !this.continuousScroll
+    )
+      return;
+    const { scrollTop, scrollHeight, clientHeight } = this.listContainer;
+    if (clientHeight === 0) return;
+    const direction =
+      scrollHeight - scrollTop - clientHeight < 300 &&
+      timeline.to < timeline.notes.length
+        ? "older"
+        : scrollTop < 200 && timeline.from > 0
+          ? "newer"
+          : null;
+    if (!direction) return;
+    const page = timeline.page(direction);
+    const revision = this.timelineRevision;
+    this.timelineLoading = true;
+    try {
+      const entries = await this.readTimelineNotes(page);
+      if (revision !== this.timelineRevision || !this.continuousScroll) return;
+      const anchor = this.timelineAnchor();
+      const host = this.listContainer.createDiv({ cls: "wrot-timeline-page" });
+      this.renderTimelineNotes(entries, host);
+      const nodes = Array.from(host.children);
+      host.remove();
+      if (direction === "newer") {
+        const first = this.listContainer.querySelector("[data-timeline-day]");
+        for (const node of nodes) this.listContainer.insertBefore(node, first);
+      } else this.listContainer.append(...nodes);
+      timeline.commit(direction, page.length);
+      if (this.timelineScrollTarget) this.alignTimelineScrollTarget();
+      else this.restoreTimelineAnchor(anchor);
+    } catch (error) {
+      console.error("Wrot: could not load timeline", error);
+      new Notice(t("view.dateNav.continuousScrollError"));
+      return;
+    } finally {
+      this.timelineLoading = false;
+    }
+    this.queueTimelineScroll();
   }
 
   private composerPlaceholder(): string {
@@ -1907,17 +2467,27 @@ export class WrotView extends ItemView {
   private updateDateLabel(): void {
     this.updateComposerPlaceholder();
     const today = moment().startOf("day");
-    const dayOffset = this.currentDate.clone().startOf("day").diff(today, "days");
+    const dayOffset = this.currentDate
+      .clone()
+      .startOf("day")
+      .diff(today, "days");
     const isToday = dayOffset === 0;
-    const dateText = this.currentDate.format(this.plugin.settings.headerDateFormat);
-    this.dateText.setText(isToday ? `${dateText}${t("view.dateNav.todaySuffix")}` : dateText);
-    let badgeText = "";
+    const dateText = this.currentDate.format(
+      this.plugin.settings.headerDateFormat,
+    );
+    this.dateText.setText(dateText);
+    let badgeText = t("view.dateNav.today");
     if (dayOffset === -1) badgeText = t("view.dateNav.yesterday");
     else if (dayOffset === 1) badgeText = t("view.dateNav.tomorrow");
-    else if (dayOffset < 0) badgeText = t("view.dateNav.daysAgo", { count: -dayOffset });
-    else if (dayOffset > 0) badgeText = t("view.dateNav.daysAhead", { count: dayOffset });
+    else if (dayOffset < 0)
+      badgeText = t("view.dateNav.daysAgo", { count: -dayOffset });
+    else if (dayOffset > 0)
+      badgeText = t("view.dateNav.daysAhead", { count: dayOffset });
     this.dateBadge.setText(badgeText);
-    this.dateBadge.hidden = isToday;
+    this.dateBadge.className = isToday
+      ? "wrot-date-badge flair mod-pop hint-today"
+      : "wrot-date-badge wrot-timeline-future-hint";
+    this.dateBadge.hidden = false;
   }
 
   async refresh(): Promise<void> {
@@ -1932,6 +2502,7 @@ export class WrotView extends ItemView {
     // Skip renders entirely during the modify-suppression window (e.g. right after a checkbox toggle).
     if (Date.now() < this.ignoreModifyUntil) return;
     this.refreshing = true;
+    const revision = ++this.timelineRevision;
     // Past both skips above, so this render is going to happen: record the day now rather
     // than at the end, where the "no note for this date" branch returns early.
     const today = moment().startOf("day");
@@ -1959,23 +2530,50 @@ export class WrotView extends ItemView {
         ...bySchedule.resolved.map((p) => ({ ...p, fromSchedule: true })),
       ];
       // Pins whose note is missing are not stale: the note may still be arriving through sync.
-      const stale = new Set([...byHand.stale, ...bySchedule.stale, ...byWait.stale]);
+      const stale = new Set([
+        ...byHand.stale,
+        ...bySchedule.stale,
+        ...byWait.stale,
+      ]);
       const waiting = new Set(
-        notYet.filter((e) => !stale.has(e)).map((e) => pinKey(e.file, e.timestamp))
+        notYet
+          .filter((e) => !stale.has(e))
+          .map((e) => pinKey(e.file, e.timestamp)),
       );
       if (stale.size > 0) {
         const settings = this.plugin.settings;
         settings.pins = settings.pins.filter((p) => !stale.has(p));
-        settings.scheduledPins = (settings.scheduledPins ?? []).filter((p) => !stale.has(p));
+        settings.scheduledPins = (settings.scheduledPins ?? []).filter(
+          (p) => !stale.has(p),
+        );
         await this.plugin.savePins();
         this.setArmedSchedule(this.armedSchedule);
       }
-      const pinnedKeys = new Set(pinnedResolved.map((p) => pinKey(p.filePath, p.memo.time)));
-
-      const file = getDailyNoteFile(
-        this.app,
-        this.currentDate
+      const pinnedKeys = new Set(
+        pinnedResolved.map((p) => pinKey(p.filePath, p.memo.time)),
       );
+      if (revision !== this.timelineRevision) return;
+
+      if (this.continuousScroll) {
+        try {
+          await this.refreshContinuousTimeline(
+            pinnedResolved,
+            pinnedKeys,
+            waiting,
+          );
+        } catch (error) {
+          console.error("Wrot: could not load timeline", error);
+          new Notice(t("view.dateNav.continuousScrollError"));
+        }
+        return;
+      }
+      this.timeline = null;
+      this.timelineDay = null;
+      this.timelineScrollTarget = null;
+      this.listContainer.style.removeProperty("--wrot-post-scroll-floor");
+      this.listContainer.removeClass("wrot-list-continuous");
+
+      const file = getDailyNoteFile(this.app, this.currentDate);
       // Read from disk: on mobile the cache can still hold the note as it was before sync.
       const content = file ? await this.app.vault.read(file) : null;
 
@@ -1991,12 +2589,7 @@ export class WrotView extends ItemView {
         return;
       }
 
-      // Posts under a heading and at the note's end can mix, so order by time; unparsable ones keep their slot.
-      const parsed = parseMemos(content);
-      const timeOf = (memo: Memo): number => Date.parse(memo.time);
-      const timed = parsed.filter((m) => !isNaN(timeOf(m))).sort((a, b) => timeOf(b) - timeOf(a));
-      let next = 0;
-      const memos = parsed.map((m) => (isNaN(timeOf(m)) ? m : timed[next++]));
+      const memos = timelineMemos(content);
 
       let rendered = 0;
       for (const memo of memos) {
@@ -2004,7 +2597,13 @@ export class WrotView extends ItemView {
         if (pinnedKeys.has(key)) continue;
         // Pinned memos above are deliberately exempt: pinning names a single memo,
         // which outranks a rule that hides a whole tag.
-        if (this.plugin.matchesRuleFlag(memo.tags, (rule) => rule.hideFromTimeline === true)) continue;
+        if (
+          this.plugin.matchesRuleFlag(
+            memo.tags,
+            (rule) => rule.hideFromTimeline === true,
+          )
+        )
+          continue;
         this.renderMemoCard(memo, {
           pinned: false,
           filePath: file.path,
@@ -2015,7 +2614,8 @@ export class WrotView extends ItemView {
 
       // Covers both "the note has no memos" and "every memo is hidden by a rule":
       // the same message reads for either, and the list never ends up blank.
-      if (pinnedResolved.length === 0 && rendered === 0) this.renderEmptyState();
+      if (pinnedResolved.length === 0 && rendered === 0)
+        this.renderEmptyState();
     } finally {
       // Pins may have been added or taken down; the arm button's reach follows them.
       this.setArmedSchedule(this.armedSchedule);
@@ -2026,6 +2626,7 @@ export class WrotView extends ItemView {
         // eslint-disable-next-line @typescript-eslint/no-floating-promises -- replay must not alter this call's result
         this.refresh();
       }
+      this.queueTimelineScroll();
     }
   }
 
@@ -2461,11 +3062,12 @@ export class WrotView extends ItemView {
       filePath: string;
       waitingSchedule?: boolean;
       fromSchedule?: boolean;
-    }
-  ): void {
+      host?: HTMLElement;
+    },
+  ): HTMLElement {
     const host = options.pinned
       ? this.ensurePinnedContainer()
-      : this.listContainer;
+      : (options.host ?? this.listContainer);
     const card = host.createDiv({ cls: "wrot-card" });
     const pendingTaskLines = new Set(
       incompleteMemoTaskEntries(memo.content).map((task) => task.line),
@@ -2493,8 +3095,7 @@ export class WrotView extends ItemView {
       const file = this.app.metadataCache.getFirstLinkpathDest(fileName, "");
       return file ? this.app.vault.getResourcePath(file) : null;
     };
-    const currentFile = getDailyNoteFile(this.app, this.currentDate);
-    const currentFilePath = currentFile?.path || "";
+    const currentFilePath = options.filePath;
     const urls = renderTextWithTagsAndUrls(contentEl, memo.content, {
       onTagClick: (tag) => this.plugin.openTagSearch(tag),
       // eslint-disable-next-line @typescript-eslint/no-misused-promises -- async handler intentionally used as a callback
@@ -2510,7 +3111,13 @@ export class WrotView extends ItemView {
         );
         // Suppress the burst of modify events so full re-renders don't flicker the cards.
         this.ignoreModifyUntil = Date.now() + 500;
-        const written = await setMemoCheckbox(this.app, file, memo.time, lineIndex, checked);
+        const written = await setMemoCheckbox(
+          this.app,
+          file,
+          memo.time,
+          lineIndex,
+          checked,
+        );
         // Re-arm after the write: a slow write can land modify past the first window and jank.
         // The strikethrough was already applied via class toggle, so no re-render is needed.
         this.ignoreModifyUntil = Date.now() + 500;
@@ -2526,26 +3133,33 @@ export class WrotView extends ItemView {
       checkStrikethrough: this.plugin.settings.checkStrikethrough,
       resolveImagePath,
       resolveLinkTarget: (linkName) => {
-        return this.app.metadataCache.getFirstLinkpathDest(linkName, "") !== null;
+        return (
+          this.app.metadataCache.getFirstLinkpathDest(linkName, "") !== null
+        );
       },
       vaultName: this.app.vault.getName(),
       renderQuoteCard: (slot, fileName, blockId) => {
         renderQuoteCard(slot, fileName, blockId, this.app, currentFilePath, {
           timestampSettings: this.plugin.settings,
-          resolveRuleClass: (content) => this.plugin.getTagRuleClassForContent(content),
-          resolveRuleAccent: (ruleClass) => this.plugin.getRuleAccentColor(ruleClass),
+          resolveRuleClass: (content) =>
+            this.plugin.getTagRuleClassForContent(content),
+          resolveRuleAccent: (ruleClass) =>
+            this.plugin.getRuleAccentColor(ruleClass),
           checkStrikethrough: this.plugin.settings.checkStrikethrough,
         });
       },
       renderCodeBlock: (code, lang, blockEl, fenceTildes) => {
         const fence = "~".repeat(Math.max(3, fenceTildes));
-        const source = (lang ? `${fence}${lang}\n` : `${fence}\n`) + code + `\n${fence}`;
-        MarkdownRenderer.render(this.app, source, blockEl, "", this).catch(() => {
-          const pre = blockEl.createEl("pre");
-          const codeEl = pre.createEl("code");
-          if (lang) codeEl.addClass(`language-${lang}`);
-          codeEl.textContent = code;
-        });
+        const source =
+          (lang ? `${fence}${lang}\n` : `${fence}\n`) + code + `\n${fence}`;
+        MarkdownRenderer.render(this.app, source, blockEl, "", this).catch(
+          () => {
+            const pre = blockEl.createEl("pre");
+            const codeEl = pre.createEl("code");
+            if (lang) codeEl.addClass(`language-${lang}`);
+            codeEl.textContent = code;
+          },
+        );
       },
       renderMathBlock: (tex, blockEl) => {
         try {
@@ -2566,7 +3180,7 @@ export class WrotView extends ItemView {
     // Trailing media area for OGP/Twitter URL cards; inserted just before the
     // quote-card slot so quotes stay at the bottom.
     const previewUrls = urls.filter(
-      (pu) => pu.type === "image" || !pu.url.startsWith("obsidian://")
+      (pu) => pu.type === "image" || !pu.url.startsWith("obsidian://"),
     );
     if (previewUrls.length > 0) {
       const mediaEl = createDiv();
@@ -2577,7 +3191,12 @@ export class WrotView extends ItemView {
       } else {
         card.appendChild(mediaEl);
       }
-      renderUrlPreviews(mediaEl, previewUrls, this.plugin.ogpCache, resolveImagePath);
+      renderUrlPreviews(
+        mediaEl,
+        previewUrls,
+        this.plugin.ogpCache,
+        resolveImagePath,
+      );
     }
 
     // The pin indicator lives outside the footer so it can't shift the menu button's
@@ -2609,71 +3228,109 @@ export class WrotView extends ItemView {
       const pinned = this.isPinned(memo, options.filePath);
       const scheduled = this.findScheduledPin(memo, options.filePath);
       // An arrived schedule is a pin in every way the menu cares about.
-      const onBoard = pinned || (scheduled !== undefined && this.isScheduleDue(scheduled));
+      const onBoard =
+        pinned || (scheduled !== undefined && this.isScheduleDue(scheduled));
       const pinLimit = this.plugin.settings.pinLimit;
       const claimed = pinned || scheduled !== undefined;
-      const limitReached = !claimed && this.plugin.settings.pins.length >= pinLimit;
-      const scheduleLimitReached = !claimed && this.scheduledClaimCount() >= pinLimit;
+      const limitReached =
+        !claimed && this.plugin.settings.pins.length >= pinLimit;
+      const scheduleLimitReached =
+        !claimed && this.scheduledClaimCount() >= pinLimit;
       this.openMenu(menuBtn, (menu) => {
         menu.addItem((item) =>
-          item.setTitle(t("view.postMenu.copy")).setIcon("copy").onClick(async () => {
-            await navigator.clipboard.writeText(memo.content);
-          })
+          item
+            .setTitle(t("view.postMenu.copy"))
+            .setIcon("copy")
+            .onClick(async () => {
+              await navigator.clipboard.writeText(memo.content);
+            }),
         );
         // Copies one block's inside; with several, a second menu off the same button names each by its first line.
-        const addBlockCopy = (title: string, icon: string, texts: string[]): void => {
+        const addBlockCopy = (
+          title: string,
+          icon: string,
+          texts: string[],
+        ): void => {
           const blocks = texts.filter((s) => s.trim() !== "");
           if (blocks.length === 0) return;
           menu.addItem((item) =>
-            item.setTitle(title).setIcon(icon).onClick(async () => {
-              if (blocks.length === 1) {
-                await navigator.clipboard.writeText(blocks[0]);
-                return;
-              }
-              this.openMenu(menuBtn, (picker) => {
-                for (const text of blocks) {
-                  const label = createFragment((f) =>
-                    f.createSpan({ cls: "wrot-block-pick", text: text.split("\n").find((l) => l.trim() !== "")?.trim() })
-                  );
-                  picker.addItem((pick) =>
-                    pick.setTitle(label).onClick(async () => {
-                      await navigator.clipboard.writeText(text);
-                    })
-                  );
+            item
+              .setTitle(title)
+              .setIcon(icon)
+              .onClick(async () => {
+                if (blocks.length === 1) {
+                  await navigator.clipboard.writeText(blocks[0]);
+                  return;
                 }
-              });
-            })
+                this.openMenu(menuBtn, (picker) => {
+                  for (const text of blocks) {
+                    const label = createFragment((f) =>
+                      f.createSpan({
+                        cls: "wrot-block-pick",
+                        text: text
+                          .split("\n")
+                          .find((l) => l.trim() !== "")
+                          ?.trim(),
+                      }),
+                    );
+                    picker.addItem((pick) =>
+                      pick.setTitle(label).onClick(async () => {
+                        await navigator.clipboard.writeText(text);
+                      }),
+                    );
+                  }
+                });
+              }),
           );
         };
         const segments = segmentBlocks(memo.content);
-        addBlockCopy(t("view.postMenu.copyMath"), "sigma", segments.flatMap((s) => (s.kind === "mathblock" ? [s.tex] : [])));
-        addBlockCopy(t("view.postMenu.copyCode"), "code", segments.flatMap((s) => (s.kind === "codeblock" ? [s.code] : [])));
+        addBlockCopy(
+          t("view.postMenu.copyMath"),
+          "sigma",
+          segments.flatMap((s) => (s.kind === "mathblock" ? [s.tex] : [])),
+        );
+        addBlockCopy(
+          t("view.postMenu.copyCode"),
+          "code",
+          segments.flatMap((s) => (s.kind === "codeblock" ? [s.code] : [])),
+        );
         menu.addItem((item) => {
-          item.setTitle(t("view.postMenu.quotePost")).setIcon("quote").onClick(() => {
-            // eslint-disable-next-line @typescript-eslint/no-floating-promises -- fire-and-forget; failure is non-critical
-            this.insertQuoteToForm(memo, options.filePath);
-          });
+          item
+            .setTitle(t("view.postMenu.quotePost"))
+            .setIcon("quote")
+            .onClick(() => {
+              // eslint-disable-next-line @typescript-eslint/no-floating-promises -- fire-and-forget; failure is non-critical
+              this.insertQuoteToForm(memo, options.filePath);
+            });
           // Quoting writes into the form, which would clobber the edit in progress.
           if (this.isEditingTarget(memo)) item.setDisabled(true);
         });
         if (this.isEditingTarget(memo)) {
           menu.addItem((item) =>
-            item.setTitle(t("view.postMenu.cancelEdit")).setIcon("pencil-off").onClick(() => {
-              this.exitEditMode();
-            })
+            item
+              .setTitle(t("view.postMenu.cancelEdit"))
+              .setIcon("pencil-off")
+              .onClick(() => {
+                this.exitEditMode();
+              }),
           );
         } else {
           menu.addItem((item) =>
-            item.setTitle(t("view.postMenu.edit")).setIcon("pencil").onClick(() => {
-              this.enterEditMode(memo, options.filePath);
-            })
+            item
+              .setTitle(t("view.postMenu.edit"))
+              .setIcon("pencil")
+              .onClick(() => {
+                this.enterEditMode(memo, options.filePath);
+              }),
           );
         }
         // Menu groups: text actions, placement, then delete.
         menu.addSeparator();
         const addLimitHint = () => {
           menu.addItem((item) => {
-            item.setTitle(t("view.postMenu.pinLimitHint", { limit: pinLimit })).setDisabled(true);
+            item
+              .setTitle(t("view.postMenu.pinLimitHint", { limit: pinLimit }))
+              .setDisabled(true);
             const itemDom = (item as { dom?: HTMLElement }).dom;
             itemDom?.classList.add("wrot-menu-hint", "is-label");
           });
@@ -2688,18 +3345,24 @@ export class WrotView extends ItemView {
         const editingThis = this.isEditingTarget(memo);
         if (onBoard || scheduled) {
           menu.addItem((item) => {
-            item.setTitle(t("view.postMenu.unpin")).setIcon("pin-off").onClick(async () => {
-              if (editingThis) return;
-              await this.removePin(memo, options.filePath);
-            });
+            item
+              .setTitle(t("view.postMenu.unpin"))
+              .setIcon("pin-off")
+              .onClick(async () => {
+                if (editingThis) return;
+                await this.removePin(memo, options.filePath);
+              });
             if (editingThis) item.setDisabled(true);
           });
         } else {
           menu.addItem((item) => {
-            item.setTitle(t("view.postMenu.pin")).setIcon("pin").onClick(async () => {
-              if (limitReached || editingThis) return;
-              await this.addPin(memo, options.filePath);
-            });
+            item
+              .setTitle(t("view.postMenu.pin"))
+              .setIcon("pin")
+              .onClick(async () => {
+                if (limitReached || editingThis) return;
+                await this.addPin(memo, options.filePath);
+              });
             if (limitReached || editingThis) item.setDisabled(true);
           });
           if (limitReached && !editingThis) addLimitHint();
@@ -2733,11 +3396,20 @@ export class WrotView extends ItemView {
             const locked =
               this.isEditingTarget(memo) ||
               claimed ||
-              this.plugin.matchesRuleFlag(memo.tags, (rule) => rule.protectFromDelete === true);
+              this.plugin.matchesRuleFlag(
+                memo.tags,
+                (rule) => rule.protectFromDelete === true,
+              );
             // Armed already when a previous opening took the first press.
             let armed = this.isDeleteArmed(memo);
             item
-              .setTitle(t(armed ? "view.postMenu.deleteConfirm" : "view.postMenu.delete"))
+              .setTitle(
+                t(
+                  armed
+                    ? "view.postMenu.deleteConfirm"
+                    : "view.postMenu.delete",
+                ),
+              )
               .setIcon("trash-2")
               .setWarning(true);
             if (locked) item.setDisabled(true);
@@ -2764,7 +3436,7 @@ export class WrotView extends ItemView {
                 });
                 item.setTitle(t("view.postMenu.deleteConfirm"));
               },
-              true
+              true,
             );
 
             item.onClick(() => {
@@ -2794,7 +3466,8 @@ export class WrotView extends ItemView {
     if (options.pinned) {
       const pinIndicator = card.createSpan({ cls: "wrot-pin-indicator" });
       // Solid pin = arrived from a schedule; the two kinds spend separate allowances.
-      if (options.fromSchedule) pinIndicator.addClass("wrot-pin-indicator-filled");
+      if (options.fromSchedule)
+        pinIndicator.addClass("wrot-pin-indicator-filled");
       setIcon(pinIndicator, "pin");
     } else if (options.waitingSchedule) {
       const scheduleIndicator = card.createSpan({
@@ -2802,6 +3475,7 @@ export class WrotView extends ItemView {
       });
       setIcon(scheduleIndicator, "clock-fading");
     }
+    return card;
   }
 
   private async insertQuoteToForm(memo: Memo, srcFilePath: string): Promise<void> {

@@ -222,6 +222,8 @@ const ja = {
   "view.dateNav.tomorrow": "明日",
   "view.dateNav.daysAgo": "{count}日前",
   "view.dateNav.daysAhead": "{count}日後",
+  "view.dateNav.continuousScroll": "連続スクロール",
+  "view.dateNav.continuousScrollError": "投稿の読み込みに失敗しました。もう一度お試しください。",
 
   "view.empty.noMemos": "表示できる投稿がありません",
   "view.tasks.title": "未完了タスク",

@@ -220,6 +220,8 @@ const zhCN = {
   "view.dateNav.tomorrow": "明天",
   "view.dateNav.daysAgo": "{count}天前",
   "view.dateNav.daysAhead": "{count}天后",
+  "view.dateNav.continuousScroll": "连续滚动",
+  "view.dateNav.continuousScrollError": "无法加载帖子。请重试。",
 
   "view.empty.noMemos": "暂无记录",
   "view.tasks.title": "未完成任务",

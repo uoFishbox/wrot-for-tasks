@@ -216,6 +216,8 @@ const ko = {
   "view.dateNav.tomorrow": "내일",
   "view.dateNav.daysAgo": "{count}일 전",
   "view.dateNav.daysAhead": "{count}일 후",
+  "view.dateNav.continuousScroll": "연속 스크롤",
+  "view.dateNav.continuousScrollError": "게시물을 불러오지 못했습니다. 다시 시도하세요.",
 
   "view.empty.noMemos": "표시할 게시물이 없습니다",
   "view.tasks.title": "미완료 작업",
