@@ -22,6 +22,12 @@ const ko = {
 
   "settings.item.timestampFormat.name": "타임스탬프 형식",
   "settings.item.timestampFormat.desc": "YYYY, MM, DD, HH, mm, ss를 사용할 수 있습니다.",
+  "settings.item.dateAwareTimestamp.name": "노트 날짜에 따른 타임스탬프",
+  "settings.item.dateAwareTimestamp.desc": "타임스탬프를 왼쪽 아래에 표시합니다. 작성일이 원본 데일리 노트 날짜와 같으면 시각만 표시하고, 다르거나 노트 날짜를 알 수 없으면 날짜도 표시합니다.",
+  "settings.item.timestampTimeFormat.name": "시각 형식",
+  "settings.item.timestampTimeFormat.desc": "노트 날짜에 따른 타임스탬프가 켜져 있을 때 사용합니다(예: HH:mm:ss).",
+  "settings.item.timestampDateFormat.name": "작성 날짜 형식",
+  "settings.item.timestampDateFormat.desc": "시각 앞에 표시할 작성일 형식입니다(예: YYYY/MM/DD).",
 
   "settings.item.bgColorLight.name": "배경색 (라이트 모드)",
   "settings.item.bgColorLight.desc": "게시물과 입력창에 적용됩니다.",

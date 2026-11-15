@@ -22,6 +22,12 @@ const zhCN = {
 
   "settings.item.timestampFormat.name": "时间戳格式",
   "settings.item.timestampFormat.desc": "支持 YYYY、MM、DD、HH、mm、ss 等格式。",
+  "settings.item.dateAwareTimestamp.name": "根据笔记日期显示时间戳",
+  "settings.item.dateAwareTimestamp.desc": "在左下角显示时间戳。发布日期与来源日记日期相同时仅显示时间；日期不同或日记日期未知时，同时显示日期。",
+  "settings.item.timestampTimeFormat.name": "时间格式",
+  "settings.item.timestampTimeFormat.desc": "启用根据笔记日期显示时间戳时使用（例如 HH:mm:ss）。",
+  "settings.item.timestampDateFormat.name": "发布日期格式",
+  "settings.item.timestampDateFormat.desc": "时间前的发布日期格式（例如 YYYY/MM/DD）。",
 
   "settings.item.bgColorLight.name": "背景颜色（浅色模式）",
   "settings.item.bgColorLight.desc": "应用于记录卡片与输入框。",

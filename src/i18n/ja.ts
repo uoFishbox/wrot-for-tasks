@@ -21,6 +21,12 @@ const ja = {
 
   "settings.item.timestampFormat.name": "タイムスタンプ表示形式",
   "settings.item.timestampFormat.desc": "YYYY, MM, DD, HH, mm, ss が使用できます。",
+  "settings.item.dateAwareTimestamp.name": "ノートの日付に応じたタイムスタンプ",
+  "settings.item.dateAwareTimestamp.desc": "日時を左下に表示します。投稿日と保存先デイリーノートの日付が同じ場合は時刻だけを表示し、異なる場合やノートの日付が不明な場合は日付も表示します。",
+  "settings.item.timestampTimeFormat.name": "時刻の表示形式",
+  "settings.item.timestampTimeFormat.desc": "上のオプションが有効な場合に使います（例: HH:mm:ss）。",
+  "settings.item.timestampDateFormat.name": "投稿日付の表示形式",
+  "settings.item.timestampDateFormat.desc": "時刻の前に添える投稿日の日付形式です（例: YYYY/MM/DD）。",
 
   "settings.item.bgColorLight.name": "背景色（ライトモード）",
   "settings.item.bgColorLight.desc": "投稿と投稿フォームの背景に使用されます。",

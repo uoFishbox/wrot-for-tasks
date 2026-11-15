@@ -365,7 +365,7 @@ export class RemainingTasks extends Component implements HoverParent {
           vaultName: this.app.vault.getName(),
           renderQuoteCard: (slot, fileName, blockId) => {
             renderQuoteCard(slot, fileName, blockId, this.app, task.filePath, {
-              timestampFormat: this.plugin.settings.timestampFormat,
+              timestampSettings: this.plugin.settings,
               resolveRuleClass: (content) =>
                 this.plugin.getTagRuleClassForContent(content),
               resolveRuleAccent: (ruleClass) =>

@@ -22,6 +22,12 @@ const pt = {
 
   "settings.item.timestampFormat.name": "Formato do carimbo de data/hora",
   "settings.item.timestampFormat.desc": "Ex.: YYYY, MM, DD, HH, mm, ss.",
+  "settings.item.dateAwareTimestamp.name": "Carimbos de data/hora conforme a nota",
+  "settings.item.dateAwareTimestamp.desc": "Mostra os carimbos de data/hora no canto inferior esquerdo. Mostra apenas a hora quando a data de publicação coincide com a nota diária de origem; inclui a data quando diferem ou a data da nota é desconhecida.",
+  "settings.item.timestampTimeFormat.name": "Formato da hora",
+  "settings.item.timestampTimeFormat.desc": "Usado com carimbos conforme a nota ativados (ex.: HH:mm:ss).",
+  "settings.item.timestampDateFormat.name": "Formato da data de publicação",
+  "settings.item.timestampDateFormat.desc": "Formato da data de publicação antes da hora (ex.: YYYY/MM/DD).",
 
   "settings.item.bgColorLight.name": "Cor de fundo (Modo claro)",
   "settings.item.bgColorLight.desc": "Usada nas postagens e na caixa de texto.",

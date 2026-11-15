@@ -3,6 +3,7 @@ import { VIEW_TYPE_WROT } from "../constants";
 import { parseMemos, Memo } from "../utils/memoParser";
 import { appendMemo, deleteMemo, setMemoCheckbox, updateMemo } from "../utils/memoWriter";
 import { getOrCreateDailyNote, getDailyNoteFile, dailyNotePathFor, dailyNoteTemplateFile } from "../utils/dailyNote";
+import { renderMemoTimestamp } from "../utils/memoTimestamp";
 import { incompleteMemoTaskEntries } from "../utils/dailyNoteTasks";
 import { headingLocator, waitForTemplater } from "../utils/postHeading";
 import { segmentBlocks, toTildeFences } from "../utils/blockSegmenter";
@@ -1526,7 +1527,7 @@ export class WrotView extends ItemView {
     const wrap = container.createDiv({ cls: "wrot-pending-quote" });
     const slot = wrap.createDiv({ cls: "wrot-quote-card-slot" });
     renderQuoteCard(slot, link[1], link[2], this.app, "", {
-      timestampFormat: this.plugin.settings.timestampFormat,
+      timestampSettings: this.plugin.settings,
       resolveRuleClass: (content) => this.plugin.getTagRuleClassForContent(content),
       checkStrikethrough: this.plugin.settings.checkStrikethrough,
     });
@@ -2530,7 +2531,7 @@ export class WrotView extends ItemView {
       vaultName: this.app.vault.getName(),
       renderQuoteCard: (slot, fileName, blockId) => {
         renderQuoteCard(slot, fileName, blockId, this.app, currentFilePath, {
-          timestampFormat: this.plugin.settings.timestampFormat,
+          timestampSettings: this.plugin.settings,
           resolveRuleClass: (content) => this.plugin.getTagRuleClassForContent(content),
           resolveRuleAccent: (ruleClass) => this.plugin.getRuleAccentColor(ruleClass),
           checkStrikethrough: this.plugin.settings.checkStrikethrough,
@@ -2583,9 +2584,13 @@ export class WrotView extends ItemView {
     // position or hit area.
     const footer = card.createDiv({ cls: "wrot-card-footer" });
 
-    const fmt = this.plugin.settings.timestampFormat || "YYYY/MM/DD HH:mm:ss";
-    const formatted = moment(memo.time).format(fmt);
-    footer.createSpan({ cls: "wrot-timestamp", text: formatted });
+    const sourceFile = this.app.vault.getAbstractFileByPath(options.filePath);
+    renderMemoTimestamp(
+      footer,
+      memo.time,
+      sourceFile instanceof TFile ? sourceFile : null,
+      this.plugin.settings,
+    );
 
     const menuBtn = footer.createSpan({ cls: "wrot-menu-btn" });
     setIcon(menuBtn, "ellipsis");

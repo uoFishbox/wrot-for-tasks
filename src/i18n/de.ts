@@ -22,6 +22,12 @@ const de = {
 
   "settings.item.timestampFormat.name": "Zeitstempel-Format",
   "settings.item.timestampFormat.desc": "Unterstützt YYYY, MM, DD, HH, mm, ss.",
+  "settings.item.dateAwareTimestamp.name": "Datumsabhängige Zeitstempel",
+  "settings.item.dateAwareTimestamp.desc": "Zeitstempel unten links anzeigen. Bei gleichem Beitrags- und Tagesnotizdatum nur die Uhrzeit anzeigen; bei abweichendem oder unbekanntem Notizdatum auch das Datum anzeigen.",
+  "settings.item.timestampTimeFormat.name": "Uhrzeitformat",
+  "settings.item.timestampTimeFormat.desc": "Bei datumsabhängigen Zeitstempeln verwendet (z. B. HH:mm:ss).",
+  "settings.item.timestampDateFormat.name": "Beitragsdatumsformat",
+  "settings.item.timestampDateFormat.desc": "Format des Beitragsdatums vor der Uhrzeit (z. B. YYYY/MM/DD).",
 
   "settings.item.bgColorLight.name": "Hintergrundfarbe (Hell)",
   "settings.item.bgColorLight.desc": "Gilt für Beiträge und das Eingabefeld.",

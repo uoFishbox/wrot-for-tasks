@@ -791,7 +791,12 @@ function buildDecorations(
                 app,
                 currentPath,
                 block.ruleClass,
-                plugin.settings.timestampFormat || "YYYY/MM/DD HH:mm",
+                {
+                  timestampFormat: plugin.settings.timestampFormat,
+                  dateAwareTimestamp: plugin.settings.dateAwareTimestamp,
+                  timestampTimeFormat: plugin.settings.timestampTimeFormat,
+                  timestampDateFormat: plugin.settings.timestampDateFormat,
+                },
                 ogpCache,
                 resolveImagePath,
                 (content) => plugin.getTagRuleClassForContent(content),

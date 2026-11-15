@@ -128,6 +128,9 @@ export interface WrotSettings {
   openOnStartup: boolean;
   headerDateFormat: string;
   timestampFormat: string;
+  dateAwareTimestamp: boolean;
+  timestampTimeFormat: string;
+  timestampDateFormat: string;
   bgColorLight: string;
   bgColorDark: string;
   textColorLight: string;
@@ -184,6 +187,9 @@ export const DEFAULT_SETTINGS: WrotSettings = {
   openOnStartup: false,
   headerDateFormat: "YYYY年MM月DD日",
   timestampFormat: "YYYY/MM/DD HH:mm:ss",
+  dateAwareTimestamp: false,
+  timestampTimeFormat: "HH:mm:ss",
+  timestampDateFormat: "YYYY/MM/DD",
   bgColorLight: "#efefef",
   bgColorDark: "#303030",
   textColorLight: "#454545",
@@ -324,6 +330,11 @@ export class WrotSettingTab extends PluginSettingTab {
       calendarDayShape: () => this.plugin.applyCalendarDayShape(),
       dateAwarePlaceholder: () => {
         this.plugin.forEachView((view) => view.updateComposerPlaceholder());
+      },
+      dateAwareTimestamp: () => {
+        this.update();
+        this.plugin.refreshViews();
+        this.plugin.refreshAttachmentDecorations();
       },
       checkStrikethrough: () => {
         this.plugin.refreshViews();
@@ -582,9 +593,31 @@ export class WrotSettingTab extends PluginSettingTab {
             settings.timestampFormat = value || defaultTimestampFormat();
             await this.plugin.saveSettings();
             this.plugin.refreshViews();
+            this.plugin.refreshAttachmentDecorations();
           },
           resetValue: () => defaultTimestampFormat(),
         }),
+        {
+          name: t("settings.item.dateAwareTimestamp.name"),
+          desc: desc(t("settings.item.dateAwareTimestamp.desc")),
+          control: { type: "toggle", key: "dateAwareTimestamp" },
+        },
+        ...(["timestampTimeFormat", "timestampDateFormat"] as const).map((key) => ({
+          ...this.textWithReset({
+            name: t(`settings.item.${key}.name`),
+            desc: t(`settings.item.${key}.desc`),
+            placeholder: DEFAULT_SETTINGS[key],
+            read: () => settings[key],
+            write: async (value) => {
+              settings[key] = value || DEFAULT_SETTINGS[key];
+              await this.plugin.saveSettings();
+              this.plugin.refreshViews();
+              this.plugin.refreshAttachmentDecorations();
+            },
+            resetValue: () => DEFAULT_SETTINGS[key],
+          }),
+          visible: () => settings.dateAwareTimestamp,
+        })),
         this.themeColorRow("bgColorLight"),
         this.themeColorRow("textColorLight"),
         this.themeColorRow("bgColorDark"),

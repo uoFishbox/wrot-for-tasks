@@ -126,6 +126,7 @@ Wrot for Tasks は **11 言語 12 ロケール** に対応しています。Obsi
 - ピン留め設定: 最大件数の設定（1 / 3 / 5件）、スクロール時の上部固定表示
 - ボタン設定: 投稿・更新ボタンのラベル／アイコン変更、投稿メニュー内の削除ボタン表示切り替え
 - フォーマット: タイムスタンプの表示形式（例: `YYYY/MM/DD HH:mm:ss`）
+- ノートの日付に応じたタイムスタンプ: 投稿日と保存先デイリーノートの日付が同じ場合は時刻だけを表示し、異なる場合は時刻の前に投稿日を添えます。
 - プレビュー機能: OGP カードプレビューの有効化／無効化
 
 ![右サイドバーに置いた Wrot for Tasks のタイムライン](https://raw.githubusercontent.com/uoFishbox/wrot-for-tasks/main/docs/images/sidebar-desktop-ja.png)

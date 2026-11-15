@@ -22,6 +22,12 @@ const ru = {
 
   "settings.item.timestampFormat.name": "Формат времени",
   "settings.item.timestampFormat.desc": "Например: YYYY, MM, DD, HH, mm, ss.",
+  "settings.item.dateAwareTimestamp.name": "Время с учётом даты заметки",
+  "settings.item.dateAwareTimestamp.desc": "Показывать время публикации слева внизу. Если дата публикации совпадает с датой исходной ежедневной заметки, показывать только время; если даты различаются или дата заметки неизвестна, добавлять дату.",
+  "settings.item.timestampTimeFormat.name": "Формат времени",
+  "settings.item.timestampTimeFormat.desc": "Используется при показе времени с учётом даты заметки (например, HH:mm:ss).",
+  "settings.item.timestampDateFormat.name": "Формат даты публикации",
+  "settings.item.timestampDateFormat.desc": "Формат даты публикации перед временем (например, YYYY/MM/DD).",
 
   "settings.item.bgColorLight.name": "Цвет фона (светлая тема)",
   "settings.item.bgColorLight.desc": "Используется для записей и поля ввода.",

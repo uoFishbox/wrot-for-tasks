@@ -3,8 +3,7 @@ import { parseMemos, type Memo } from "./memoParser";
 import { renderTextWithTagsAndUrls } from "./urlRenderer";
 import { ListDepthTracker, parseListLine } from "./listParser";
 import { t } from "../i18n";
-
-declare const moment: typeof import("moment");
+import { renderMemoTimestamp, type MemoTimestampSettings } from "./memoTimestamp";
 
 // LRU cache (Map insertion order) of parseMemos results per file.
 const MEMO_CACHE = new Map<string, Memo[]>();
@@ -31,6 +30,7 @@ export function invalidateMemoCache(filePath: string): void {
 // Card DOM -> source memo, read by click handlers for the jump target. A WeakMap
 // (not a closure) lets in-place updates swap the memo without rebuilding the card.
 const CARD_MEMO = new WeakMap<HTMLElement, Memo>();
+const CARD_TIMESTAMP_SETTINGS = new WeakMap<HTMLElement, MemoTimestampSettings | undefined>();
 
 // Refresh quote cards referencing the changed file (data-quote-file holds a link path, matched by basename).
 // In-place update avoids the placeholder flicker of a rebuild; rebuild only on unexpected structure.
@@ -50,7 +50,7 @@ export function refreshQuoteCardsForFile(
     const fileName = card.dataset.quoteFile;
     const blockId = card.dataset.quoteBlock;
     const currentFilePath = card.dataset.quoteContext ?? "";
-    const timestampFormat = card.dataset.quoteTsFormat;
+    const timestampSettings = CARD_TIMESTAMP_SETTINGS.get(card);
     if (!fileName || !blockId) return;
     const checkStrikethrough = card.dataset.quoteStrike === "1";
     if (
@@ -58,7 +58,7 @@ export function refreshQuoteCardsForFile(
         fileName,
         blockId,
         currentFilePath,
-        timestampFormat,
+        timestampSettings,
         resolveRuleClass,
         checkStrikethrough,
       })
@@ -67,7 +67,7 @@ export function refreshQuoteCardsForFile(
     }
     card.remove();
     renderQuoteCard(slot, fileName, blockId, app, currentFilePath, {
-      timestampFormat,
+      timestampSettings,
       resolveRuleClass,
       resolveRuleAccent,
       checkStrikethrough,
@@ -85,7 +85,7 @@ function updateQuoteCardInPlace(
     fileName: string;
     blockId: string;
     currentFilePath: string;
-    timestampFormat?: string;
+    timestampSettings?: MemoTimestampSettings;
     resolveRuleClass?: (content: string) => string | null;
     checkStrikethrough?: boolean;
   }
@@ -109,7 +109,7 @@ function updateQuoteCardInPlace(
       return;
     }
     card.classList.remove("wrot-quote-card-dead");
-    fillCardBody(bodyEl, metaEl, found, app, opts.timestampFormat, opts.checkStrikethrough);
+    fillCardBody(bodyEl, metaEl, found, app, file, opts.timestampSettings, opts.checkStrikethrough);
     Array.from(card.classList)
       .filter((c) => /^wrot-tag-rule-\d+$/.test(c))
       .forEach((c) => card.classList.remove(c));
@@ -142,12 +142,6 @@ function memoMatchesBlockId(memo: Memo, blockId: string): boolean {
   const T = blockId.slice(3);
   const memoT = memo.time.replace(/[-:.TZ+]/g, "").slice(0, 17);
   return memoT === T;
-}
-
-const DEFAULT_TIMESTAMP_FORMAT = "YYYY/MM/DD HH:mm";
-
-function formatMemoTimestamp(time: string, format?: string): string {
-  return moment(time).format(format || DEFAULT_TIMESTAMP_FORMAT);
 }
 
 /**
@@ -330,12 +324,14 @@ function fillCardBody(
   metaEl: HTMLElement,
   memo: Memo,
   app: App,
-  timestampFormat?: string,
+  file: TFile,
+  timestampSettings?: MemoTimestampSettings,
   checkStrikethrough?: boolean
 ): void {
   bodyEl.empty();
   renderPreviewLines(bodyEl, memo.content, app, checkStrikethrough);
-  metaEl.textContent = formatMemoTimestamp(memo.time, timestampFormat);
+  metaEl.empty();
+  renderMemoTimestamp(metaEl, memo.time, file, timestampSettings);
 }
 
 function markDead(card: HTMLElement, bodyEl: HTMLElement, metaEl: HTMLElement): void {
@@ -809,7 +805,7 @@ export function renderQuoteCard(
   app: App,
   currentFilePath: string,
   options?: {
-    timestampFormat?: string;
+    timestampSettings?: MemoTimestampSettings;
     // Colors the card by the source post's tag rule, independent of the quoting post's rule.
     resolveRuleClass?: (content: string) => string | null;
     // Rule class -> accent hex; used for the post-jump flash color.
@@ -818,7 +814,7 @@ export function renderQuoteCard(
     checkStrikethrough?: boolean;
   }
 ): void {
-  const timestampFormat = options?.timestampFormat;
+  const timestampSettings = options?.timestampSettings;
   const resolveRuleClass = options?.resolveRuleClass;
   const resolveRuleAccent = options?.resolveRuleAccent;
   const checkStrikethrough = options?.checkStrikethrough ?? false;
@@ -830,7 +826,7 @@ export function renderQuoteCard(
   card.dataset.quoteFile = fileName;
   card.dataset.quoteBlock = blockId;
   card.dataset.quoteContext = currentFilePath;
-  if (timestampFormat) card.dataset.quoteTsFormat = timestampFormat;
+  CARD_TIMESTAMP_SETTINGS.set(card, timestampSettings);
   // Stored in dataset so refreshQuoteCardsForFile can carry the setting over.
   if (checkStrikethrough) card.dataset.quoteStrike = "1";
   const bodyEl = card.createDiv({ cls: "wrot-quote-card-body", text: "…" });
@@ -889,7 +885,7 @@ export function renderQuoteCard(
   });
 
   const setupClick = (memo: Memo) => {
-    fillCardBody(bodyEl, metaEl, memo, app, timestampFormat, checkStrikethrough);
+    fillCardBody(bodyEl, metaEl, memo, app, file, timestampSettings, checkStrikethrough);
     if (resolveRuleClass) {
       Array.from(card.classList)
         .filter((c) => /^wrot-tag-rule-\d+$/.test(c))

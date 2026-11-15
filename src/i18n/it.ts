@@ -23,6 +23,12 @@ const it = {
 
   "settings.item.timestampFormat.name": "Formato del timestamp",
   "settings.item.timestampFormat.desc": "Puoi usare: YYYY, MM, DD, HH, mm, ss.",
+  "settings.item.dateAwareTimestamp.name": "Timestamp in base alla nota",
+  "settings.item.dateAwareTimestamp.desc": "Mostra i timestamp in basso a sinistra. Mostra solo l’ora se la data di pubblicazione coincide con la nota giornaliera di origine; include la data se sono diverse o se la data della nota è sconosciuta.",
+  "settings.item.timestampTimeFormat.name": "Formato dell’ora",
+  "settings.item.timestampTimeFormat.desc": "Usato con i timestamp in base alla nota (es.: HH:mm:ss).",
+  "settings.item.timestampDateFormat.name": "Formato della data di pubblicazione",
+  "settings.item.timestampDateFormat.desc": "Formato della data di pubblicazione prima dell’ora (es.: YYYY/MM/DD).",
 
   "settings.item.bgColorLight.name": "Colore di sfondo (Tema chiaro)",
   "settings.item.bgColorLight.desc": "Usato per i post e il campo di inserimento.",

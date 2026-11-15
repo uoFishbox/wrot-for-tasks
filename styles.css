@@ -1435,7 +1435,10 @@ body .wrot-card.wrot-card-editing .wrot-menu-btn .svg-icon:not(#x) {
   align-items: center;
   gap: 8px;
   margin-top: 7px;
-  /* Room for the pin indicator, which sits outside the row; the menu button must not run under it */
+}
+
+/* Reserve space only when a pin or schedule indicator sits outside the footer. */
+.wrot-card:has(> .wrot-pin-indicator) > .wrot-card-footer {
   padding-right: calc(max(14px, var(--wrot-font-text)) + 8px);
 }
 
@@ -2405,8 +2408,8 @@ body .wrot-menu-btn.wrot-toolbar-active .svg-icon:not(#x) {
   stroke: var(--text-accent);
 }
 
-/* Pin indicator: absolute-positioned at the card's bottom-right on the footer
-   row; rendered only when pinned, so no slot is reserved otherwise. */
+/* Pin/schedule indicator: absolute-positioned at the card's bottom-right on the
+   footer row; space is reserved only while the indicator is present. */
 .wrot-pin-indicator {
   position: absolute;
   right: 14px;
@@ -3615,9 +3618,16 @@ body .wrot-quote-card-slot .wrot-quote-card .wrot-quote-card-body .wrot-internal
 }
 
 .wrot-quote-card-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
   font-size: 0.8em;
   color: var(--text-muted);
   font-family: var(--font-text, var(--default-font));
+}
+
+.wrot-quote-card-meta .wrot-timestamp {
+  font-size: inherit;
 }
 
 .wrot-quote-card-dead {

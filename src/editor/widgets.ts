@@ -10,6 +10,7 @@ import {
   isSafeUrl,
   type ParsedUrl,
 } from "../utils/urlRenderer";
+import type { MemoTimestampSettings } from "../utils/memoTimestamp";
 import { renderQuoteCard } from "../utils/quoteCard";
 import { parseListLine } from "../utils/listParser";
 import type { OGPCache } from "../utils/ogpCache";
@@ -431,7 +432,7 @@ export class QuoteBlockWidget extends WidgetType {
     private app: App,
     private currentFilePath: string,
     private ruleClass: string | null,
-    private timestampFormat: string,
+    private timestampSettings: MemoTimestampSettings,
     private ogpCache: OGPCache,
     private resolveImagePath: (fileName: string) => string | null,
     private resolveQuoteRuleClass: (content: string) => string | null,
@@ -449,7 +450,10 @@ export class QuoteBlockWidget extends WidgetType {
     if (this.fileName !== other.fileName) return false;
     if (this.blockId !== other.blockId) return false;
     if (this.ruleClass !== other.ruleClass) return false;
-    if (this.timestampFormat !== other.timestampFormat) return false;
+    if (this.timestampSettings.timestampFormat !== other.timestampSettings.timestampFormat) return false;
+    if (this.timestampSettings.dateAwareTimestamp !== other.timestampSettings.dateAwareTimestamp) return false;
+    if (this.timestampSettings.timestampTimeFormat !== other.timestampSettings.timestampTimeFormat) return false;
+    if (this.timestampSettings.timestampDateFormat !== other.timestampSettings.timestampDateFormat) return false;
     if (this.checkStrikethrough !== other.checkStrikethrough) return false;
     if (this.parsedUrls.length !== other.parsedUrls.length) return false;
     for (let i = 0; i < this.parsedUrls.length; i++) {
@@ -492,7 +496,7 @@ export class QuoteBlockWidget extends WidgetType {
     slot.className = "wrot-quote-card-slot wrot-lp-quote-card";
     if (this.ruleClass) slot.classList.add(this.ruleClass);
     renderQuoteCard(slot, this.fileName, this.blockId, this.app, this.currentFilePath, {
-      timestampFormat: this.timestampFormat,
+      timestampSettings: this.timestampSettings,
       resolveRuleClass: this.resolveQuoteRuleClass,
       resolveRuleAccent: this.resolveQuoteRuleAccent,
       checkStrikethrough: this.checkStrikethrough,

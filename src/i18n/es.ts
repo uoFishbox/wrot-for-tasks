@@ -22,6 +22,12 @@ const es = {
 
   "settings.item.timestampFormat.name": "Formato de marca de tiempo",
   "settings.item.timestampFormat.desc": "Ej.: YYYY, MM, DD, HH, mm, ss.",
+  "settings.item.dateAwareTimestamp.name": "Marcas de tiempo según la nota",
+  "settings.item.dateAwareTimestamp.desc": "Muestra las marcas de tiempo abajo a la izquierda. Muestra solo la hora si la fecha de publicación coincide con la nota diaria de origen; incluye la fecha si difieren o si la fecha de la nota es desconocida.",
+  "settings.item.timestampTimeFormat.name": "Formato de hora",
+  "settings.item.timestampTimeFormat.desc": "Se usa con las marcas de tiempo según la nota (p. ej., HH:mm:ss).",
+  "settings.item.timestampDateFormat.name": "Formato de fecha de publicación",
+  "settings.item.timestampDateFormat.desc": "Formato de la fecha de publicación antes de la hora (p. ej., YYYY/MM/DD).",
 
   "settings.item.bgColorLight.name": "Color de fondo (modo claro)",
   "settings.item.bgColorLight.desc": "Se usa en las publicaciones y en el campo de entrada.",

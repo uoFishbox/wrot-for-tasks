@@ -22,6 +22,12 @@ const en = {
 
   "settings.item.timestampFormat.name": "Timestamp format",
   "settings.item.timestampFormat.desc": "Supports tokens such as YYYY, MM, DD, HH, mm, and ss.",
+  "settings.item.dateAwareTimestamp.name": "Date-aware timestamps",
+  "settings.item.dateAwareTimestamp.desc": "Show timestamps at the bottom left. Show only the time when the posting date matches the source daily note date; include the date when they differ or the note date is unknown.",
+  "settings.item.timestampTimeFormat.name": "Time format",
+  "settings.item.timestampTimeFormat.desc": "Used when date-aware timestamps are enabled (e.g., HH:mm:ss).",
+  "settings.item.timestampDateFormat.name": "Posting date format",
+  "settings.item.timestampDateFormat.desc": "Format for the posting date before the time (e.g., YYYY/MM/DD).",
 
   "settings.item.bgColorLight.name": "Background color (light mode)",
   "settings.item.bgColorLight.desc": "Used for posts and the compose box.",

@@ -22,6 +22,12 @@ const zhTW = {
 
   "settings.item.timestampFormat.name": "時間戳記格式",
   "settings.item.timestampFormat.desc": "可使用 YYYY、MM、DD、HH、mm、ss。",
+  "settings.item.dateAwareTimestamp.name": "依筆記日期顯示時間戳記",
+  "settings.item.dateAwareTimestamp.desc": "在左下角顯示時間戳記。發文日期與來源日記日期相同時僅顯示時間；日期不同或日記日期未知時，同時顯示日期。",
+  "settings.item.timestampTimeFormat.name": "時間格式",
+  "settings.item.timestampTimeFormat.desc": "啟用依筆記日期顯示時間戳記時使用（例如 HH:mm:ss）。",
+  "settings.item.timestampDateFormat.name": "發文日期格式",
+  "settings.item.timestampDateFormat.desc": "時間前的發文日期格式（例如 YYYY/MM/DD）。",
 
   "settings.item.bgColorLight.name": "背景顏色（淺色模式）",
   "settings.item.bgColorLight.desc": "套用於貼文與輸入框。",

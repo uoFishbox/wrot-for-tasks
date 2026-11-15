@@ -126,6 +126,7 @@ Wrot for Tasks gives you fine-grained control over how your feed looks and behav
 - **Pinning**: Limit pinned items (1, 3, or 5 notes) and keep pinned notes sticky at the top when scrolling.
 - **Button setup**: Customize post and update labels/icons, or hide the delete button from the post menu.
 - **Timestamp format**: Adjust how dates and times display (e.g., `YYYY/MM/DD HH:mm:ss`).
+- **Date-aware timestamps**: Show only the time when the posting date matches the source daily note date; otherwise include the posting date before the time.
 - **Link previews**: Turn OGP link preview cards on or off.
 
 ![Wrot for Tasks timeline docked in the right sidebar](https://raw.githubusercontent.com/uoFishbox/wrot-for-tasks/main/docs/images/sidebar-desktop-en.png)

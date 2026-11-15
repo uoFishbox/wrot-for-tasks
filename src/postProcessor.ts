@@ -487,7 +487,7 @@ function processCodeBlock(code: HTMLElement, plugin: WrotPlugin, parent: Compone
           const slot = createSpan();
           slot.className = "wrot-quote-card-slot";
           renderQuoteCard(slot, quoteMatch[1], quoteMatch[2], plugin.app, "", {
-            timestampFormat: plugin.settings.timestampFormat,
+            timestampSettings: plugin.settings,
             resolveRuleClass: (content) => plugin.getTagRuleClassForContent(content),
             resolveRuleAccent: (ruleClass) => plugin.getRuleAccentColor(ruleClass),
             checkStrikethrough: plugin.settings.checkStrikethrough,

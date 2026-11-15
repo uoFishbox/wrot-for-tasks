@@ -23,6 +23,12 @@ const fr = {
 
   "settings.item.timestampFormat.name": "Format de l'horodatage",
   "settings.item.timestampFormat.desc": "Prend en charge YYYY, MM, DD, HH, mm, ss.",
+  "settings.item.dateAwareTimestamp.name": "Horodatage selon la note",
+  "settings.item.dateAwareTimestamp.desc": "Affiche les horodatages en bas à gauche. Affiche uniquement l’heure si la date de publication correspond à la note quotidienne source ; ajoute la date si elles diffèrent ou si la date de la note est inconnue.",
+  "settings.item.timestampTimeFormat.name": "Format de l’heure",
+  "settings.item.timestampTimeFormat.desc": "Utilisé avec l’horodatage selon la note (ex. : HH:mm:ss).",
+  "settings.item.timestampDateFormat.name": "Format de la date de publication",
+  "settings.item.timestampDateFormat.desc": "Format de la date de publication avant l’heure (ex. : YYYY/MM/DD).",
 
   "settings.item.bgColorLight.name": "Couleur d'arrière-plan (mode clair)",
   "settings.item.bgColorLight.desc": "Utilisée pour les publications et la zone de saisie.",
