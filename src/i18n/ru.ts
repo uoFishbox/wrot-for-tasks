@@ -2,6 +2,10 @@ import type { Translations } from "./ja";
 
 // Russian translations. Translated via Nani.
 const ru = {
+  "settings.section.experimental": "Экспериментальные функции",
+  "settings.item.nativeEditor.name": "Использовать редактор Obsidian",
+  "settings.item.nativeEditor.desc": "Включает Markdown-редактор Obsidian вместо прежнего текстового поля. Переключается сразу, сохраняя текст. Используется закрытый API, который может перестать работать после обновления Obsidian.",
+  "view.notice.nativeEditorFallback": "Не удалось запустить редактор Obsidian. Используется прежнее поле ввода.",
   "settings.section.basic": "Основные настройки",
   "settings.section.advanced": "Расширенные настройки",
   "settings.section.tagrules": "Правила для тегов",

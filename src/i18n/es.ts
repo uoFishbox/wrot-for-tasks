@@ -2,6 +2,10 @@ import type { Translations } from "./ja";
 
 // Spanish translations. Translated via Nani.
 const es = {
+  "settings.section.experimental": "Funciones experimentales",
+  "settings.item.nativeEditor.name": "Usar el editor nativo de Obsidian",
+  "settings.item.nativeEditor.desc": "Activa el editor Markdown de Obsidian; al desactivarlo se usa el cuadro de texto existente. Cambia al instante y conserva el texto. Usa una API privada que puede fallar tras una actualización de Obsidian.",
+  "view.notice.nativeEditorFallback": "No se pudo iniciar el editor nativo de Obsidian. Se usará el campo de entrada existente.",
   "settings.section.basic": "Configuración básica",
   "settings.section.advanced": "Configuración avanzada",
   "settings.section.tagrules": "Reglas por etiqueta",

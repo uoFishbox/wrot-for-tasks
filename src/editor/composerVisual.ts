@@ -124,7 +124,7 @@ const rawField = StateField.define<Span[]>({
   },
 });
 
-const armedField = StateField.define<{ pos: number; marker: string } | null>({
+export const armedField = StateField.define<{ pos: number; marker: string } | null>({
   create: () => null,
   update(armed, tr) {
     for (const e of tr.effects) if (e.is(armEffect)) armed = e.value;

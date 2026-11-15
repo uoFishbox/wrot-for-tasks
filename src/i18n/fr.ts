@@ -2,6 +2,10 @@ import type { Translations } from "./ja";
 
 // French translations. Translated via Nani.
 const fr = {
+  "settings.section.experimental": "Fonctionnalités expérimentales",
+  "settings.item.nativeEditor.name": "Utiliser l’éditeur natif d’Obsidian",
+  "settings.item.nativeEditor.desc": "Active l’éditeur Markdown d’Obsidian à la place du champ existant. Le changement est immédiat et conserve le texte. Utilise une API privée qui peut cesser de fonctionner après une mise à jour d’Obsidian.",
+  "view.notice.nativeEditorFallback": "Impossible d’initialiser l’éditeur natif d’Obsidian. Le champ de saisie existant sera utilisé.",
   "settings.section.basic": "Paramètres généraux",
   "settings.section.advanced": "Paramètres avancés",
   "settings.section.tagrules": "Règles par tag",

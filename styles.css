@@ -592,7 +592,59 @@ body .wrot-link-popover-item-folder {
   margin-left: auto;
 }
 
-/* The composer is a CodeMirror editor (.cm-editor), whatever its class name. */
+.wrot-composer-host {
+  width: 100%;
+  min-width: 0;
+}
+
+/* Only constrain the embedded editor's layout; leave Live Preview's markup and
+   theme styling to Obsidian. It must not inherit the custom visual-mode resets. */
+.wrot-native-composer .markdown-source-view.mod-cm6 {
+  width: 100%;
+  height: auto;
+  min-height: 64px;
+  max-height: 50vh;
+  overflow: auto;
+  padding: 0;
+  background: transparent;
+}
+
+.wrot-native-composer .cm-editor {
+  min-height: 64px;
+  font-size: var(--wrot-font-text);
+}
+
+.wrot-native-composer .cm-scroller {
+  min-height: 64px;
+  overflow: visible;
+  padding: 8px;
+}
+
+.wrot-native-composer .cm-sizer {
+  min-height: 0;
+}
+
+.wrot-native-composer .cm-content {
+  position: relative;
+  min-height: 48px;
+}
+
+.wrot-native-composer .cm-contentContainer {
+  padding-bottom: 0;
+}
+
+.wrot-native-textarea.wrot-composer-empty .cm-content::before {
+  content: attr(aria-placeholder);
+  position: absolute;
+  color: var(--text-faint);
+  pointer-events: none;
+}
+
+.wrot-native-composer .wrot-held-range {
+  background: var(--text-selection);
+}
+
+/* The existing composer uses a custom CodeMirror configuration. */
 /* At least two lines (2 × line-height 1.6) at any font size. */
 body .wrot-textarea {
   width: 100%;

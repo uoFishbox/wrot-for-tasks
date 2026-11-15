@@ -27,6 +27,7 @@
     "typescript-eslint": "^8.72.1"
   },
   "dependencies": {
+    "@mnaoumov/obsidian-lib": "10.12.0",
     "obsidian-daily-notes-interface": "^0.9.5"
   },
   "overrides": {

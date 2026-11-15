@@ -1,5 +1,9 @@
 // Japanese translations (source of truth). Other locale files match this key structure via `satisfies`.
 const ja = {
+  "settings.section.experimental": "実験的機能",
+  "settings.item.nativeEditor.name": "Obsidian標準エディタを使う",
+  "settings.item.nativeEditor.desc": "オンでObsidian標準のMarkdownエディタ、オフで既存のテキストボックスを使います。本文を保って即座に切り替えます。非公開APIを使用するため、Obsidianの更新で動かなくなる場合があります。",
+  "view.notice.nativeEditorFallback": "Obsidian標準エディタを初期化できなかったため、既存の入力欄を使います。",
   "settings.section.basic": "基本設定",
   "settings.section.advanced": "詳細設定",
   "settings.section.tagrules": "タグ別ルール設定",

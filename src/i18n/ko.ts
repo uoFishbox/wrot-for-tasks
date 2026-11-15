@@ -2,6 +2,10 @@ import type { Translations } from "./ja";
 
 // Korean translations. Translated via Nani.
 const ko = {
+  "settings.section.experimental": "실험적 기능",
+  "settings.item.nativeEditor.name": "Obsidian 기본 편집기 사용",
+  "settings.item.nativeEditor.desc": "켜면 Obsidian Markdown 편집기를, 끄면 기존 텍스트 상자를 사용합니다. 내용을 유지하며 즉시 전환합니다. 비공개 API를 사용하므로 Obsidian 업데이트 후 작동하지 않을 수 있습니다.",
+  "view.notice.nativeEditorFallback": "Obsidian 기본 편집기를 초기화하지 못해 기존 입력란을 사용합니다.",
   "settings.section.basic": "기본 설정",
   "settings.section.advanced": "고급 설정",
   "settings.section.tagrules": "태그별 규칙 설정",

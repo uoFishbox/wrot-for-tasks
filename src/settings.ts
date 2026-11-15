@@ -143,6 +143,7 @@ export interface WrotSettings {
   // Submit-button icon while editing a post. Empty shares submitIcon.
   updateIcon: string;
   dateAwarePlaceholder: boolean;
+  nativeEditorEnabled: boolean;
   // Saves attached images into attachmentFolder instead of following Obsidian's own
   // attachment setting. The folder is never created here: a missing one falls back.
   useCustomAttachmentFolder: boolean;
@@ -199,6 +200,7 @@ export const DEFAULT_SETTINGS: WrotSettings = {
   updateLabel: "更新",
   updateIcon: "send",
   dateAwarePlaceholder: true,
+  nativeEditorEnabled: false,
   useCustomAttachmentFolder: false,
   attachmentFolder: "",
   shrinkImages: true,
@@ -295,7 +297,7 @@ export class WrotSettingTab extends PluginSettingTab {
   }
 
   getSettingDefinitions(): SettingDefinitionItem[] {
-    return [this.basicGroup(), this.advancedGroup(), ...this.tagRuleItems()];
+    return [this.basicGroup(), this.advancedGroup(), ...this.tagRuleItems(), this.experimentalGroup()];
   }
 
   getControlValue(key: string): unknown {
@@ -314,6 +316,9 @@ export class WrotSettingTab extends PluginSettingTab {
   private controlEffects(): Record<string, () => void | Promise<void>> {
     const settings = this.plugin.settings;
     return {
+      nativeEditorEnabled: () => {
+        this.plugin.forEachView((view) => view.updateComposerMode());
+      },
       viewPlacement: () => {
         this.update();
         void this.plugin.relocateView();
@@ -789,6 +794,20 @@ export class WrotSettingTab extends PluginSettingTab {
           name: t("settings.item.showPostDelete.name"),
           desc: desc(t("settings.item.showPostDelete.desc")),
           control: { type: "toggle", key: "showPostDelete" },
+        },
+      ],
+    };
+  }
+
+  private experimentalGroup(): SettingDefinitionItem {
+    return {
+      type: "group",
+      heading: t("settings.section.experimental"),
+      items: [
+        {
+          name: t("settings.item.nativeEditor.name"),
+          desc: desc(t("settings.item.nativeEditor.desc")),
+          control: { type: "toggle", key: "nativeEditorEnabled" },
         },
       ],
     };

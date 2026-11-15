@@ -315,6 +315,9 @@ export class WrotView extends ItemView {
   private scheduleArmBtn: HTMLButtonElement | null = null;
   private tagSuggest: TagSuggest | null = null;
   private composerSuggest: ComposerSuggest | null = null;
+  private rebuildComposerSuggest: (() => void) | null = null;
+  private composerModePending = false;
+  private composerModeTimer: number | null = null;
   private submittingMemo = false;
   composer!: ComposerField;
   submitLabelEl!: HTMLElement;
@@ -545,6 +548,9 @@ export class WrotView extends ItemView {
   }
 
   onClose(): Promise<void> {
+    if (this.composerModeTimer !== null) this.containerEl.win.clearTimeout(this.composerModeTimer);
+    this.composerModeTimer = null;
+    this.composerModePending = false;
     this.timelineRevision++;
     this.timelineScrollTarget = null;
     this.pendingMemoReveal = false;
@@ -562,6 +568,7 @@ export class WrotView extends ItemView {
     this.tagSuggest = null;
     this.composerSuggest?.destroy();
     this.composerSuggest = null;
+    this.rebuildComposerSuggest = null;
     // Before the composer goes: closing hands focus back to it otherwise.
     this.linkPopover?.close(true);
     this.composer?.destroy();
@@ -1051,6 +1058,15 @@ export class WrotView extends ItemView {
       this.plugin.settings.checkStrikethrough,
       () => this.obsidianConfig("autoPairBrackets") !== false,
       [dateShiftOnSpace(shiftDate)],
+      {
+        app: this.app,
+        enabled: this.plugin.settings.nativeEditorEnabled,
+        onSubmit: () => { void this.submitMemo(); },
+        onFailure: (error) => {
+          console.error("Wrot: could not initialize the native Markdown editor", error);
+          new Notice(t("view.notice.nativeEditorFallback"));
+        },
+      },
     );
 
     // Enablement is read per call, so the settings toggle takes effect immediately.
@@ -1058,20 +1074,25 @@ export class WrotView extends ItemView {
       field: this.composer,
       container,
       getCandidates: () => this.plugin.recentTags,
-      isEnabled: () => this.plugin.settings.tagSuggestEnabled,
+      // Native mode owns #tag and [[link]] completion; avoid competing popups.
+      isEnabled: () => this.plugin.settings.tagSuggestEnabled && !this.composer.isNative,
     });
-    this.composerSuggest = new ComposerSuggest(
-      this.app,
-      this.composer,
-      () => {
-        // eslint-disable-next-line @typescript-eslint/no-floating-promises -- same submit action as the view's Mod+Enter shortcut
-        this.submitMemo();
-      },
-      { getDate: () => this.currentDate, shiftDate, canPost },
-    );
+    this.rebuildComposerSuggest = () => {
+      this.composerSuggest?.destroy();
+      this.composerSuggest = new ComposerSuggest(
+        this.app,
+        this.composer,
+        () => {
+          // eslint-disable-next-line @typescript-eslint/no-floating-promises -- same submit action as the view's Mod+Enter shortcut
+          this.submitMemo();
+        },
+        { getDate: () => this.currentDate, shiftDate, canPost },
+      );
+    };
+    this.rebuildComposerSuggest();
 
     this.composer.addEventListener("keydown", (e: KeyboardEvent) => {
-      if (e.isComposing) return;
+      if (e.isComposing || this.composer.view.composing || this.composer.view.compositionStarted) return;
       // Suggest dropdown handles navigation keys first; Mod+Enter only closes it
       // without being consumed, so it falls through to the submit handling below.
       if (this.tagSuggest?.handleKeydown(e)) return;
@@ -1096,6 +1117,8 @@ export class WrotView extends ItemView {
       if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) {
         return;
       }
+      // Let Obsidian handle Markdown lists, indentation and deletion in native mode.
+      if (this.composer.isNative) return;
       if (e.key === "Enter" && !e.shiftKey) {
         // Hand-typed syntax converts on the first Enter; the line breaks on the next.
         if (
@@ -1721,6 +1744,7 @@ export class WrotView extends ItemView {
     // Held back mid-composition: rewriting the value then would drop the IME's pending text.
     this.composer.addEventListener("input", (e) => {
       if ("isComposing" in e && e.isComposing) return;
+      if (this.composer.isNative) return;
       syncListFormatting(this.composer);
     });
 
@@ -1774,6 +1798,36 @@ export class WrotView extends ItemView {
     });
 
     this.restoreDraft();
+  }
+
+  /** Apply the setting without rebuilding the form or touching its draft/edit state. */
+  updateComposerMode(): void {
+    if (!this.rebuildComposerSuggest || this.composerModePending) return;
+    // A setting can be changed by a command while IME still owns the DOM. Wait for
+    // its commit, including CodeMirror's compositionend handler, before swapping it.
+    if (this.composer.view.composing || this.composer.view.compositionStarted) {
+      this.composerModePending = true;
+      const finish = () => {
+        this.composer.removeEventListener("compositionend", finish);
+        if (!this.rebuildComposerSuggest) return;
+        // Android flushes its final composition DOM changes on a timer.
+        this.composerModeTimer = this.containerEl.win.setTimeout(() => {
+          this.composerModeTimer = null;
+          this.composerModePending = false;
+          this.updateComposerMode();
+        }, 50);
+      };
+      this.composer.addEventListener("compositionend", finish);
+      this.composer.blur();
+      return;
+    }
+    this.linkPopover?.close(true);
+    this.tagSuggest?.close();
+    // The native suggestion API binds directly to contentDOM, so recreate only it.
+    this.composerSuggest?.destroy();
+    this.composerSuggest = null;
+    this.composer.setNative(this.plugin.settings.nativeEditorEnabled);
+    this.rebuildComposerSuggest();
   }
 
   private openImagePicker(): void {

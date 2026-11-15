@@ -1,12 +1,21 @@
-import { Compartment, EditorState, StateEffect, StateField, type Extension } from "@codemirror/state";
+import { Compartment, EditorState, Prec, StateEffect, StateField, type Extension } from "@codemirror/state";
+import type { App } from "obsidian";
+import { NativeComposer } from "./nativeComposer";
 import { Decoration, DecorationSet, EditorView, keymap } from "@codemirror/view";
 import { history, historyKeymap, insertNewline, standardKeymap } from "@codemirror/commands";
 import { autoPairs } from "./composerPairs";
 import { timedTaskOnSpace } from "./composerTimeTask";
 import { insertTaskOnSpace } from "../utils/textareaEditor";
-import { armEffectOf, armedOpener, checkStrikethrough, commitTypedLine, drawnListMarkerAt, redrawEffect, visualMode } from "./composerVisual";
+import { armedField, armEffectOf, armedOpener, checkStrikethrough, commitTypedLine, drawnListMarkerAt, redrawEffect, visualMode } from "./composerVisual";
 
 type Listener = (e: Event) => void;
+
+interface NativeOptions {
+  app: App;
+  enabled: boolean;
+  onSubmit: () => void;
+  onFailure: (error: unknown) => void;
+}
 
 const placeholderAttr = (text: string) => EditorView.contentAttributes.of({ "aria-placeholder": text });
 
@@ -44,7 +53,13 @@ const heldRangeField = StateField.define<DecorationSet>({
  *   preventDefault (Enter on a list, an image paste or drop) keeps CodeMirror out of it.
  */
 export class ComposerField {
-  readonly view: EditorView;
+  view!: EditorView;
+  private nativeEditor: NativeComposer | null = null;
+  private host: HTMLElement;
+  private domListeners = new Map<string, Set<Listener>>();
+  private readOnlyValue = false;
+  private revision = 0;
+  private destroyed = false;
   private inputListeners = new Set<Listener>();
   private selectionListeners = new Set<() => void>();
   private readOnlyConf = new Compartment();
@@ -52,20 +67,82 @@ export class ComposerField {
   private strikeConf = new Compartment();
   private holder: object | null = null;
 
-  constructor(parent: HTMLElement, placeholderText: string, strikeDone: boolean, autoPair: () => boolean, extensions: Extension[] = []) {
+  constructor(parent: HTMLElement, private placeholderText: string, private strikeDone: boolean, private autoPair: () => boolean, private extensions: Extension[] = [], private nativeOptions?: NativeOptions) {
+    this.host = parent.createDiv({ cls: "wrot-composer-host" });
+    this.mount(nativeOptions?.enabled ?? false);
+  }
+
+  get isNative(): boolean {
+    return this.nativeEditor !== null;
+  }
+
+  private mount(native: boolean): void {
+    const revision = ++this.revision;
+    const common: Extension[] = [
+      // Task/date shortcuts must precede the native Markdown input handlers.
+      Prec.highest([
+        ...this.extensions,
+        timedTaskOnSpace,
+        EditorView.inputHandler.of((view, from, to, text) => {
+          if ((text !== " " && text !== "\u3000") || view.composing || view.state.readOnly) return false;
+          if (view.state.selection.ranges.length !== 1 || from !== to || from !== this.selectionStart) return false;
+          return insertTaskOnSpace(this);
+        }),
+      ]),
+      // A CSS placeholder avoids CodeMirror's widget interfering with mobile long-press.
+      this.placeholderConf.of(placeholderAttr(this.placeholderText)),
+      // Use facets because CodeMirror rewrites the DOM class attribute on focus.
+      EditorView.editorAttributes.of({ class: native ? "wrot-native-textarea" : "wrot-textarea" }),
+      EditorView.editorAttributes.compute(["doc"], (s) => ({ class: s.doc.length ? "" : "wrot-composer-empty" })),
+      this.readOnlyConf.of([EditorState.readOnly.of(this.readOnlyValue), EditorView.editable.of(!this.readOnlyValue)]),
+      heldRangeField,
+      ...(native ? [armedField] : []),
+      EditorView.updateListener.of((update) => {
+        const typed = update.docChanged && update.transactions.some((tr) =>
+          tr.isUserEvent("input") || tr.isUserEvent("delete") ||
+          tr.isUserEvent("undo") || tr.isUserEvent("redo") || tr.isUserEvent("move"));
+        const composing = update.view.composing;
+        // Native commands may omit userEvent; our own value replacements stay silent.
+        // Listeners can write into the editor, so notify only after the update finishes.
+        if (typed || (native && update.docChanged && !this.writingValue)) queueMicrotask(() => {
+          if (this.destroyed || revision !== this.revision) return;
+          this.emitInput(new InputEvent("input", { isComposing: composing }));
+        });
+        if (update.selectionSet || update.docChanged) queueMicrotask(() => {
+          if (this.destroyed || revision !== this.revision) return;
+          this.selectionListeners.forEach((cb) => cb());
+        });
+      }),
+    ];
+    if (native && this.nativeOptions) {
+      let editor: NativeComposer | null = null;
+      try {
+        editor = new NativeComposer(this.nativeOptions.app, this.host, common, this.nativeOptions.onSubmit);
+        editor.load();
+        this.view = editor.editorView;
+        this.nativeEditor = editor;
+        this.host.addClass("wrot-native-composer");
+        return;
+      } catch (error) {
+        try {
+          editor?.unload();
+        } catch (cleanupError) {
+          console.error("Wrot: could not unload the failed native editor", cleanupError);
+        }
+        this.host.empty();
+        this.nativeOptions.onFailure(error);
+        // Build fresh extensions with the custom editor's visual state.
+        this.mount(false);
+        return;
+      }
+    }
     this.view = new EditorView({
-      parent,
+      parent: this.host,
       state: EditorState.create({
         extensions: [
+          ...common,
           history(),
-          ...extensions,
-          autoPairs(autoPair),
-          timedTaskOnSpace,
-          EditorView.inputHandler.of((view, from, to, text) => {
-            if ((text !== " " && text !== "\u3000") || view.composing || view.state.readOnly) return false;
-            if (view.state.selection.ranges.length !== 1 || from !== to || from !== this.selectionStart) return false;
-            return insertTaskOnSpace(this);
-          }),
+          autoPairs(this.autoPair),
           // Plain newline first: the standard binding copies the line's indentation,
           // which a textarea never did. Lists get their marker from the view's handler.
           keymap.of([
@@ -74,32 +151,43 @@ export class ComposerField {
             ...historyKeymap,
           ]),
           EditorView.lineWrapping,
-          // Through the facet: the editor rewrites its class attribute whenever its own
-          // classes change (focus adds one), dropping anything added to the element by hand.
-          EditorView.editorAttributes.of({ class: "wrot-textarea" }),
           EditorView.contentAttributes.of({ spellcheck: "true", autocorrect: "on", autocapitalize: "on" }),
-          // Not CodeMirror's placeholder widget: on mobile it breaks the long-press menu.
-          this.placeholderConf.of(placeholderAttr(placeholderText)),
-          EditorView.editorAttributes.compute(["doc"], (s) => ({ class: s.doc.length ? "" : "wrot-composer-empty" })),
-          this.readOnlyConf.of(EditorState.readOnly.of(false)),
           visualMode(),
-          heldRangeField,
-          this.strikeConf.of(checkStrikethrough.of(strikeDone)),
-          EditorView.updateListener.of((update) => {
-            const typed = update.docChanged && update.transactions.some((tr) =>
-              tr.isUserEvent("input") || tr.isUserEvent("delete") ||
-              tr.isUserEvent("undo") || tr.isUserEvent("redo") || tr.isUserEvent("move"));
-            const composing = update.view.composing;
-            // Listeners write back into the editor, which is refused mid-update.
-            if (typed) queueMicrotask(() => this.emitInput(new InputEvent("input", { isComposing: composing })));
-            if (update.selectionSet || update.docChanged) {
-              queueMicrotask(() => this.selectionListeners.forEach((cb) => cb()));
-            }
-          }),
+          this.strikeConf.of(checkStrikethrough.of(this.strikeDone)),
         ],
       }),
     });
   }
+
+  /** Swap only the editor; the surrounding form, attachments and event wiring survive. */
+  setNative(enabled: boolean): void {
+    if (enabled === this.isNative || this.destroyed) return;
+    const value = this.value;
+    const selection = this.view.state.selection;
+    const armed = this.armedOpener();
+    const focused = this.hasFocus;
+    this.unmount();
+    this.host.empty();
+    this.host.removeClass("wrot-native-composer");
+    this.mount(enabled);
+    this.value = value;
+    this.view.dispatch({ selection });
+    this.setArmedFormat(armed?.pos ?? null, armed?.marker);
+    for (const [type, listeners] of this.domListeners) {
+      for (const listener of listeners) this.view.contentDOM.addEventListener(type, listener, true);
+    }
+    if (focused) this.focus();
+  }
+
+  private unmount(): void {
+    // Blur first so native keymap scopes are removed even if the DOM is detached later.
+    this.blur();
+    if (this.nativeEditor) this.nativeEditor.unload();
+    else this.view.destroy();
+    this.nativeEditor = null;
+  }
+
+  private writingValue = false;
 
   get value(): string {
     return this.view.state.doc.toString();
@@ -118,7 +206,12 @@ export class ComposerField {
       endCur--;
       endNext--;
     }
-    this.view.dispatch({ changes: { from, to: endCur, insert: next.slice(from, endNext) } });
+    this.writingValue = true;
+    try {
+      this.view.dispatch({ changes: { from, to: endCur, insert: next.slice(from, endNext) } });
+    } finally {
+      this.writingValue = false;
+    }
   }
 
   get selectionStart(): number {
@@ -145,7 +238,7 @@ export class ComposerField {
   }
 
   get hasFocus(): boolean {
-    return this.view.hasFocus;
+    return this.nativeEditor?.hasFocus ?? this.view.hasFocus;
   }
 
   // The editor's own focus also writes its selection into the DOM; a bare DOM focus would let
@@ -159,10 +252,12 @@ export class ComposerField {
   }
 
   set readOnly(on: boolean) {
-    this.view.dispatch({ effects: this.readOnlyConf.reconfigure(EditorState.readOnly.of(on)) });
+    this.readOnlyValue = on;
+    this.view.dispatch({ effects: this.readOnlyConf.reconfigure([EditorState.readOnly.of(on), EditorView.editable.of(!on)]) });
   }
 
   setPlaceholder(text: string): void {
+    this.placeholderText = text;
     if (this.view.contentDOM.getAttribute("aria-placeholder") === text) return;
     this.view.dispatch({ effects: this.placeholderConf.reconfigure(placeholderAttr(text)) });
   }
@@ -191,22 +286,27 @@ export class ComposerField {
   }
 
   setCheckStrikethrough(on: boolean): void {
+    this.strikeDone = on;
+    if (this.isNative) return;
     this.view.dispatch({ effects: this.strikeConf.reconfigure(checkStrikethrough.of(on)) });
   }
 
   /** End of the drawn list marker the caret sits before or just after (see composerVisual). */
   listMarkerAtCaret(): number | null {
+    if (this.isNative) return null;
     const sel = this.view.state.selection.main;
     return sel.empty ? drawnListMarkerAt(this.view.state, sel.head) : null;
   }
 
   /** Converts typed syntax on the caret's line; true if there was any (see composerVisual). */
   commitTypedLine(): boolean {
+    if (this.isNative) return false;
     return commitTypedLine(this.view);
   }
 
   /** Rebuilds what visual mode draws, for when something outside the text changed. */
   redraw(): void {
+    if (this.isNative) return;
     this.view.dispatch({ effects: redrawEffect.of(null) });
   }
 
@@ -231,13 +331,20 @@ export class ComposerField {
   addEventListener<K extends keyof HTMLElementEventMap>(type: K, listener: (e: HTMLElementEventMap[K]) => void): void;
   addEventListener(type: string, listener: Listener): void {
     if (type === "input") this.inputListeners.add(listener);
-    else this.view.contentDOM.addEventListener(type, listener, true);
+    else {
+      if (!this.domListeners.has(type)) this.domListeners.set(type, new Set());
+      this.domListeners.get(type)!.add(listener);
+      this.view.contentDOM.addEventListener(type, listener, true);
+    }
   }
 
   removeEventListener<K extends keyof HTMLElementEventMap>(type: K, listener: (e: HTMLElementEventMap[K]) => void): void;
   removeEventListener(type: string, listener: Listener): void {
     if (type === "input") this.inputListeners.delete(listener);
-    else this.view.contentDOM.removeEventListener(type, listener, true);
+    else {
+      this.domListeners.get(type)?.delete(listener);
+      this.view.contentDOM.removeEventListener(type, listener, true);
+    }
   }
 
   dispatchEvent(event: Event): boolean {
@@ -247,9 +354,16 @@ export class ComposerField {
   }
 
   destroy(): void {
+    if (this.destroyed) return;
+    this.destroyed = true;
     this.inputListeners.clear();
     this.selectionListeners.clear();
-    this.view.destroy();
+    for (const [type, listeners] of this.domListeners) {
+      for (const listener of listeners) this.view.contentDOM.removeEventListener(type, listener, true);
+    }
+    this.domListeners.clear();
+    this.unmount();
+    this.host.remove();
   }
 
   private emitInput(event: Event): void {

@@ -2,6 +2,10 @@ import type { Translations } from "./ja";
 
 // Traditional Chinese (Taiwan) translations. Translated via Nani.
 const zhTW = {
+  "settings.section.experimental": "實驗性功能",
+  "settings.item.nativeEditor.name": "使用 Obsidian 原生編輯器",
+  "settings.item.nativeEditor.desc": "開啟時使用 Obsidian Markdown 編輯器，關閉時使用現有文字方塊。立即切換並保留內文。使用非公開 API，可能在 Obsidian 更新後失效。",
+  "view.notice.nativeEditorFallback": "無法初始化 Obsidian 原生編輯器，將使用現有輸入欄。",
   "settings.section.basic": "一般設定",
   "settings.section.advanced": "進階設定",
   "settings.section.tagrules": "標籤規則設定",
