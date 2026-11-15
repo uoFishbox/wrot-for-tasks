@@ -133,13 +133,37 @@ const TOOLBAR_ACTION_SPECS: ReadonlyArray<{
   { id: "code", icon: "code", labelKey: "view.formatMenu.code" },
   { id: "math", icon: "sigma", labelKey: "view.formatMenu.math" },
   { id: "quote", icon: "quote", labelKey: "view.formatMenu.quote" },
-  { id: "bold", icon: "bold", labelKey: "view.toolbarAction.bold", pendingMode: true },
-  { id: "italic", icon: "italic", labelKey: "view.toolbarAction.italic", pendingMode: true },
+  {
+    id: "bold",
+    icon: "bold",
+    labelKey: "view.toolbarAction.bold",
+    pendingMode: true,
+  },
+  {
+    id: "italic",
+    icon: "italic",
+    labelKey: "view.toolbarAction.italic",
+    pendingMode: true,
+  },
   // Needs a selection to link, or the caret on a link to edit; its own terms, see linkTarget.
   { id: "link", icon: "link", labelKey: "view.formatMenu.link" },
-  { id: "strikethrough", icon: "strikethrough", labelKey: "view.formatMenu.strikethrough", needsSelection: true },
-  { id: "highlight", icon: "highlighter", labelKey: "view.formatMenu.highlight", needsSelection: true },
-  { id: "schedule", icon: "clock-fading", labelKey: "view.postMenu.schedulePin" },
+  {
+    id: "strikethrough",
+    icon: "strikethrough",
+    labelKey: "view.formatMenu.strikethrough",
+    needsSelection: true,
+  },
+  {
+    id: "highlight",
+    icon: "highlighter",
+    labelKey: "view.formatMenu.highlight",
+    needsSelection: true,
+  },
+  {
+    id: "schedule",
+    icon: "clock-fading",
+    labelKey: "view.postMenu.schedulePin",
+  },
 ];
 
 // What each action would add to the text, for keeping code and math apart from other effects.
@@ -229,9 +253,13 @@ function insertEmbedAboveBottomBlock(bodyText: string, embed: string): string {
 
 // A quote-card marker alone on the last line: the post's quote, which the form shows as a
 // card instead of text. Markers elsewhere (mid-text, or a second one) stay text.
-const TRAILING_QUOTE_RE = /^(?:([\s\S]*?)\n)?[ \t]*(\[\[[^[\]\n]+#\^wr-\d{17}\]\])\s*$/;
+const TRAILING_QUOTE_RE =
+  /^(?:([\s\S]*?)\n)?[ \t]*(\[\[[^[\]\n]+#\^wr-\d{17}\]\])\s*$/;
 
-function splitTrailingQuote(text: string): { text: string; quote: string | null } {
+function splitTrailingQuote(text: string): {
+  text: string;
+  quote: string | null;
+} {
   const m = text.match(TRAILING_QUOTE_RE);
   if (!m) return { text, quote: null };
   return { text: (m[1] ?? "").replace(/\s+$/, ""), quote: m[2] };
@@ -750,7 +778,14 @@ export class WrotView extends ItemView {
 
   restoreDraft(): void {
     const draft = this.plugin.draft;
-    if (!draft || !this.composer || this.composer.value || this.pendingQuote || this.editingMemo) return;
+    if (
+      !draft ||
+      !this.composer ||
+      this.composer.value ||
+      this.pendingQuote ||
+      this.editingMemo
+    )
+      return;
     this.loadDraftText(draft);
     this.composer.dispatchEvent(new Event("input"));
   }
@@ -942,7 +977,8 @@ export class WrotView extends ItemView {
   refreshSubmitButton(): void {
     this.updateComposerPlaceholder();
     if (!this.submitBtnEl) return;
-    const { submitLabel, submitIcon, updateLabel, updateIcon } = this.plugin.settings;
+    const { submitLabel, submitIcon, updateLabel, updateIcon } =
+      this.plugin.settings;
     const editing = this.editingMemo !== null;
     // While editing, both the label and the icon swap to their update variants
     // under the same rules as posting: an empty label goes icon-only when the
@@ -960,7 +996,7 @@ export class WrotView extends ItemView {
     } else {
       this.submitBtnEl.setAttr(
         "aria-label",
-        editing ? t("defaults.updateLabel") : t("defaults.submitLabel")
+        editing ? t("defaults.updateLabel") : t("defaults.submitLabel"),
       );
     }
     this.submitIconEl.empty();
@@ -979,7 +1015,9 @@ export class WrotView extends ItemView {
     const header = inputArea.createDiv({ cls: "wrot-input-header" });
     // Third way out of edit mode, next to Escape and the card menu's cancel item:
     // both of those can be out of reach on mobile or with the card scrolled away.
-    const cancelBtn = header.createEl("button", { cls: "wrot-toolbar-btn wrot-cancel-btn" });
+    const cancelBtn = header.createEl("button", {
+      cls: "wrot-toolbar-btn wrot-cancel-btn",
+    });
     setIcon(cancelBtn, "x");
     cancelBtn.setAttr("aria-label", t("view.postMenu.cancelEdit"));
     this.cancelBtnEl = cancelBtn;
@@ -994,19 +1032,21 @@ export class WrotView extends ItemView {
     // eslint-disable-next-line @typescript-eslint/no-misused-promises -- async handler intentionally used as a callback
     submitBtn.addEventListener("click", () => this.submitMemo());
 
-    const canPost = () => !this.editingMemo && !this.toolbarEditing && !this.submittingMemo;
+    const canPost = () =>
+      !this.editingMemo && !this.toolbarEditing && !this.submittingMemo;
     const shiftDate = dateShiftCommand(
       () => this.currentDate,
-      (date, followToday, post) => this.shiftComposerDate(date, followToday, post),
+      (date, followToday, post) =>
+        this.shiftComposerDate(date, followToday, post),
       () => moment(),
-      canPost
+      canPost,
     );
     this.composer = new ComposerField(
       inputArea,
       this.composerPlaceholder(),
       this.plugin.settings.checkStrikethrough,
       () => this.obsidianConfig("autoPairBrackets") !== false,
-      [dateShiftOnSpace(shiftDate)]
+      [dateShiftOnSpace(shiftDate)],
     );
 
     // Enablement is read per call, so the settings toggle takes effect immediately.
@@ -1016,10 +1056,15 @@ export class WrotView extends ItemView {
       getCandidates: () => this.plugin.recentTags,
       isEnabled: () => this.plugin.settings.tagSuggestEnabled,
     });
-    this.composerSuggest = new ComposerSuggest(this.app, this.composer, () => {
-      // eslint-disable-next-line @typescript-eslint/no-floating-promises -- same submit action as the view's Mod+Enter shortcut
-      this.submitMemo();
-    }, { getDate: () => this.currentDate, shiftDate, canPost });
+    this.composerSuggest = new ComposerSuggest(
+      this.app,
+      this.composer,
+      () => {
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises -- same submit action as the view's Mod+Enter shortcut
+        this.submitMemo();
+      },
+      { getDate: () => this.currentDate, shiftDate, canPost },
+    );
 
     this.composer.addEventListener("keydown", (e: KeyboardEvent) => {
       if (e.isComposing) return;
@@ -1028,7 +1073,10 @@ export class WrotView extends ItemView {
       if (this.tagSuggest?.handleKeydown(e)) return;
       if (
         (e.key === "Enter" || e.key === "Tab") &&
-        !e.shiftKey && !e.altKey && !e.ctrlKey && !e.metaKey &&
+        !e.shiftKey &&
+        !e.altKey &&
+        !e.ctrlKey &&
+        !e.metaKey &&
         (shiftDate(this.composer.view) || completeTimedTask(this.composer.view))
       ) {
         e.preventDefault();
@@ -1051,11 +1099,16 @@ export class WrotView extends ItemView {
           this.composer.commitTypedLine() ||
           continueListOnEnter(this.composer) ||
           continueQuoteOnEnter(this.composer)
-        ) e.preventDefault();
+        )
+          e.preventDefault();
       }
       // Task markers are removed as a whole; other list markers keep their outdent/reveal behavior.
       if (
-        e.key === "Backspace" && !e.shiftKey && !e.altKey && !e.ctrlKey && !e.metaKey &&
+        e.key === "Backspace" &&
+        !e.shiftKey &&
+        !e.altKey &&
+        !e.ctrlKey &&
+        !e.metaKey &&
         !this.composer.view.state.readOnly
       ) {
         if (deleteTaskOnBackspace(this.composer)) {
@@ -1065,19 +1118,25 @@ export class WrotView extends ItemView {
         const markerEnd = this.composer.listMarkerAtCaret();
         if (markerEnd !== null) {
           if (shiftListIndent(this.composer, true)) e.preventDefault();
-          else if (this.composer.selectionStart < markerEnd) this.composer.setSelectionRange(markerEnd, markerEnd);
+          else if (this.composer.selectionStart < markerEnd)
+            this.composer.setSelectionRange(markerEnd, markerEnd);
         }
       }
       // Tab indents inside a code block and moves list items; anywhere else it still leaves the field.
       if (e.key === "Tab") {
-        if (!e.shiftKey && insertCodeIndent(this.composer, this.indentUnit())) e.preventDefault();
+        if (!e.shiftKey && insertCodeIndent(this.composer, this.indentUnit()))
+          e.preventDefault();
         else if (shiftListIndent(this.composer, e.shiftKey)) e.preventDefault();
       }
     });
 
-    this.thumbnailContainer = inputArea.createDiv({ cls: "wrot-thumbnail-container" });
+    this.thumbnailContainer = inputArea.createDiv({
+      cls: "wrot-thumbnail-container",
+    });
     this.thumbnailContainer.setCssStyles({ display: "none" });
-    this.quoteContainer = inputArea.createDiv({ cls: "wrot-pending-quote-container" });
+    this.quoteContainer = inputArea.createDiv({
+      cls: "wrot-pending-quote-container",
+    });
     this.quoteContainer.setCssStyles({ display: "none" });
 
     this.composer.addEventListener("paste", (e: ClipboardEvent) => {
@@ -1113,7 +1172,9 @@ export class WrotView extends ItemView {
     // The suggest dropdown can overlap the toolbar; while it is shown (and during the
     // ghost-click window right after a tap-commit) toolbar buttons must not react.
     const toolbarSuppressed = () =>
-      this.submittingMemo || (this.tagSuggest?.isSuppressingUi() ?? false) || (this.composerSuggest?.isSuppressingUi() ?? false);
+      this.submittingMemo ||
+      (this.tagSuggest?.isSuppressingUi() ?? false) ||
+      (this.composerSuggest?.isSuppressingUi() ?? false);
 
     // Buttons are born detached: applyToolbarLayout is the only thing that puts one on
     // the bar, so an action that lives in the overflow menu simply never gets appended.
@@ -1175,21 +1236,32 @@ export class WrotView extends ItemView {
     highlightBtn.addEventListener("click", () => {
       if (toolbarSuppressed()) return;
       const ta = this.composer;
-      if (ta.selectionStart === ta.selectionEnd || this.effectBlockedFor("highlight")) return;
+      if (
+        ta.selectionStart === ta.selectionEnd ||
+        this.effectBlockedFor("highlight")
+      )
+        return;
       const existing = highlightAtSelection(ta);
       if (existing) {
         removeHighlight(ta, existing);
         return;
       }
       // Off the bar it was picked from the overflow menu, so the colours hang off that.
-      const anchor = highlightBtn.parentElement ? highlightBtn : this.formatBtnEl ?? highlightBtn;
+      const anchor = highlightBtn.parentElement
+        ? highlightBtn
+        : (this.formatBtnEl ?? highlightBtn);
       this.openComposerMenu(anchor, (menu) => {
         menu.addItem((item) =>
-          item.setTitle(t("view.highlight.default")).setIcon("highlighter").onClick(() => wrapHighlight(ta, ""))
+          item
+            .setTitle(t("view.highlight.default"))
+            .setIcon("highlighter")
+            .onClick(() => wrapHighlight(ta, "")),
         );
         for (const [color, emoji] of HIGHLIGHT_EMOJI) {
           menu.addItem((item) => {
-            item.setTitle(t(`view.highlight.${color}` as Parameters<typeof t>[0])).onClick(() => wrapHighlight(ta, emoji));
+            item
+              .setTitle(t(`view.highlight.${color}` as Parameters<typeof t>[0]))
+              .onClick(() => wrapHighlight(ta, emoji));
             // Not in the public typings: the icon slot Obsidian's own menu puts its swatch in.
             (item as unknown as { iconEl?: HTMLElement }).iconEl?.createDiv({
               cls: "highlight-swatch",
@@ -1206,11 +1278,23 @@ export class WrotView extends ItemView {
       const italicActive = this.activeFormatMode === "italic" || insideItalic;
       boldBtn.toggleClass("wrot-toolbar-active", boldActive);
       italicBtn.toggleClass("wrot-toolbar-active", italicActive);
-      boldBtn.toggleClass("wrot-toolbar-disabled", this.activeFormatMode === "italic" || this.effectBlockedFor("bold"));
-      italicBtn.toggleClass("wrot-toolbar-disabled", this.activeFormatMode === "bold" || this.effectBlockedFor("italic"));
+      boldBtn.toggleClass(
+        "wrot-toolbar-disabled",
+        this.activeFormatMode === "italic" || this.effectBlockedFor("bold"),
+      );
+      italicBtn.toggleClass(
+        "wrot-toolbar-disabled",
+        this.activeFormatMode === "bold" || this.effectBlockedFor("italic"),
+      );
       // Mute only the active button during IME composition to prevent accidental presses.
-      boldBtn.toggleClass("wrot-toolbar-ime-muted", this.imeLocked && boldActive);
-      italicBtn.toggleClass("wrot-toolbar-ime-muted", this.imeLocked && italicActive);
+      boldBtn.toggleClass(
+        "wrot-toolbar-ime-muted",
+        this.imeLocked && boldActive,
+      );
+      italicBtn.toggleClass(
+        "wrot-toolbar-ime-muted",
+        this.imeLocked && italicActive,
+      );
       if (this.activeFormatMode === null && this.armedShown) {
         this.armedShown = false;
         this.composer.setArmedFormat(null);
@@ -1244,8 +1328,14 @@ export class WrotView extends ItemView {
     boldBtn.addEventListener("click", () => {
       if (toolbarSuppressed()) return;
       // During IME, block only when active (condition must match updateFormatBtns).
-      if (this.imeLocked && (this.activeFormatMode === "bold" || isInsideMarker(this.composer, "**"))) return;
-      if (this.activeFormatMode === "italic" || this.effectBlockedFor("bold")) return;
+      if (
+        this.imeLocked &&
+        (this.activeFormatMode === "bold" ||
+          isInsideMarker(this.composer, "**"))
+      )
+        return;
+      if (this.activeFormatMode === "italic" || this.effectBlockedFor("bold"))
+        return;
       const ta = this.composer;
       if (ta.selectionStart !== ta.selectionEnd) {
         wrapSelection(this.composer, "**", "**", true);
@@ -1277,8 +1367,14 @@ export class WrotView extends ItemView {
     italicBtn.addEventListener("click", () => {
       if (toolbarSuppressed()) return;
       // During IME, block only when active (condition must match updateFormatBtns).
-      if (this.imeLocked && (this.activeFormatMode === "italic" || isInsideMarker(this.composer, "*"))) return;
-      if (this.activeFormatMode === "bold" || this.effectBlockedFor("italic")) return;
+      if (
+        this.imeLocked &&
+        (this.activeFormatMode === "italic" ||
+          isInsideMarker(this.composer, "*"))
+      )
+        return;
+      if (this.activeFormatMode === "bold" || this.effectBlockedFor("italic"))
+        return;
       const ta = this.composer;
       if (ta.selectionStart !== ta.selectionEnd) {
         wrapSelection(this.composer, "*", "*", true);
@@ -1331,7 +1427,9 @@ export class WrotView extends ItemView {
       // The picker hangs off whatever is on screen: the button itself while it is on the
       // bar, the overflow button once it has been put away, since a picker cannot be
       // placed against something that is not laid out.
-      const anchor = scheduleBtn.parentElement ? scheduleBtn : this.formatBtnEl ?? scheduleBtn;
+      const anchor = scheduleBtn.parentElement
+        ? scheduleBtn
+        : (this.formatBtnEl ?? scheduleBtn);
       // The picker this button opened closes on the same button, the way the date
       // nav's calendar does. The popover ignores presses on its own anchor so a day
       // cell's click can land, which leaves the press to fall through to here.
@@ -1343,19 +1441,23 @@ export class WrotView extends ItemView {
         this.setArmedSchedule(null);
         return;
       }
-      this.openSchedulePicker(anchor, null, (from) => this.setArmedSchedule(from));
+      this.openSchedulePicker(anchor, null, (from) =>
+        this.setArmedSchedule(from),
+      );
     });
 
     // The actions that ship inside the overflow menu. They own buttons of their own so
     // that promoting one to the bar needs nothing beyond a change of layout.
     const runCode = () => {
       const ta = this.composer;
-      if (ta.selectionStart !== ta.selectionEnd) wrapSelection(this.composer, "`", "`", true);
+      if (ta.selectionStart !== ta.selectionEnd)
+        wrapSelection(this.composer, "`", "`", true);
       else insertFenceBlock(this.composer, "~~~\n\n~~~");
     };
     const runMath = () => {
       const ta = this.composer;
-      if (ta.selectionStart !== ta.selectionEnd) wrapSelection(this.composer, "$", "$", true);
+      if (ta.selectionStart !== ta.selectionEnd)
+        wrapSelection(this.composer, "$", "$", true);
       else insertFenceBlock(this.composer, "$$\n\n$$");
     };
     // Keyed by id: an action listed here gets its click handler from this table, and the
@@ -1373,7 +1475,8 @@ export class WrotView extends ItemView {
       btnFor(spec.id).addEventListener("click", () => {
         if (toolbarSuppressed()) return;
         const ta = this.composer;
-        if (spec.needsSelection && ta.selectionStart === ta.selectionEnd) return;
+        if (spec.needsSelection && ta.selectionStart === ta.selectionEnd)
+          return;
         if (this.effectBlockedFor(spec.id)) return;
         run();
       });
@@ -1390,11 +1493,16 @@ export class WrotView extends ItemView {
       run: () => this.toolbarBtns.get(spec.id)?.click(),
     }));
     const highlightLabel = (): string =>
-      highlightAtSelection(this.composer) ? t("view.highlight.remove") : t("view.formatMenu.highlight");
-    const highlightAction = this.toolbarActions.find((a) => a.id === "highlight");
+      highlightAtSelection(this.composer)
+        ? t("view.highlight.remove")
+        : t("view.formatMenu.highlight");
+    const highlightAction = this.toolbarActions.find(
+      (a) => a.id === "highlight",
+    );
     if (highlightAction) highlightAction.title = highlightLabel;
     for (const action of this.toolbarActions) {
-      if (EFFECT_KIND[action.id]) action.disabled = () => this.effectBlockedFor(action.id);
+      if (EFFECT_KIND[action.id])
+        action.disabled = () => this.effectBlockedFor(action.id);
     }
     const linkAction = this.toolbarActions.find((a) => a.id === "link");
     if (linkAction) linkAction.disabled = () => !this.linkTarget();
@@ -1416,7 +1524,9 @@ export class WrotView extends ItemView {
     toolbarDoneBtn.addEventListener("mousedown", (e) => e.preventDefault());
     this.toolbarDoneBtnEl = toolbarDoneBtn;
 
-    const formatBtn = toolbar.createEl("button", { cls: "wrot-toolbar-btn wrot-format-btn" });
+    const formatBtn = toolbar.createEl("button", {
+      cls: "wrot-toolbar-btn wrot-format-btn",
+    });
     setIcon(formatBtn, "ellipsis");
     formatBtn.setAttr("aria-label", t("view.toolbarAction.more"));
     this.formatBtnEl = formatBtn;
@@ -1425,38 +1535,57 @@ export class WrotView extends ItemView {
       if (toolbarSuppressed()) return;
       const ta = this.composer;
       const hasSelection = ta.selectionStart !== ta.selectionEnd;
-      this.openComposerMenu(formatBtn, (menu) => {
-        let rendered = 0;
-        for (const action of this.hiddenActions()) {
-          rendered++;
-          menu.addItem((item) => {
-            item.setTitle(action.title?.() ?? action.label).setIcon(action.icon).onClick(() => action.run());
-            if (action.checked?.()) item.setChecked(true);
-            const wrapOnly = action.needsSelection || action.pendingMode;
-            if ((wrapOnly && !hasSelection) || action.disabled?.()) item.setDisabled(true);
-          });
-        }
-        if (rendered > 0) menu.addSeparator();
-        if (this.plugin.settings.toolbarEditEnabled) {
+      this.openComposerMenu(
+        formatBtn,
+        (menu) => {
+          let rendered = 0;
+          for (const action of this.hiddenActions()) {
+            rendered++;
+            menu.addItem((item) => {
+              item
+                .setTitle(action.title?.() ?? action.label)
+                .setIcon(action.icon)
+                .onClick(() => action.run());
+              if (action.checked?.()) item.setChecked(true);
+              const wrapOnly = action.needsSelection || action.pendingMode;
+              if ((wrapOnly && !hasSelection) || action.disabled?.())
+                item.setDisabled(true);
+            });
+          }
+          if (rendered > 0) menu.addSeparator();
+          if (this.plugin.settings.toolbarEditEnabled) {
+            menu.addItem((item) => {
+              item
+                .setTitle(t("view.formatMenu.editToolbar"))
+                .setIcon("wrench")
+                .onClick(() => this.setToolbarEditing(true));
+              // Editing a post already owns the header's ×; the toolbar cannot claim it too.
+              if (this.editingMemo) item.setDisabled(true);
+            });
+          }
           menu.addItem((item) => {
             item
-              .setTitle(t("view.formatMenu.editToolbar"))
-              .setIcon("wrench")
-              .onClick(() => this.setToolbarEditing(true));
-            // Editing a post already owns the header's ×; the toolbar cannot claim it too.
-            if (this.editingMemo) item.setDisabled(true);
+              .setTitle(t("view.formatMenu.settings"))
+              .setIcon("settings")
+              .onClick(() => {
+                const settingApi = (
+                  this.app as {
+                    setting?: {
+                      open?: () => void;
+                      openTabById?: (id: string) => void;
+                    };
+                  }
+                ).setting;
+                if (settingApi?.open && settingApi?.openTabById) {
+                  settingApi.open();
+                  settingApi.openTabById(this.plugin.manifest.id);
+                }
+              });
           });
-        }
-        menu.addItem((item) => {
-          item.setTitle(t("view.formatMenu.settings")).setIcon("settings").onClick(() => {
-            const settingApi = (this.app as { setting?: { open?: () => void; openTabById?: (id: string) => void } }).setting;
-            if (settingApi?.open && settingApi?.openTabById) {
-              settingApi.open();
-              settingApi.openTabById(this.plugin.manifest.id);
-            }
-          });
-        });
-      }, -4, true);
+        },
+        -4,
+        true,
+      );
     });
 
     // Every press inside the bar belongs to arranging it while that is what is going on;
@@ -1469,9 +1598,10 @@ export class WrotView extends ItemView {
         e.preventDefault();
         e.stopPropagation();
         if (formatBtn.contains(e.target as Node)) this.setToolbarEditing(false);
-        else if (toolbarDoneBtn.contains(e.target as Node)) this.commitToolbarLayout();
+        else if (toolbarDoneBtn.contains(e.target as Node))
+          this.commitToolbarLayout();
       },
-      true
+      true,
     );
     this.setupToolbarArrange(toolbar);
     this.applyToolbarLayout();
@@ -1572,15 +1702,22 @@ export class WrotView extends ItemView {
     // Refresh on both input and compositionend so uncommitted IME text also filters candidates.
     this.composer.addEventListener("input", () => this.scheduleDraftSave());
     this.composer.addEventListener("input", () => this.tagSuggest?.refresh());
-    this.composer.addEventListener("input", () => this.composerSuggest?.refresh());
-    this.composer.addEventListener("compositionend", () => this.tagSuggest?.refresh());
-    this.composer.addEventListener("compositionend", () => this.composerSuggest?.refresh());
+    this.composer.addEventListener("input", () =>
+      this.composerSuggest?.refresh(),
+    );
+    this.composer.addEventListener("compositionend", () =>
+      this.tagSuggest?.refresh(),
+    );
+    this.composer.addEventListener("compositionend", () =>
+      this.composerSuggest?.refresh(),
+    );
     this.composer.addEventListener("blur", () => this.tagSuggest?.notifyBlur());
 
     // Wrap detection via offsetTop, which padding changes don't affect, so the
     // ResizeObserver cannot loop.
     const updateToolbarWrapped = () => {
-      const buttons = toolbar.querySelectorAll<HTMLElement>(".wrot-toolbar-btn");
+      const buttons =
+        toolbar.querySelectorAll<HTMLElement>(".wrot-toolbar-btn");
       if (buttons.length < 2) return;
       const first = buttons[0];
       const last = buttons[buttons.length - 1];
@@ -1591,7 +1728,10 @@ export class WrotView extends ItemView {
       // row above stands on. The class takes it back visually only: dropping the margin
       // itself would change the width that decided the wrap, and the two would oscillate.
       const prev = buttons[buttons.length - 2];
-      last.toggleClass("wrot-toolbar-row-start", last.offsetTop > prev.offsetTop);
+      last.toggleClass(
+        "wrot-toolbar-row-start",
+        last.offsetTop > prev.offsetTop,
+      );
     };
     window.requestAnimationFrame(updateToolbarWrapped);
     if (typeof ResizeObserver !== "undefined") {
@@ -1654,7 +1794,9 @@ export class WrotView extends ItemView {
   private setPendingImage(file: File): void {
     this.clearPendingImage();
     this.pendingImage = file;
-    this.pendingShrink = this.plugin.settings.shrinkImages ? shrinkImage(file) : null;
+    this.pendingShrink = this.plugin.settings.shrinkImages
+      ? shrinkImage(file)
+      : null;
     this.pendingImageUrl = URL.createObjectURL(file);
     this.renderThumbnail();
     this.updateImageAddBtnState();
@@ -1717,7 +1859,8 @@ export class WrotView extends ItemView {
     const slot = wrap.createDiv({ cls: "wrot-quote-card-slot" });
     renderQuoteCard(slot, link[1], link[2], this.app, "", {
       timestampSettings: this.plugin.settings,
-      resolveRuleClass: (content) => this.plugin.getTagRuleClassForContent(content),
+      resolveRuleClass: (content) =>
+        this.plugin.getTagRuleClassForContent(content),
       checkStrikethrough: this.plugin.settings.checkStrikethrough,
     });
     const card = slot.querySelector<HTMLElement>(".wrot-quote-card");
@@ -1755,7 +1898,10 @@ export class WrotView extends ItemView {
 
   private updateSubmitBtnState(): void {
     if (!this.submitBtnEl) return;
-    const hasContent = this.hasTypedText() || this.pendingImage !== null || this.pendingQuote !== null;
+    const hasContent =
+      this.hasTypedText() ||
+      this.pendingImage !== null ||
+      this.pendingQuote !== null;
     this.submitBtnEl.toggleClass("wrot-submit-active", hasContent);
   }
 
@@ -1765,7 +1911,10 @@ export class WrotView extends ItemView {
     const armed = this.composer.armedOpener();
     if (!armed) return text;
     const start = armed.pos + armed.marker.length;
-    const lineEnd = text.indexOf("\n", start) === -1 ? text.length : text.indexOf("\n", start);
+    const lineEnd =
+      text.indexOf("\n", start) === -1
+        ? text.length
+        : text.indexOf("\n", start);
     const body = text.slice(start, lineEnd);
     const core = body.trim();
     const before = text.slice(0, armed.pos);
@@ -1774,8 +1923,11 @@ export class WrotView extends ItemView {
     // A delimiter only counts with no space on its inner side, so wrap the trimmed text.
     const lead = body.slice(0, body.length - body.trimStart().length);
     const trail = body.slice(body.trimEnd().length);
-    const gap = !lead && before !== "" && !/\s/.test(before.slice(-1)) ? " " : "";
-    return before + gap + lead + armed.marker + core + armed.marker + trail + after;
+    const gap =
+      !lead && before !== "" && !/\s/.test(before.slice(-1)) ? " " : "";
+    return (
+      before + gap + lead + armed.marker + core + armed.marker + trail + after
+    );
   }
 
   // A bold/italic switched on with nothing typed yet leaves only its opener in the field,
@@ -1783,7 +1935,12 @@ export class WrotView extends ItemView {
   private hasTypedText(): boolean {
     const text = this.composer.value.trim();
     if (!text) return false;
-    const opener = this.activeFormatMode === "bold" ? "**" : this.activeFormatMode === "italic" ? "*" : null;
+    const opener =
+      this.activeFormatMode === "bold"
+        ? "**"
+        : this.activeFormatMode === "italic"
+          ? "*"
+          : null;
     return text !== opener;
   }
 
@@ -1819,7 +1976,8 @@ export class WrotView extends ItemView {
     // focus(), then fire input so every dependent state (toolbar highlights,
     // submit button) is recomputed synchronously with the final caret.
     this.composer.focus();
-    this.composer.selectionStart = this.composer.selectionEnd = this.composer.value.length;
+    this.composer.selectionStart = this.composer.selectionEnd =
+      this.composer.value.length;
     this.composer.dispatchEvent(new Event("input"));
     this.refreshSubmitButton();
     this.applyEditModeClasses();
@@ -1842,7 +2000,7 @@ export class WrotView extends ItemView {
     const len = this.composer.value.length;
     this.composer.setSelectionRange(
       Math.min(draft?.selStart ?? len, len),
-      Math.min(draft?.selEnd ?? len, len)
+      Math.min(draft?.selEnd ?? len, len),
     );
     this.composer.dispatchEvent(new Event("input"));
     this.refreshSubmitButton();
@@ -1857,26 +2015,41 @@ export class WrotView extends ItemView {
     const targetClass = editing
       ? `wrot-block-id-wr-${editing.time.replace(/[-:.TZ+]/g, "").slice(0, 17)}`
       : null;
-    this.contentEl.querySelectorAll<HTMLElement>(".wrot-card").forEach((card) => {
-      const isTarget = targetClass !== null && card.classList.contains(targetClass);
-      card.classList.toggle("wrot-card-editing", isTarget);
-      card.classList.toggle("wrot-card-menu-locked", editing !== null && !isTarget);
-      this.setEditingAccentVars(card, isTarget);
-    });
+    this.contentEl
+      .querySelectorAll<HTMLElement>(".wrot-card")
+      .forEach((card) => {
+        const isTarget =
+          targetClass !== null && card.classList.contains(targetClass);
+        card.classList.toggle("wrot-card-editing", isTarget);
+        card.classList.toggle(
+          "wrot-card-menu-locked",
+          editing !== null && !isTarget,
+        );
+        this.setEditingAccentVars(card, isTarget);
+      });
   }
 
   // Same convention as the quote-jump flash: a tag-rule card with a custom
   // accent carries it as inline CSS vars while highlighted; without them the
   // stylesheet defaults fall back to the theme accent.
   private setEditingAccentVars(card: HTMLElement, editing: boolean): void {
-    const ruleClass = Array.from(card.classList).find((c) => /^wrot-tag-rule-\d+$/.test(c));
-    const accent = editing && ruleClass ? this.plugin.getRuleAccentColor(ruleClass) : null;
+    const ruleClass = Array.from(card.classList).find((c) =>
+      /^wrot-tag-rule-\d+$/.test(c),
+    );
+    const accent =
+      editing && ruleClass ? this.plugin.getRuleAccentColor(ruleClass) : null;
     if (accent) {
       const r = parseInt(accent.slice(1, 3), 16);
       const g = parseInt(accent.slice(3, 5), 16);
       const b = parseInt(accent.slice(5, 7), 16);
-      card.style.setProperty("--wrot-editing-ring-color", `rgba(${r}, ${g}, ${b}, 0.45)`);
-      card.style.setProperty("--wrot-editing-tint-color", `rgba(${r}, ${g}, ${b}, 0.07)`);
+      card.style.setProperty(
+        "--wrot-editing-ring-color",
+        `rgba(${r}, ${g}, ${b}, 0.45)`,
+      );
+      card.style.setProperty(
+        "--wrot-editing-tint-color",
+        `rgba(${r}, ${g}, ${b}, 0.07)`,
+      );
       card.style.setProperty("--wrot-editing-accent", accent);
     } else {
       card.style.removeProperty("--wrot-editing-ring-color");
@@ -1889,7 +2062,9 @@ export class WrotView extends ItemView {
   // own attachment setting.
   // Obsidian's own editor settings; getConfig is not in the public typings.
   private obsidianConfig(key: string): unknown {
-    return (this.app.vault as unknown as { getConfig(key: string): unknown }).getConfig(key);
+    return (
+      this.app.vault as unknown as { getConfig(key: string): unknown }
+    ).getConfig(key);
   }
 
   // A tab, or that many spaces, as the note editor would indent.
@@ -1900,7 +2075,8 @@ export class WrotView extends ItemView {
   }
 
   private attachmentFolder(): string | undefined {
-    const { useCustomAttachmentFolder, attachmentFolder } = this.plugin.settings;
+    const { useCustomAttachmentFolder, attachmentFolder } =
+      this.plugin.settings;
     return useCustomAttachmentFolder ? attachmentFolder : undefined;
   }
 
@@ -1925,7 +2101,7 @@ export class WrotView extends ItemView {
           this.app,
           image,
           file,
-          this.attachmentFolder()
+          this.attachmentFolder(),
         );
         const embed = buildEmbedLink(savedFile);
         bodyText = insertEmbedAboveBottomBlock(bodyText, embed);
@@ -2650,7 +2826,8 @@ export class WrotView extends ItemView {
     const draftQuote = this.savedDraft?.quote ?? null;
     this.editingMemo = null;
     this.savedDraft = null;
-    this.composer.value = typed && draft ? `${typed}\n\n${draft}` : typed || draft;
+    this.composer.value =
+      typed && draft ? `${typed}\n\n${draft}` : typed || draft;
     if (draftImage && !this.pendingImage) this.setPendingImage(draftImage);
     if (draftQuote && !this.pendingQuote) this.setPendingQuote(draftQuote);
     this.composer.dispatchEvent(new Event("input"));
@@ -2685,7 +2862,7 @@ export class WrotView extends ItemView {
 
   // `stale`: entries whose note was read but no longer holds the memo.
   private async resolvePinEntries<T extends PinEntry>(
-    pins: T[] | undefined
+    pins: T[] | undefined,
   ): Promise<{ resolved: { memo: Memo; filePath: string }[]; stale: T[] }> {
     const resolved: { memo: Memo; filePath: string }[] = [];
     const stale: T[] = [];
@@ -2723,8 +2900,13 @@ export class WrotView extends ItemView {
   }
 
   /** The scheduled pin on this memo, whether its day has come or not. */
-  private findScheduledPin(memo: Memo, filePath: string): ScheduledPinEntry | undefined {
-    return (this.plugin.settings.scheduledPins ?? []).find((p) => matchesPin(p, memo, filePath));
+  private findScheduledPin(
+    memo: Memo,
+    filePath: string,
+  ): ScheduledPinEntry | undefined {
+    return (this.plugin.settings.scheduledPins ?? []).find((p) =>
+      matchesPin(p, memo, filePath),
+    );
   }
 
   /**
@@ -2733,7 +2915,10 @@ export class WrotView extends ItemView {
    * post it was armed for cannot find the allowance gone by the time it is written.
    */
   private scheduledClaimCount(): number {
-    return (this.plugin.settings.scheduledPins?.length ?? 0) + (this.armedSchedule ? 1 : 0);
+    return (
+      (this.plugin.settings.scheduledPins?.length ?? 0) +
+      (this.armedSchedule ? 1 : 0)
+    );
   }
 
   /** Whether a scheduled pin's day has arrived. Compared by day, never by clock time. */
@@ -2750,7 +2935,9 @@ export class WrotView extends ItemView {
     ]);
     if (stale.size === 0) return false;
     settings.pins = settings.pins.filter((p) => !stale.has(p));
-    settings.scheduledPins = (settings.scheduledPins ?? []).filter((p) => !stale.has(p));
+    settings.scheduledPins = (settings.scheduledPins ?? []).filter(
+      (p) => !stale.has(p),
+    );
     await this.plugin.savePins();
     return true;
   }
@@ -2759,7 +2946,8 @@ export class WrotView extends ItemView {
     await this.cleanupOrphanPins();
     const limit = this.plugin.settings.pinLimit;
     if (this.plugin.settings.pins.length >= limit) return;
-    if (this.isPinned(memo, filePath) || this.findScheduledPin(memo, filePath)) return;
+    if (this.isPinned(memo, filePath) || this.findScheduledPin(memo, filePath))
+      return;
     this.plugin.settings.pins = [
       { timestamp: memo.time, file: filePath },
       ...this.plugin.settings.pins,
@@ -2768,11 +2956,16 @@ export class WrotView extends ItemView {
     await this.refresh();
   }
 
-  private async addScheduledPin(memo: Memo, filePath: string, from: string): Promise<void> {
+  private async addScheduledPin(
+    memo: Memo,
+    filePath: string,
+    from: string,
+  ): Promise<void> {
     await this.cleanupOrphanPins();
     const settings = this.plugin.settings;
     if (this.scheduledClaimCount() >= settings.pinLimit) return;
-    if (this.isPinned(memo, filePath) || this.findScheduledPin(memo, filePath)) return;
+    if (this.isPinned(memo, filePath) || this.findScheduledPin(memo, filePath))
+      return;
     settings.scheduledPins = [
       { timestamp: memo.time, file: filePath, from },
       ...(settings.scheduledPins ?? []),
@@ -2788,7 +2981,7 @@ export class WrotView extends ItemView {
     const before = settings.pins.length + (settings.scheduledPins?.length ?? 0);
     settings.pins = settings.pins.filter((p) => !matchesPin(p, memo, filePath));
     settings.scheduledPins = (settings.scheduledPins ?? []).filter(
-      (p) => !matchesPin(p, memo, filePath)
+      (p) => !matchesPin(p, memo, filePath),
     );
     if (settings.pins.length + settings.scheduledPins.length !== before) {
       await this.plugin.savePins();
@@ -2830,16 +3023,24 @@ export class WrotView extends ItemView {
     if (file instanceof TFile) {
       try {
         this.markOwnWrite();
-        const removed = await deleteMemo(this.app, file, memo.time, memo.lineStart);
+        const removed = await deleteMemo(
+          this.app,
+          file,
+          memo.time,
+          memo.lineStart,
+        );
         if (removed) {
           // Quote cards read a per-file memo cache; drop it so this refresh
           // cannot repaint a quote of the memo we just removed.
           invalidateMemoCache(file.path);
           const settings = this.plugin.settings;
-          const before = settings.pins.length + (settings.scheduledPins?.length ?? 0);
-          settings.pins = settings.pins.filter((p) => !matchesPin(p, memo, file.path));
+          const before =
+            settings.pins.length + (settings.scheduledPins?.length ?? 0);
+          settings.pins = settings.pins.filter(
+            (p) => !matchesPin(p, memo, file.path),
+          );
           settings.scheduledPins = (settings.scheduledPins ?? []).filter(
-            (p) => !matchesPin(p, memo, file.path)
+            (p) => !matchesPin(p, memo, file.path),
           );
           if (settings.pins.length + settings.scheduledPins.length !== before) {
             await this.plugin.savePins();
@@ -2870,7 +3071,7 @@ export class WrotView extends ItemView {
   private openSchedulePicker(
     trigger: HTMLElement,
     memo: Memo | null,
-    onPick: (from: string) => void
+    onPick: (from: string) => void,
   ): void {
     const earliest = moment().add(1, "day").startOf("day");
     // Only a card's picker locks the timeline behind it. Armed from the toolbar there
@@ -2890,7 +3091,10 @@ export class WrotView extends ItemView {
       // The card menu is still closing as its item fires, and its own hide handler
       // puts the button's lit state out. Light it again once that has run: the
       // picker is still the same card's.
-      window.setTimeout(() => trigger.toggleClass("wrot-toolbar-active", true), 0);
+      window.setTimeout(
+        () => trigger.toggleClass("wrot-toolbar-active", true),
+        0,
+      );
       // The popover is placed once, against the button's position at the time, so the
       // list is held still while it is open — scrolling either way would slide the
       // card out from under it. Before locking, the list is sent down far enough for
@@ -2910,7 +3114,9 @@ export class WrotView extends ItemView {
           // calendar over the very post the day is being chosen for.
           // The floor's height is measured, so it is the one value that has to be
           // written as a property rather than carried by a class.
-          this.listContainer.setCssProps({ "--wrot-list-floor": `${overflow}px` });
+          this.listContainer.setCssProps({
+            "--wrot-list-floor": `${overflow}px`,
+          });
           this.listContainer.scrollTop += overflow;
           popover.reposition();
         }
@@ -2919,7 +3125,8 @@ export class WrotView extends ItemView {
         this.listContainer.addClass("wrot-list-held");
       };
       this.schedulePickerAnchor = trigger;
-      const form = trigger.closest<HTMLElement>(".wrot-input-area") ?? undefined;
+      const form =
+        trigger.closest<HTMLElement>(".wrot-input-area") ?? undefined;
       this.schedulePopover = openCalendarPopover({
         app: this.app,
         anchor: trigger,
@@ -2969,7 +3176,9 @@ export class WrotView extends ItemView {
         let chosen = earliest.clone();
         let confirmItem: MenuItem | null = null;
         const renderChosen = () => {
-          confirmItem?.setTitle(chosen.format(this.plugin.settings.headerDateFormat));
+          confirmItem?.setTitle(
+            chosen.format(this.plugin.settings.headerDateFormat),
+          );
         };
 
         menu.addItem((item) => {
@@ -2992,7 +3201,9 @@ export class WrotView extends ItemView {
 
         menu.addItem((item) => {
           confirmItem = item;
-          (item as { dom?: HTMLElement }).dom?.classList.add("wrot-menu-schedule-confirm");
+          (item as { dom?: HTMLElement }).dom?.classList.add(
+            "wrot-menu-schedule-confirm",
+          );
           item.setIcon("clock-fading").onClick(() => {
             onPick(chosen.format("YYYY-MM-DD"));
           });
@@ -3005,7 +3216,7 @@ export class WrotView extends ItemView {
       // desktop, so it is the one shape that can be lined up with the form the way the
       // overflow menu is. A phone raises the menu from the bottom edge and has nothing to
       // line up; a card has no form around it either.
-      Platform.isTablet && trigger.closest(".wrot-input-area") !== null
+      Platform.isTablet && trigger.closest(".wrot-input-area") !== null,
     );
   }
 
@@ -3023,13 +3234,15 @@ export class WrotView extends ItemView {
     const full = this.scheduledClaimCount() >= this.plugin.settings.pinLimit;
     this.setBtnDisabled(
       this.scheduleArmBtn,
-      this.editingMemo !== null || (full && from === null)
+      this.editingMemo !== null || (full && from === null),
     );
     this.scheduleArmBtn.setAttr(
       "aria-label",
       from
-        ? moment(from, "YYYY-MM-DD").format(this.plugin.settings.headerDateFormat)
-        : t("view.postMenu.schedulePin")
+        ? moment(from, "YYYY-MM-DD").format(
+            this.plugin.settings.headerDateFormat,
+          )
+        : t("view.postMenu.schedulePin"),
     );
   }
 
@@ -3049,10 +3262,16 @@ export class WrotView extends ItemView {
     const targetClass = time
       ? `wrot-block-id-wr-${time.replace(/[-:.TZ+]/g, "").slice(0, 17)}`
       : null;
-    this.contentEl.querySelectorAll<HTMLElement>(".wrot-card").forEach((card) => {
-      const isTarget = targetClass !== null && card.classList.contains(targetClass);
-      card.classList.toggle("wrot-card-menu-locked", time !== null && !isTarget);
-    });
+    this.contentEl
+      .querySelectorAll<HTMLElement>(".wrot-card")
+      .forEach((card) => {
+        const isTarget =
+          targetClass !== null && card.classList.contains(targetClass);
+        card.classList.toggle(
+          "wrot-card-menu-locked",
+          time !== null && !isTarget,
+        );
+      });
   }
 
   private renderMemoCard(
@@ -3478,7 +3697,10 @@ export class WrotView extends ItemView {
     return card;
   }
 
-  private async insertQuoteToForm(memo: Memo, srcFilePath: string): Promise<void> {
+  private async insertQuoteToForm(
+    memo: Memo,
+    srcFilePath: string,
+  ): Promise<void> {
     const T = memo.time.replace(/[-:.TZ+]/g, "").slice(0, 17);
     const blockId = `wr-${T}`;
     const srcFile = this.app.vault.getAbstractFileByPath(srcFilePath);
@@ -3490,7 +3712,11 @@ export class WrotView extends ItemView {
     this.composer.dispatchEvent(new Event("input"));
   }
 
-  private updateToolbarActive(listBtn: HTMLElement, checkBtn: HTMLElement, olBtn: HTMLElement): void {
+  private updateToolbarActive(
+    listBtn: HTMLElement,
+    checkBtn: HTMLElement,
+    olBtn: HTMLElement,
+  ): void {
     const { isList, isCheck, isOl } = lineMarkerState(this.composer);
     listBtn.toggleClass("wrot-toolbar-active", isList);
     checkBtn.toggleClass("wrot-toolbar-active", isCheck);
@@ -3503,7 +3729,9 @@ export class WrotView extends ItemView {
    */
   private hiddenActions(): ToolbarAction[] {
     const hidden = new Set(
-      this.toolbarLayout.filter((slot) => slot.state === "menu").map((slot) => slot.id)
+      this.toolbarLayout
+        .filter((slot) => slot.state === "menu")
+        .map((slot) => slot.id),
     );
     return this.toolbarActions.filter((action) => hidden.has(action.id));
   }
@@ -3522,15 +3750,23 @@ export class WrotView extends ItemView {
       return;
     }
     if (!this.toolbarEditing) {
-      this.toolbarLayout = resolveToolbarLayout(this.plugin.settings.toolbarLayout);
+      this.toolbarLayout = resolveToolbarLayout(
+        this.plugin.settings.toolbarLayout,
+      );
     }
     for (const slot of this.toolbarLayout) {
       const btn = this.toolbarBtns.get(slot.id);
       if (!btn) continue;
       if (slot.state === "bar" || this.toolbarEditing) toolbar.appendChild(btn);
       else btn.detach();
-      btn.toggleClass("wrot-toolbar-off", this.toolbarEditing && slot.state !== "bar");
-      btn.toggleClass("wrot-toolbar-disabled-slot", this.toolbarEditing && slot.state === "off");
+      btn.toggleClass(
+        "wrot-toolbar-off",
+        this.toolbarEditing && slot.state !== "bar",
+      );
+      btn.toggleClass(
+        "wrot-toolbar-disabled-slot",
+        this.toolbarEditing && slot.state === "off",
+      );
     }
     if (this.toolbarDoneBtnEl) {
       if (this.toolbarEditing) toolbar.appendChild(this.toolbarDoneBtnEl);
@@ -3570,7 +3806,12 @@ export class WrotView extends ItemView {
       const blockable = action.id === "code" || action.id === "math";
       if (!action.needsSelection && !blockable) continue;
       const btn = this.toolbarBtns.get(action.id);
-      if (btn) this.setBtnDisabled(btn, (!!action.needsSelection && empty) || this.effectBlockedFor(action.id));
+      if (btn)
+        this.setBtnDisabled(
+          btn,
+          (!!action.needsSelection && empty) ||
+            this.effectBlockedFor(action.id),
+        );
     }
   }
 
@@ -3582,7 +3823,8 @@ export class WrotView extends ItemView {
 
   private setToolbarEditing(on: boolean): void {
     if (this.submittingMemo) return;
-    if (on && (this.editingMemo || !this.plugin.settings.toolbarEditEnabled)) return;
+    if (on && (this.editingMemo || !this.plugin.settings.toolbarEditEnabled))
+      return;
     if (this.toolbarEditing === on) return;
     this.toolbarEditing = on;
     // A disabled button dispatches nothing at all, so it could neither be moved nor
@@ -3604,7 +3846,7 @@ export class WrotView extends ItemView {
       setIcon(this.formatBtnEl, on ? "x" : "ellipsis");
       this.formatBtnEl.setAttr(
         "aria-label",
-        on ? t("view.toolbarEdit.cancel") : t("view.toolbarAction.more")
+        on ? t("view.toolbarEdit.cancel") : t("view.toolbarAction.more"),
       );
     }
     this.applyToolbarLayout();
@@ -3612,7 +3854,9 @@ export class WrotView extends ItemView {
 
   /** Keeps what was arranged. Backing out instead simply leaves the saved layout alone. */
   private commitToolbarLayout(): void {
-    this.plugin.settings.toolbarLayout = this.toolbarLayout.map((slot) => ({ ...slot }));
+    this.plugin.settings.toolbarLayout = this.toolbarLayout.map((slot) => ({
+      ...slot,
+    }));
     // eslint-disable-next-line @typescript-eslint/no-floating-promises -- fire-and-forget; the bar is already drawn from it
     this.plugin.saveToolbarLayout();
     this.setToolbarEditing(false);
@@ -3680,9 +3924,12 @@ export class WrotView extends ItemView {
 
     this.registerDomEvent(toolbar, "pointerdown", (e: PointerEvent) => {
       if (!this.toolbarEditing) return;
-      const btn = (e.target as HTMLElement | null)?.closest<HTMLElement>(".wrot-toolbar-btn");
+      const btn = (e.target as HTMLElement | null)?.closest<HTMLElement>(
+        ".wrot-toolbar-btn",
+      );
       // The two ways out of arranging are not part of what is being arranged.
-      if (!btn || btn === this.formatBtnEl || btn === this.toolbarDoneBtnEl) return;
+      if (!btn || btn === this.formatBtnEl || btn === this.toolbarDoneBtnEl)
+        return;
       held = btn;
       moved = false;
       startX = e.clientX;
@@ -3699,18 +3946,28 @@ export class WrotView extends ItemView {
       if (!held) return;
       if (!moved) {
         // Below this the press is still a press: dragging must not swallow a plain tap.
-        if (Math.abs(e.clientX - startX) + Math.abs(e.clientY - startY) < 8) return;
+        if (Math.abs(e.clientX - startX) + Math.abs(e.clientY - startY) < 8)
+          return;
         moved = true;
         lift(held);
       }
-      held.setCssStyles({ left: `${e.clientX - grabX}px`, top: `${e.clientY - grabY}px` });
+      held.setCssStyles({
+        left: `${e.clientX - grabX}px`,
+        top: `${e.clientY - grabY}px`,
+      });
       if (!gap) return;
-      const under = activeDocument.elementFromPoint(e.clientX, e.clientY) as HTMLElement | null;
+      const under = activeDocument.elementFromPoint(
+        e.clientX,
+        e.clientY,
+      ) as HTMLElement | null;
       const over = under?.closest<HTMLElement>(".wrot-toolbar-btn");
-      if (!over || over === this.formatBtnEl || over === this.toolbarDoneBtnEl) return;
+      if (!over || over === this.formatBtnEl || over === this.toolbarDoneBtnEl)
+        return;
       if (over.parentElement !== toolbar) return;
       const gapPrecedes =
-        (over.compareDocumentPosition(gap) & Node.DOCUMENT_POSITION_PRECEDING) !== 0;
+        (over.compareDocumentPosition(gap) &
+          Node.DOCUMENT_POSITION_PRECEDING) !==
+        0;
       toolbar.insertBefore(gap, gapPrecedes ? over.nextSibling : over);
     });
 
@@ -3734,7 +3991,8 @@ export class WrotView extends ItemView {
     if (!id) return;
     const slot = this.toolbarLayout.find((s) => s.id === id);
     if (!slot) return;
-    slot.state = slot.state === "bar" ? "menu" : slot.state === "menu" ? "off" : "bar";
+    slot.state =
+      slot.state === "bar" ? "menu" : slot.state === "menu" ? "off" : "bar";
     this.readOrderFromBar();
   }
 
@@ -3763,7 +4021,11 @@ export class WrotView extends ItemView {
    * What the link button would act on: the link under the caret or selection (to edit), or
    * the selected text (to link). Null when there is neither.
    */
-  private linkTarget(): { edit: ReturnType<typeof findLinkAt>; from: number; to: number } | null {
+  private linkTarget(): {
+    edit: ReturnType<typeof findLinkAt>;
+    from: number;
+    to: number;
+  } | null {
     const ta = this.composer;
     if (!ta) return null;
     const from = ta.selectionStart;
@@ -3791,7 +4053,10 @@ export class WrotView extends ItemView {
     const { edit, from, to } = target;
     const text = edit ? edit.text : ta.value.slice(from, to);
     const write = (insert: string): void => {
-      ta.view.dispatch({ changes: { from, to, insert }, selection: { anchor: from + insert.length } });
+      ta.view.dispatch({
+        changes: { from, to, insert },
+        selection: { anchor: from + insert.length },
+      });
       ta.focus();
       ta.dispatchEvent(new Event("input"));
     };
@@ -3830,11 +4095,17 @@ export class WrotView extends ItemView {
     trigger: HTMLElement,
     buildMenu: (m: Menu) => void,
     yOffset = 0,
-    alignRight = false
+    alignRight = false,
   ): void {
     const ta = this.composer;
     const holder = {};
-    this.openMenu(trigger, buildMenu, yOffset, () => ta.holdRange(null, holder), alignRight);
+    this.openMenu(
+      trigger,
+      buildMenu,
+      yOffset,
+      () => ta.holdRange(null, holder),
+      alignRight,
+    );
     if (Platform.isMobile && ta.selectionStart !== ta.selectionEnd) {
       ta.holdRange({ from: ta.selectionStart, to: ta.selectionEnd }, holder);
     }
@@ -3850,7 +4121,7 @@ export class WrotView extends ItemView {
     // Hangs the menu off the right edge of the form the trigger belongs to, rather than off
     // the trigger itself. The button sits wherever the row of actions ends, which is not
     // where the eye expects a menu of its width to stop.
-    alignRight = false
+    alignRight = false,
   ): void {
     if (this.currentMenu) {
       this.currentMenu.hide();
@@ -3940,5 +4211,4 @@ export class WrotView extends ItemView {
       stopTracking = () => window.cancelAnimationFrame(frame);
     }
   }
-
 }
