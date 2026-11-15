@@ -1,7 +1,7 @@
 {
   "id": "wrot-for-tasks",
   "name": "Wrot for Tasks",
-  "version": "3.2.0-task.1",
+  "version": "3.2.0-task.2",
   "minAppVersion": "1.14.4",
   "description": "Daily notes, timed tasks, and a remaining-tasks timeline, based on Wrot.",
   "author": "Vill Yoshioka",
